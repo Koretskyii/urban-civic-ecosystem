@@ -1,0 +1,450 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//////////////////// ENUMS ////////////////////
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ReactionType {
+  LIKE
+  DISLIKE
+  LAUGH
+  ANGRY
+}
+
+//////////////////// CITY (TENANT) ////////////////////
+
+model City {
+  id     String @id @default(cuid())
+  name   String
+  region String?
+
+  users                UserCity[]
+  roles                Role[]
+  cityRequests         CityRequest[]
+  chats                Chat[]
+  alerts               Alert[]
+  alertSubscriptions   AlertSubscription[] @relation("alertSubscriptions")
+  projects             Project[]
+  communities          Community[]
+  surveys              Survey[]
+  crowdfundingProjects CrowdfundingProject[]
+  news                 GeneralNews[] @relation("news")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////// USERS ////////////////////
+
+model User {
+  id           String @id @default(cuid())
+  name         String
+  email        String @unique
+  passwordHash String
+
+  memberships           UserCity[]
+  userRoles             UserRole[]
+  cityRequests          CityRequest[]
+  messages              Message[]
+  publishedAlerts       Alert[]
+  alertSubscriptions    AlertSubscription[]
+  posts                 Post[]
+  comments              Comment[]
+  reactions             Reaction[]
+  votes                 Vote[]
+  donations             Donation[]
+  crowdfundingProjects  CrowdfundingProject[] @relation("creator")
+  projectParticipants   ProjectParticipant[]
+  communityMemberships  CommunityMember[]
+  publishedNews         GeneralNews[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserCity {
+  userId String
+  cityId String
+
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, cityId])
+}
+
+//////////////////// RBAC ////////////////////
+
+model Role {
+  id     String @id @default(cuid())
+  name   String
+  cityId String
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@unique([cityId, name])
+}
+
+model Permission {
+  id  String @id @default(cuid())
+  key String @unique
+
+  roles RolePermission[]
+}
+
+model UserRole {
+  userId String
+  roleId String // city tenant id?? TODO: consider if we need cityId here for multitenancy
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+//////////////////// CITY REQUESTS ////////////////////
+
+model CityRequest {
+  id          String @id @default(cuid())
+  cityId      String
+  userId      String
+  title       String
+  description String?
+  status      RequestStatus @default(OPEN)
+  location    String?
+  priority    Int @default(0)
+  category    String?
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  chat   Chat?
+  reports Report[]
+  attachments Attachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Report {
+  id          String @id @default(cuid())
+  description String?
+
+  cityRequestId String
+  cityRequest   CityRequest @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
+
+  attachments Attachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attachment {
+  id         String @id @default(cuid())
+  fileName   String
+  mimeType   String?
+  url        String
+  type       String?
+  entityId   String
+  entityType String
+
+  reportId String?
+  report   Report? @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  cityRequestId String?
+  cityRequest   CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
+
+  uploadedAt DateTime @default(now())
+}
+
+//////////////////// CHAT ////////////////////
+
+model Chat {
+  id            String @id @default(cuid())
+  cityId        String
+  cityRequestId String? @unique
+  communityId   String?
+  contextType   String @default("cityRequest")
+
+  city        City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  cityRequest CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
+  community   Community?   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id       String @id @default(cuid())
+  chatId  String
+  authorId String
+  content String
+
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  timestamp DateTime @default(now())
+}
+
+//////////////////// ALERTS ////////////////////
+
+model Alert {
+  id        String @id @default(cuid())
+  cityId    String
+  typeId    String
+  authorId  String
+  content   String
+  timestamp DateTime @default(now())
+
+  city   City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  type   AlertType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  author User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model AlertType {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+
+  alerts        Alert[]
+  subscriptions AlertSubscription[]
+}
+
+model AlertSubscription {
+  userId      String
+  cityId      String
+  alertTypeId String
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city      City @relation("alertSubscriptions", fields: [cityId], references: [id], onDelete: Cascade)
+  alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, cityId, alertTypeId])
+}
+
+//////////////////// PROJECTS ////////////////////
+
+model Project {
+  id          String @id @default(cuid())
+  cityId      String
+  title       String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+
+  city         City                  @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  events       Event[]
+  participants ProjectParticipant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectParticipant {
+  userId    String
+  projectId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([userId, projectId])
+}
+
+model Event {
+  id        String @id @default(cuid())
+  projectId String
+  title     String
+  startTime DateTime
+  endTime   DateTime?
+  location  String?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+//////////////////// COMMUNITY ////////////////////
+
+model Community {
+  id          String @id @default(cuid())
+  cityId      String
+  name        String
+  description String?
+
+  city      City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  posts     Post[]
+  members   CommunityMember[]
+  chats     Chat[]
+
+  createdAt DateTime @default(now())
+}
+
+model CommunityMember {
+  userId    String
+  communityId String
+
+  joinedAt DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, communityId])
+}
+
+model Post {
+  id          String @id @default(cuid())
+  authorId    String
+  communityId String
+  content     String
+
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  reactions Reaction[]
+
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  postId  String
+  userId  String
+  content String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Reaction {
+  postId String
+  userId String
+  type   ReactionType
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([postId, userId])
+}
+
+//////////////////// SURVEYS ////////////////////
+
+model Survey {
+  id          String @id @default(cuid())
+  cityId      String
+  title       String
+  description String?
+
+  city    City           @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  options SurveyOption[]
+  votes   Vote[]
+
+  createdAt DateTime @default(now())
+}
+
+model SurveyOption {
+  id       String @id @default(cuid())
+  surveyId String
+  text     String
+
+  survey Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  votes  Vote[]
+}
+
+model Vote {
+  id             String @id @default(cuid())
+  surveyId       String
+  surveyOptionId String
+  userId         String
+
+  survey    Survey       @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  option    SurveyOption @relation(fields: [surveyOptionId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@unique([surveyId, userId])
+}
+
+//////////////////// CROWDFUNDING ////////////////////
+
+model CrowdfundingProject {
+  id        String @id @default(cuid())
+  cityId    String
+  creatorId String
+  title     String
+  description String?
+  fundingGoal Decimal
+  currentAmount Decimal @default(0)
+  deadline  DateTime
+
+  city      City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  creator   User @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
+  donations Donation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Donation {
+  id        String @id @default(cuid())
+  projectId String
+  contributorId String
+  amount    Decimal
+  timestamp DateTime @default(now())
+
+  project   CrowdfundingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contributor User               @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+//////////////////// GENERAL NEWS ////////////////////
+
+model GeneralNews {
+  id          String @id @default(cuid())
+  cityId      String
+  publisherId String
+  title       String
+  content     String
+  timestamp   DateTime @default(now())
+
+  city      City @relation("news", fields: [cityId], references: [id], onDelete: Cascade)
+  publisher User @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
