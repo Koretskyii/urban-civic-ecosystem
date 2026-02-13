@@ -1,1 +1,1 @@
-// Export all types from here
+export type { AuthResponse } from './auth.types';

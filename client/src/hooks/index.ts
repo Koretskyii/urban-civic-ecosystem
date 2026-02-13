@@ -1,1 +1,1 @@
-// Export all hooks from here
+export { useCurrentUser } from './useAuth';

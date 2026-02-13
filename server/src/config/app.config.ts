@@ -1,6 +1,6 @@
-// App configuration
-export const appConfig = {
-  port: parseInt(process.env.PORT || '3000'),
-  jwtSecret: process.env.JWT_SECRET || 'default-secret',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
-};
+import { registerAs } from '@nestjs/config';
+
+export const appConfig = registerAs('app', () => ({
+  port: parseInt(process.env.PORT || '3000', 10),
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+}));

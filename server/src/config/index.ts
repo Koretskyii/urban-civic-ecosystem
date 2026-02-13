@@ -1,2 +1,2 @@
-// Export all config from here
-export * from './app.config';
+export { appConfig } from './app.config';
+export { jwtConfig } from './jwt.config';
