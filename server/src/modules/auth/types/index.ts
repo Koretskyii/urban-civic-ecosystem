@@ -1,0 +1,1 @@
+export type { LoginAuthProps, RegisterAuthProps } from "./auth.type.js";

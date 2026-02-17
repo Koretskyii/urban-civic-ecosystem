@@ -1,2 +1,2 @@
 // Export all utilities from here
-export * from './helpers';
+export * from './helpers.js';

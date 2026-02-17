@@ -1,2 +1,2 @@
 // Export all modules from here
-export * from './auth/auth.module';
+export * from './auth/auth.module.js';
