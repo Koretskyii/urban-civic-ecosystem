@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { LoginAuthProps, RegisterAuthProps } from './types/auth.type.js';
+import { LoginDto, RegisterDto } from './dto/index.js';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
@@ -23,7 +23,7 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) { }
 
-  async validateLogin(loginData: LoginAuthProps): Promise<User> {
+  async validateLogin(loginData: LoginDto): Promise<User> {
     const user = await this.findUser(loginData.email);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -39,7 +39,7 @@ export class AuthService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async register(authData: RegisterAuthProps, res: Response) {
+  async register(authData: RegisterDto, res: Response) {
     const { name, email, password } = authData;
 
     const existing = await this.findUser(email);
