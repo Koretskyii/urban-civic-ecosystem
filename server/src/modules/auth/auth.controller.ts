@@ -20,7 +20,6 @@ export class AuthController {
   @ApiOkResponse({ description: 'User logged in successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    // LocalGuard runs LocalStrategy.validate() → sets req.user
     return this.authService.login(req.user as any, res);
   }
 

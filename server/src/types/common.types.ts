@@ -1,4 +1,3 @@
-// Common types
 export type ID = string;
 
 export interface BaseEntity {
