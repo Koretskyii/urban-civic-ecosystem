@@ -9,8 +9,8 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder().setTitle('API documentation').setDescription('API documentation for Urban Civic Ecosystem').setVersion('1.0').addBearerAuth().build();
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('app.port', 3000);
-  const corsOrigin = configService.get<string>('app.corsOrigin', 'http://localhost:3001');
+  const port = configService.get<number>('app.port', 3001);
+  const corsOrigin = configService.get<string>('app.corsOrigin', 'http://localhost:3000');
 
   app.use(cookieParser());
   app.enableCors({ origin: corsOrigin, credentials: true });
