@@ -1,0 +1,11 @@
+# IDE
+.vscode/
+.idea/
+
+# Personal / diploma notes
+Diploma-file.md
+prompt.md
+
+# OS
+.DS_Store
+Thumbs.db
