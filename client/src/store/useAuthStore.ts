@@ -1,10 +1,7 @@
 import { create } from 'zustand';
-
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-};
+import { persist } from 'zustand/middleware';
+import type { User } from '@/types';
+import { AUTH_STORAGE_KEY } from '@/constants';
 
 interface AuthState {
   user: User | null;
@@ -17,15 +14,27 @@ interface AuthState {
   setLoading: (isLoading: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  isLoading: false,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
 
-  setUser: (user, token) => set({ user, token, isAuthenticated: true }),
+      setUser: (user, token) => set({ user, token, isAuthenticated: true }),
 
-  logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      logout: () => set({ user: null, token: null, isAuthenticated: false }),
 
-  setLoading: (isLoading) => set({ isLoading }),
-}));
+      setLoading: (isLoading) => set({ isLoading }),
+    }),
+    {
+      name: AUTH_STORAGE_KEY,
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    },
+  ),
+);

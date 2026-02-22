@@ -1,4 +1,6 @@
 import { API_BASE_URL } from '@/config';
+import { HTTP_METHODS } from '@/constants';
+import { useAuthStore } from '@/store';
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -14,8 +16,7 @@ class ApiClient {
   }
 
   private getAuthHeaders(): Record<string, string> {
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = useAuthStore.getState().token;
 
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
@@ -50,19 +51,19 @@ class ApiClient {
   }
 
   post<T>(endpoint: string, body: unknown) {
-    return this.request<T>(endpoint, { method: 'POST', body });
+    return this.request<T>(endpoint, { method: HTTP_METHODS.POST, body });
   }
 
   put<T>(endpoint: string, body: unknown) {
-    return this.request<T>(endpoint, { method: 'PUT', body });
+    return this.request<T>(endpoint, { method: HTTP_METHODS.PUT, body });
   }
 
   patch<T>(endpoint: string, body: unknown) {
-    return this.request<T>(endpoint, { method: 'PATCH', body });
+    return this.request<T>(endpoint, { method: HTTP_METHODS.PATCH, body });
   }
 
   delete<T>(endpoint: string) {
-    return this.request<T>(endpoint, { method: 'DELETE' });
+    return this.request<T>(endpoint, { method: HTTP_METHODS.DELETE });
   }
 }
 

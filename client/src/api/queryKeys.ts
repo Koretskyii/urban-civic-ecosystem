@@ -1,10 +1,11 @@
-// Централізовані ключі запитів для TanStack Query
-// Використовуємо factory-pattern для типобезпечних ключів
-
 export const queryKeys = {
   // Auth
   auth: {
-    me: () => ['auth', 'me'] as const,
+    register: () => ['auth', 'register'] as const,
+    login: () => ['auth', 'login'] as const,
+    refresh: () => ['auth', 'refresh'] as const,
+    logout: () => ['auth', 'logout'] as const,
+    profile: () => ['auth', 'profile'] as const,
   },
 
   // Cities
