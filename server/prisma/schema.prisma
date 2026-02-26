@@ -116,7 +116,7 @@ model Permission {
 
 model UserRole {
   userId String
-  roleId String // city tenant id?? TODO: consider if we need cityId here for multitenancy
+  roleId String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)

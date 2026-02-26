@@ -8,6 +8,7 @@ import { PrismaModule } from "./prisma/prisma.module.js";
 import { AuthModule } from "./modules/index.js";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
+import { RbacModule } from "./modules/rbac/rbac.module.js";
 
 
 @Module({
@@ -19,6 +20,7 @@ import { AppService } from "./app.service.js";
     }),
     PrismaModule,
     AuthModule,
+    RbacModule,
   ],
   controllers: [AppController],
   providers: [AppService],

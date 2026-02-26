@@ -5,7 +5,10 @@ import { LocalGuard } from './guards/local.guard.js';
 import { JWTGuard } from './guards/jwt.guard.js';
 import { JWTRefreshGuard } from './guards/jwt-refresh.guard.js';
 import type { Request, Response } from 'express';
-import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiOkResponse, ApiUnauthorizedResponse, ApiCreatedResponse, ApiConflictResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiBody, ApiOkResponse, ApiUnauthorizedResponse, ApiCreatedResponse, ApiConflictResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { PERMISSIONS_KEYS } from '../rbac/constants/permissions.const.js';
+import { RequirePermissions } from '../rbac/decorators/index.js';
+import { PermissionsGuard } from '../rbac/guards/index.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -54,7 +57,8 @@ export class AuthController {
     return this.authService.logout(res);
   }
 
-  @UseGuards(JWTGuard)
+  @UseGuards(JWTGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSIONS_KEYS.USER_VIEW_PROFILE)
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile' })
   @ApiBearerAuth('access_token')

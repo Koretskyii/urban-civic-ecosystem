@@ -8,6 +8,7 @@ import { PrismaModule } from '../../prisma/prisma.module.js';
 import { LocalStrategy } from './strategies/local.strategy.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
+import { RbacModule } from '../rbac/rbac.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
       }),
       inject: [ConfigService],
     }),
+    RbacModule,
     PrismaModule,
     ConfigModule,
   ],
