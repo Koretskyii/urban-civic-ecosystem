@@ -9,6 +9,7 @@ import { LocalStrategy } from './strategies/local.strategy.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
 import { RbacModule } from '../rbac/rbac.module.js';
+import { GoogleStrategy } from './strategies/google.strategy.js';
 
 @Module({
   imports: [
@@ -26,7 +27,13 @@ import { RbacModule } from '../rbac/rbac.module.js';
     ConfigModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    GoogleStrategy,
+  ],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

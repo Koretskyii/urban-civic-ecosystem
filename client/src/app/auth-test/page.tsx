@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useLogin, useRegister, useLogout, useCurrentUser } from '@/hooks';
 import { useAuthStore } from '@/store';
+import { API_BASE_URL } from '@/config';
 
 export default function AuthTestPage() {
   const [tab, setTab] = useState<'login' | 'register'>('register');
@@ -38,20 +39,34 @@ export default function AuthTestPage() {
   const error = login.error || register.error || logout.error;
 
   return (
-    <div style={{ maxWidth: 520, margin: '40px auto', fontFamily: 'monospace' }}>
+    <div
+      style={{ maxWidth: 520, margin: '40px auto', fontFamily: 'monospace' }}
+    >
       <h1>🔐 Auth Test Page</h1>
 
       {/* ───── Auth State ───── */}
       <fieldset style={{ marginBottom: 20, padding: 16 }}>
-        <legend><strong>Zustand Store State</strong></legend>
+        <legend>
+          <strong>Zustand Store State</strong>
+        </legend>
         <pre style={{ fontSize: 13, overflow: 'auto' }}>
-          {JSON.stringify({ isAuthenticated, user, token: token ? `${token.slice(0, 20)}…` : null }, null, 2)}
+          {JSON.stringify(
+            {
+              isAuthenticated,
+              user,
+              token: token ? `${token.slice(0, 20)}…` : null,
+            },
+            null,
+            2,
+          )}
         </pre>
       </fieldset>
 
       {/* ───── Profile Query ───── */}
       <fieldset style={{ marginBottom: 20, padding: 16 }}>
-        <legend><strong>useCurrentUser() query</strong></legend>
+        <legend>
+          <strong>useCurrentUser() query</strong>
+        </legend>
         {profileLoading ? (
           <p>⏳ Loading profile…</p>
         ) : profile ? (
@@ -63,7 +78,15 @@ export default function AuthTestPage() {
 
       {/* ───── Error ───── */}
       {error && (
-        <div style={{ background: '#fee', border: '1px solid #c00', padding: 12, marginBottom: 16, borderRadius: 6 }}>
+        <div
+          style={{
+            background: '#fee',
+            border: '1px solid #c00',
+            padding: 12,
+            marginBottom: 16,
+            borderRadius: 6,
+          }}
+        >
           <strong>❌ Error:</strong> {(error as Error).message}
         </div>
       )}
@@ -71,11 +94,20 @@ export default function AuthTestPage() {
       {/* ───── Authenticated Actions ───── */}
       {isAuthenticated ? (
         <div>
-          <p>✅ Ви авторизовані як <strong>{user?.name}</strong></p>
+          <p>
+            ✅ Ви авторизовані як <strong>{user?.name}</strong>
+          </p>
           <button
             onClick={handleLogout}
             disabled={logout.isPending}
-            style={{ padding: '10px 24px', cursor: 'pointer', background: '#c00', color: '#fff', border: 'none', borderRadius: 6 }}
+            style={{
+              padding: '10px 24px',
+              cursor: 'pointer',
+              background: '#c00',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+            }}
           >
             {logout.isPending ? 'Logging out…' : '🚪 Logout'}
           </button>
@@ -119,7 +151,11 @@ export default function AuthTestPage() {
                 placeholder="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                style={{ padding: 10, borderRadius: 6, border: '1px solid #ccc' }}
+                style={{
+                  padding: 10,
+                  borderRadius: 6,
+                  border: '1px solid #ccc',
+                }}
               />
             )}
             <input
@@ -149,13 +185,50 @@ export default function AuthTestPage() {
                 fontWeight: 'bold',
               }}
             >
-              {(register.isPending || login.isPending)
+              {register.isPending || login.isPending
                 ? 'Processing…'
                 : tab === 'register'
                   ? '📝 Register'
                   : '🔑 Login'}
             </button>
           </div>
+
+          {/* ───── Divider ───── */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              margin: '8px 0',
+            }}
+          >
+            <hr
+              style={{ flex: 1, border: 'none', borderTop: '1px solid #ccc' }}
+            />
+            <span style={{ color: '#888', fontSize: 13 }}>або</span>
+            <hr
+              style={{ flex: 1, border: 'none', borderTop: '1px solid #ccc' }}
+            />
+          </div>
+
+          {/* ───── Google OAuth ───── */}
+          <a
+            href={`${API_BASE_URL}/auth/google`}
+            style={{
+              display: 'block',
+              padding: '10px 24px',
+              background: '#4285F4',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              textDecoration: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            🔵 Login with Google
+          </a>
         </>
       )}
 
@@ -163,7 +236,14 @@ export default function AuthTestPage() {
       {token && (
         <details style={{ marginTop: 20 }}>
           <summary style={{ cursor: 'pointer' }}>🔑 Raw Token</summary>
-          <pre style={{ fontSize: 11, wordBreak: 'break-all', whiteSpace: 'pre-wrap', marginTop: 8 }}>
+          <pre
+            style={{
+              fontSize: 11,
+              wordBreak: 'break-all',
+              whiteSpace: 'pre-wrap',
+              marginTop: 8,
+            }}
+          >
             {token}
           </pre>
         </details>
