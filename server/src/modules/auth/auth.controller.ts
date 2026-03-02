@@ -75,17 +75,12 @@ export class AuthController {
   @ApiOkResponse({ description: 'User logged in successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const result = await this.authService.validateOAuthUser(
-      req.user as any,
-      res,
-    );
+    await this.authService.validateOAuthUser(req.user as any, res);
 
     const clientUrl = new URL(
       '/auth/google/callback',
       process.env.CLIENT_URL || 'https://localhost:3000',
     );
-    clientUrl.searchParams.set('accessToken', result.accessToken);
-    clientUrl.searchParams.set('user', JSON.stringify(result.user));
     res.redirect(clientUrl.toString());
   }
 
