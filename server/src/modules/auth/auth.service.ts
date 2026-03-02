@@ -29,15 +29,16 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    if (user.passwordHash) {
-      const isPasswordValid = await bcrypt.compare(
-        loginData.password,
-        user.passwordHash,
+    if (!user.passwordHash) {
+      throw new UnauthorizedException(
+        'This account uses Google authentication. Please log in with Google.',
       );
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid password');
-      }
-    } else {
+    }
+    const isPasswordValid = await bcrypt.compare(
+      loginData.password,
+      user.passwordHash,
+    );
+    if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid password');
     }
 
@@ -71,6 +72,11 @@ export class AuthService {
 
     const existing = await this.findUser(email);
     if (existing) {
+      if (existing.provider !== AUTH_PROVIDERS.LOCAL) {
+        throw new UnauthorizedException(
+          'This email is linked to a Google account. Please log in with Google.',
+        );
+      }
       throw new UnauthorizedException('User with this email already exists');
     }
 
@@ -113,6 +119,15 @@ export class AuthService {
     res: Response,
   ) {
     let userData = await this.findUser(user.email);
+
+    if (userData && !userData.providerId) {
+      // Local user logging in with Google for the first time — link accounts
+      userData = await this.prisma.user.update({
+        where: { id: userData.id },
+        data: { providerId: user.providerId },
+      });
+    }
+
     if (!userData) {
       userData = await this.createOAuthUser(
         user.name,
