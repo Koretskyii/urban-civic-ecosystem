@@ -58,7 +58,9 @@ model User {
   id           String @id @default(cuid())
   name         String
   email        String @unique
-  passwordHash String
+  passwordHash String?
+  provider     String @default("local")
+  providerId   String?
 
   memberships           UserCity[]
   userRoles             UserRole[]
@@ -75,6 +77,8 @@ model User {
   projectParticipants   ProjectParticipant[]
   communityMemberships  CommunityMember[]
   publishedNews         GeneralNews[]
+
+  @@unique([provider, providerId])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

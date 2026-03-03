@@ -9,6 +9,7 @@ import { AuthModule } from "./modules/index.js";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 import { RbacModule } from "./modules/rbac/rbac.module.js";
+import { googleConfig } from "./config/google.config.js";
 
 
 @Module({
@@ -16,7 +17,7 @@ import { RbacModule } from "./modules/rbac/rbac.module.js";
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [appConfig, jwtConfig, dbConfig, tlsConfig],
+      load: [appConfig, jwtConfig, dbConfig, tlsConfig, googleConfig],
     }),
     PrismaModule,
     AuthModule,

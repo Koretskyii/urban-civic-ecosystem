@@ -1,30 +1,39 @@
-import { Controller, Post, Get, HttpCode, HttpStatus, UseGuards, Res, Req, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Res,
+  Req,
+  Body,
+} from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { LoginDto, RegisterDto } from './dto/index.js';
 import { LocalGuard } from './guards/local.guard.js';
 import { JWTGuard } from './guards/jwt.guard.js';
 import { JWTRefreshGuard } from './guards/jwt-refresh.guard.js';
 import type { Request, Response } from 'express';
-import { ApiOperation, ApiTags, ApiBody, ApiOkResponse, ApiUnauthorizedResponse, ApiCreatedResponse, ApiConflictResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiTags,
+  ApiBody,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiCreatedResponse,
+  ApiConflictResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { PERMISSIONS_KEYS } from '../rbac/constants/permissions.const.js';
 import { RequirePermissions } from '../rbac/decorators/index.js';
 import { PermissionsGuard } from '../rbac/guards/index.js';
+import { GoogleGuard } from './guards/google.guard.js';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
-
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(LocalGuard)
-  @Post('login')
-  @ApiOperation({ summary: 'Login user' })
-  @ApiBody({ type: LoginDto })
-  @ApiOkResponse({ description: 'User logged in successfully' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    return this.authService.login(req.user as any, res);
-  }
+  constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
@@ -32,17 +41,58 @@ export class AuthController {
   @ApiBody({ type: RegisterDto })
   @ApiCreatedResponse({ description: 'User registered successfully' })
   @ApiConflictResponse({ description: 'User already exists' })
-  async register(@Body() body: RegisterDto, @Res({ passthrough: true }) res: Response) {
+  async register(
+    @Body() body: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     return this.authService.register(body, res);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalGuard)
+  @Post('login')
+  @ApiOperation({ summary: 'Login user locally' })
+  @ApiBody({ type: LoginDto })
+  @ApiOkResponse({ description: 'User logged in successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.authService.login(req.user as any, res);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleGuard)
+  @ApiOperation({ summary: 'Login with Google' })
+  @ApiOkResponse({ description: 'User logged in successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  async googleLogin(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleGuard)
+  @ApiOperation({ summary: 'Google callback' })
+  @ApiOkResponse({ description: 'User logged in successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  async googleCallback(@Req() req: Request, @Res() res: Response) {
+    await this.authService.validateOAuthUser(req.user as any, res);
+
+    const clientUrl = new URL(
+      '/auth/google/callback',
+      process.env.CLIENT_URL || 'https://localhost:3000',
+    );
+    res.redirect(clientUrl.toString());
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(JWTRefreshGuard)
   @Post('refresh')
-
   @ApiOkResponse({ description: 'Access token refreshed successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid refresh token' })
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     return this.authService.refresh(req, res);
   }
 
@@ -50,7 +100,6 @@ export class AuthController {
   @UseGuards(JWTGuard)
   @Post('logout')
   @ApiOperation({ summary: 'Logout user' })
-
   @ApiOkResponse({ description: 'User logged out successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid refresh token' })
   async logout(@Res({ passthrough: true }) res: Response) {
