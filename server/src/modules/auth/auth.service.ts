@@ -16,6 +16,14 @@ const REFRESH_COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
 };
 
+const ACCESS_COOKIE_OPTIONS = {
+  httpOnly: false, // JS must read this on the client
+  secure: true,
+  sameSite: 'lax' as const, // lax needed for cross-origin redirect from Google
+  path: '/',
+  maxAge: 60 * 1000, // 1 minute — just enough for the redirect
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -143,6 +151,7 @@ export class AuthService {
 
     const accessToken = this.generateAccessToken(userData);
     this.setRefreshCookie(res, this.generateRefreshToken(userData));
+    res.cookie('access_token', accessToken, ACCESS_COOKIE_OPTIONS);
 
     return {
       accessToken,
