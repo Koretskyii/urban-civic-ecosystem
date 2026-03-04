@@ -1,54 +1,79 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
+import { authApi } from '@/api/endpoints';
+import { Container, Typography } from '@mui/material';
+import Link from 'next/link';
+
+function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function deleteCookie(name: string) {
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=lax`;
+}
 
 export default function GoogleCallbackPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { setUser } = useAuthStore.getState();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const accessToken = searchParams.get('accessToken');
-    const userParam = searchParams.get('user');
-
-    if (accessToken && userParam) {
+    async function handleGoogleAuth() {
       try {
-        const user = JSON.parse(userParam);
+        // 1. Read access token from cookie (set by server during redirect)
+        const accessToken = getCookie('access_token');
+        if (!accessToken) {
+          setError('Токен автентифікації відсутній. Спробуйте ще раз.');
+          return;
+        }
+
+        // 2. Delete cookie immediately — token now lives only in memory
+        deleteCookie('access_token');
+
+        // 3. Store token so apiClient includes auth header
+        useAuthStore.setState({ token: accessToken });
+
+        // 4. Fetch user profile
+        const user = await authApi.getProfile();
+
+        // 5. Store in auth state (same as local login)
         setUser(user, accessToken);
         router.replace('/auth-test');
       } catch {
-        setError('Помилка обробки даних від Google');
+        setError('Помилка автентифікації через Google. Спробуйте ще раз.');
       }
-    } else {
-      setError('Токен або дані користувача відсутні');
     }
-  }, [searchParams, router, setUser]);
+
+    handleGoogleAuth();
+  }, [router, setUser]);
 
   if (error) {
     return (
-      <div
-        style={{ maxWidth: 520, margin: '40px auto', fontFamily: 'monospace' }}
-      >
-        <h1>❌ Google Auth Error</h1>
-        <p>{error}</p>
-        <a href="/auth-test">← Повернутися</a>
-      </div>
+      <Container sx={{ maxWidth: 520, margin: '40px auto' }}>
+        <Typography variant="h1">❌ Google Auth Error</Typography>
+        <Typography variant="body1">{error}</Typography>
+        <Link href="/auth-test" style={{ textDecoration: 'none' }}>
+          ← Повернутися
+        </Link>
+      </Container>
     );
   }
 
   return (
-    <div
-      style={{
+    <Container
+      sx={{
         maxWidth: 520,
         margin: '40px auto',
-        fontFamily: 'monospace',
         textAlign: 'center',
       }}
     >
-      <p>⏳ Обробка Google автентифікації...</p>
-    </div>
+      <Typography variant="body1">
+        ⏳ Обробка Google автентифікації...
+      </Typography>
+    </Container>
   );
 }
