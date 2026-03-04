@@ -25,9 +25,8 @@ import {
   ApiConflictResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { PERMISSIONS_KEYS } from '../rbac/constants/permissions.const.js';
-import { RequirePermissions } from '../rbac/decorators/index.js';
 import { PermissionsGuard } from '../rbac/guards/index.js';
+import { JWTExpiredGuard } from './guards/jwt-expired.guard.js';
 import { GoogleGuard } from './guards/google.guard.js';
 
 @ApiTags('Auth')
@@ -97,7 +96,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JWTGuard)
+  @UseGuards(JWTExpiredGuard)
   @Post('logout')
   @ApiOperation({ summary: 'Logout user' })
   @ApiOkResponse({ description: 'User logged out successfully' })
@@ -107,7 +106,6 @@ export class AuthController {
   }
 
   @UseGuards(JWTGuard, PermissionsGuard)
-  @RequirePermissions(PERMISSIONS_KEYS.USER_VIEW_PROFILE)
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile' })
   @ApiBearerAuth('access_token')
