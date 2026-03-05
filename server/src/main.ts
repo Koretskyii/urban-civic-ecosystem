@@ -11,8 +11,8 @@ async function bootstrap() {
 
   let httpsOptions: { key: Buffer; cert: Buffer } | undefined;
   if (tlsEnabled) {
-    const certPath = process.env.TLS_CERT_PATH || './certs/cert.pem';
-    const keyPath = process.env.TLS_KEY_PATH || './certs/key.pem';
+    const certPath = process.env.TLS_CERT_PATH || '../certs/cert.pem';
+    const keyPath = process.env.TLS_KEY_PATH || '../certs/key.pem';
     httpsOptions = {
       key: fs.readFileSync(path.resolve(keyPath)),
       cert: fs.readFileSync(path.resolve(certPath)),
@@ -23,11 +23,19 @@ async function bootstrap() {
     ...(httpsOptions && { httpsOptions }),
   });
 
-  const swaggerConfig = new DocumentBuilder().setTitle('API documentation').setDescription('API documentation for Urban Civic Ecosystem').setVersion('1.0').addBearerAuth().build();
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('API documentation')
+    .setDescription('API documentation for Urban Civic Ecosystem')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
   const configService = app.get(ConfigService);
   const nodeEnv = configService.get<string>('app.nodeEnv', 'development');
   const port = configService.get<number>('app.port', 3001);
-  const corsOrigin = configService.get<string>('app.corsOrigin', 'https://localhost:3000');
+  const corsOrigin = configService.get<string>(
+    'app.corsOrigin',
+    'https://localhost:3000',
+  );
 
   app.use(cookieParser());
   app.enableCors({ origin: corsOrigin, credentials: true });
