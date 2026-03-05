@@ -42,7 +42,7 @@ export default function GoogleCallbackPage() {
 
         // 5. Store in auth state (same as local login)
         setUser(user, accessToken);
-        router.replace('/auth-test');
+        router.replace('/user/profile');
       } catch {
         setError('Помилка автентифікації через Google. Спробуйте ще раз.');
       }
