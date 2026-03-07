@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store';
 import { authApi } from '@/api/endpoints';
 import { Container, Typography } from '@mui/material';
 import Link from 'next/link';
+import { ERROR_MESSAGES } from '@/constants';
 
 function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -27,7 +28,7 @@ export default function GoogleCallbackPage() {
         // 1. Read access token from cookie (set by server during redirect)
         const accessToken = getCookie('access_token');
         if (!accessToken) {
-          setError('Токен автентифікації відсутній. Спробуйте ще раз.');
+          setError(ERROR_MESSAGES.AUTH.MISSING_TOKEN);
           return;
         }
 
@@ -44,7 +45,7 @@ export default function GoogleCallbackPage() {
         setUser(user, accessToken);
         router.replace('/user/profile');
       } catch {
-        setError('Помилка автентифікації через Google. Спробуйте ще раз.');
+        setError(ERROR_MESSAGES.AUTH.GOOGLE_AUTH_FAILED);
       }
     }
 

@@ -6,7 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { User } from '../../generated/prisma/client.js';
-import { AUTH_PROVIDERS } from './constants/auth.const.js';
+import { AUTH_PROVIDERS, ERROR_MESSAGES } from './constants/index.js';
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -35,19 +35,17 @@ export class AuthService {
   async validateLogin(loginData: LoginDto): Promise<User> {
     const user = await this.findUser(loginData.email);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
     if (!user.passwordHash) {
-      throw new UnauthorizedException(
-        'This account uses Google authentication. Please log in with Google.',
-      );
+      throw new UnauthorizedException(ERROR_MESSAGES.OAUTH_LOGIN_REQUIRED);
     }
     const isPasswordValid = await bcrypt.compare(
       loginData.password,
       user.passwordHash,
     );
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password');
+      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_PASSWORD);
     }
 
     return user;
@@ -81,11 +79,9 @@ export class AuthService {
     const existing = await this.findUser(email);
     if (existing) {
       if (existing.provider !== AUTH_PROVIDERS.LOCAL) {
-        throw new UnauthorizedException(
-          'This email is linked to a Google account. Please log in with Google.',
-        );
+        throw new UnauthorizedException(ERROR_MESSAGES.LOCAL_LOGIN_REQUIRED);
       }
-      throw new UnauthorizedException('User with this email already exists');
+      throw new UnauthorizedException(ERROR_MESSAGES.USER_EXISTS);
     }
 
     const user = await this.createLocalUser(name, email, password);
@@ -113,7 +109,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
     const accessToken = this.generateAccessToken(user);
@@ -146,7 +142,7 @@ export class AuthService {
     }
 
     if (!userData) {
-      throw new UnauthorizedException('Unable to authenticate OAuth user');
+      throw new UnauthorizedException(ERROR_MESSAGES.OAUTH_USER_AUTH_FAILED);
     }
 
     const accessToken = this.generateAccessToken(userData);
@@ -172,7 +168,7 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
     const { passwordHash, ...profile } = user;
     return profile;
