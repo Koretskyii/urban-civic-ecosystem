@@ -1,6 +1,22 @@
+# ========================
+# Root-Level Global Rules
+# ========================
+
 # IDE
 .vscode/
 .idea/
+
+# Root environment (if necessary)
+.env
+.env.*
+!.env.example
+
+# Root Certificates (if you store them in the root certs folder)
+certs/
+certificates/
+*.pem
+*.key
+*.crt
 
 # Personal / diploma notes
 Diploma-file.md
@@ -9,3 +25,8 @@ prompt.md
 # OS
 .DS_Store
 Thumbs.db
+
+# Root logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
