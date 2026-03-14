@@ -1,0 +1,447 @@
+@startuml ERD - Urban Civic Ecosystem
+
+!theme plain
+skinparam linetype ortho
+skinparam roundcorner 5
+skinparam class {
+  BackgroundColor #FEFECE
+  BorderColor #A80036
+  ArrowColor #A80036
+}
+
+title ER-діаграма бази даних\nЦифрова екосистема громадянської активності
+
+' ==================== ENUMS ====================
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ReactionType {
+  LIKE
+  DISLIKE
+  LAUGH
+  ANGRY
+}
+
+' ==================== CORE (TENANT) ====================
+
+package "Ядро системи" #E8F5E9 {
+
+  entity "City" as city {
+    * **id** : String <<PK, cuid>>
+    --
+    * name : String
+    region : String?
+    --
+    createdAt : DateTime
+    updatedAt : DateTime
+  }
+
+  entity "User" as user {
+    * **id** : String <<PK, cuid>>
+    --
+    * name : String
+    * email : String <<unique>>
+    * passwordHash : String
+    --
+    createdAt : DateTime
+    updatedAt : DateTime
+  }
+
+  entity "UserCity" as user_city {
+    * **userId** : String <<PK, FK>>
+    * **cityId** : String <<PK, FK>>
+    --
+    joinedAt : DateTime
+  }
+
+}
+
+' ==================== RBAC ====================
+
+package "RBAC" #E3F2FD {
+
+  entity "Role" as role {
+    * **id** : String <<PK, cuid>>
+    --
+    * name : String
+    * cityId : String <<FK>>
+    --
+    <<unique>> (cityId, name)
+  }
+
+  entity "Permission" as permission {
+    * **id** : String <<PK, cuid>>
+    --
+    * key : String <<unique>>
+  }
+
+  entity "UserRole" as user_role {
+    * **userId** : String <<PK, FK>>
+    * **roleId** : String <<PK, FK>>
+  }
+
+  entity "RolePermission" as role_permission {
+    * **roleId** : String <<PK, FK>>
+    * **permissionId** : String <<PK, FK>>
+  }
+
+}
+
+' ==================== CITY REQUESTS ====================
+
+package "Заявки (Людина–Місто)" #FFF3E0 {
+
+  entity "CityRequest" as city_request {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    * userId : String <<FK>>
+    * title : String
+    description : String?
+    * status : RequestStatus
+    location : String?
+    priority : Int
+    category : String?
+    --
+    createdAt : DateTime
+    updatedAt : DateTime
+  }
+
+  entity "Report" as report {
+    * **id** : String <<PK, cuid>>
+    --
+    description : String?
+    * cityRequestId : String <<FK>>
+    --
+    createdAt : DateTime
+    updatedAt : DateTime
+  }
+
+  entity "Attachment" as attachment {
+    * **id** : String <<PK, cuid>>
+    --
+    * fileName : String
+    mimeType : String?
+    * url : String
+    type : String?
+    * entityId : String
+    * entityType : String
+    reportId : String? <<FK>>
+    cityRequestId : String? <<FK>>
+    --
+    uploadedAt : DateTime
+  }
+
+}
+
+' ==================== CHAT ====================
+
+package "Чати" #F3E5F5 {
+
+  entity "Chat" as chat {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    cityRequestId : String? <<FK, unique>>
+    communityId : String? <<FK>>
+    * contextType : String
+    --
+    createdAt : DateTime
+  }
+
+  entity "Message" as message {
+    * **id** : String <<PK, cuid>>
+    --
+    * chatId : String <<FK>>
+    * authorId : String <<FK>>
+    * content : String
+    --
+    timestamp : DateTime
+  }
+
+}
+
+' ==================== ALERTS ====================
+
+package "Сповіщення" #FFEBEE {
+
+  entity "Alert" as alert {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    * typeId : String <<FK>>
+    * authorId : String <<FK>>
+    * content : String
+    --
+    timestamp : DateTime
+    createdAt : DateTime
+  }
+
+  entity "AlertType" as alert_type {
+    * **id** : String <<PK, cuid>>
+    --
+    * name : String
+    description : String?
+  }
+
+  entity "AlertSubscription" as alert_sub {
+    * **userId** : String <<PK, FK>>
+    * **cityId** : String <<PK, FK>>
+    * **alertTypeId** : String <<PK, FK>>
+  }
+
+}
+
+' ==================== PROJECTS ====================
+
+package "Проєкти" #E0F7FA {
+
+  entity "Project" as project {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    * title : String
+    description : String?
+    * status : ProjectStatus
+    --
+    createdAt : DateTime
+    updatedAt : DateTime
+  }
+
+  entity "ProjectParticipant" as project_participant {
+    * **userId** : String <<PK, FK>>
+    * **projectId** : String <<PK, FK>>
+  }
+
+  entity "Event" as event {
+    * **id** : String <<PK, cuid>>
+    --
+    * projectId : String <<FK>>
+    * title : String
+    * startTime : DateTime
+    endTime : DateTime?
+    location : String?
+    --
+    createdAt : DateTime
+  }
+
+}
+
+' ==================== COMMUNITY ====================
+
+package "Спільноти" #FCE4EC {
+
+  entity "Community" as community {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    * name : String
+    description : String?
+    --
+    createdAt : DateTime
+  }
+
+  entity "CommunityMember" as community_member {
+    * **userId** : String <<PK, FK>>
+    * **communityId** : String <<PK, FK>>
+    --
+    joinedAt : DateTime
+  }
+
+  entity "Post" as post {
+    * **id** : String <<PK, cuid>>
+    --
+    * authorId : String <<FK>>
+    * communityId : String <<FK>>
+    * content : String
+    --
+    createdAt : DateTime
+  }
+
+  entity "Comment" as comment {
+    * **id** : String <<PK, cuid>>
+    --
+    * postId : String <<FK>>
+    * userId : String <<FK>>
+    * content : String
+    --
+    createdAt : DateTime
+  }
+
+  entity "Reaction" as reaction {
+    * **postId** : String <<PK, FK>>
+    * **userId** : String <<PK, FK>>
+    --
+    * type : ReactionType
+    --
+    createdAt : DateTime
+  }
+
+}
+
+' ==================== SURVEYS ====================
+
+package "Опитування та голосування" #F9FBE7 {
+
+  entity "Survey" as survey {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    * title : String
+    description : String?
+    --
+    createdAt : DateTime
+  }
+
+  entity "SurveyOption" as survey_option {
+    * **id** : String <<PK, cuid>>
+    --
+    * surveyId : String <<FK>>
+    * text : String
+  }
+
+  entity "Vote" as vote {
+    * **id** : String <<PK, cuid>>
+    --
+    * surveyId : String <<FK>>
+    * surveyOptionId : String <<FK>>
+    * userId : String <<FK>>
+    --
+    createdAt : DateTime
+    --
+    <<unique>> (surveyId, userId)
+  }
+
+}
+
+' ==================== CROWDFUNDING ====================
+
+package "Краудфандинг" #EDE7F6 {
+
+  entity "CrowdfundingProject" as crowdfunding {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    * creatorId : String <<FK>>
+    * title : String
+    description : String?
+    * fundingGoal : Decimal
+    currentAmount : Decimal
+    * deadline : DateTime
+    --
+    createdAt : DateTime
+    updatedAt : DateTime
+  }
+
+  entity "Donation" as donation {
+    * **id** : String <<PK, cuid>>
+    --
+    * projectId : String <<FK>>
+    * contributorId : String <<FK>>
+    * amount : Decimal
+    --
+    timestamp : DateTime
+    createdAt : DateTime
+  }
+
+}
+
+' ==================== GENERAL NEWS ====================
+
+package "Новини" #EFEBE9 {
+
+  entity "GeneralNews" as news {
+    * **id** : String <<PK, cuid>>
+    --
+    * cityId : String <<FK>>
+    * publisherId : String <<FK>>
+    * title : String
+    * content : String
+    --
+    timestamp : DateTime
+    createdAt : DateTime
+  }
+
+}
+
+' ==================== RELATIONSHIPS ====================
+
+' -- Core --
+user ||--o{ user_city
+city ||--o{ user_city
+
+' -- RBAC --
+city ||--o{ role
+role ||--o{ user_role
+user ||--o{ user_role
+role ||--o{ role_permission
+permission ||--o{ role_permission
+
+' -- City Requests --
+city ||--o{ city_request
+user ||--o{ city_request
+city_request ||--o{ report
+city_request ||--o{ attachment
+report ||--o{ attachment
+
+' -- Chat --
+city ||--o{ chat
+city_request |o--o| chat
+community ||--o{ chat
+chat ||--o{ message
+user ||--o{ message
+
+' -- Alerts --
+city ||--o{ alert
+user ||--o{ alert
+alert_type ||--o{ alert
+alert_type ||--o{ alert_sub
+user ||--o{ alert_sub
+city ||--o{ alert_sub
+
+' -- Projects --
+city ||--o{ project
+project ||--o{ project_participant
+user ||--o{ project_participant
+project ||--o{ event
+
+' -- Community --
+city ||--o{ community
+community ||--o{ community_member
+user ||--o{ community_member
+community ||--o{ post
+user ||--o{ post
+post ||--o{ comment
+user ||--o{ comment
+post ||--o{ reaction
+user ||--o{ reaction
+
+' -- Surveys --
+city ||--o{ survey
+survey ||--o{ survey_option
+survey ||--o{ vote
+survey_option ||--o{ vote
+user ||--o{ vote
+
+' -- Crowdfunding --
+city ||--o{ crowdfunding
+user ||--o{ crowdfunding
+crowdfunding ||--o{ donation
+user ||--o{ donation
+
+' -- News --
+city ||--o{ news
+user ||--o{ news
+
+@enduml
