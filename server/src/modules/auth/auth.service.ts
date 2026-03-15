@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { User } from '../../generated/prisma/client.js';
 import { AUTH_PROVIDERS, ERROR_MESSAGES } from './constants/index.js';
+import { AuthProvider } from './types/auth.types.js';
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -65,7 +66,7 @@ export class AuthService {
   async createOAuthUser(
     name: string,
     email: string,
-    provider: string,
+    provider: AuthProvider,
     providerId: string,
   ) {
     return this.prisma.user.create({
@@ -105,7 +106,7 @@ export class AuthService {
   }
 
   async refresh(req: Request, res: Response) {
-    const { id, email } = req.user as { id: string; email: string };
+    const { id, _email } = req.user as { id: string; _email: string };
 
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {

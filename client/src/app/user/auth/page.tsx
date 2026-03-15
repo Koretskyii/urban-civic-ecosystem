@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
+import { useEffect, useState } from 'react';
 import { useLogin, useRegister } from '@/hooks';
 import { useAuthStore } from '@/store';
 import { useRouter } from 'next/navigation';
@@ -48,6 +49,12 @@ export default function AuthPage() {
   const isRegister = tab === 0;
   const isPending = login.isPending || register.isPending;
   const error = login.error || register.error;
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/user/profile');
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

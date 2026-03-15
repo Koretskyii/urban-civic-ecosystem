@@ -24,7 +24,7 @@ import {
   Google as GoogleIcon,
   Lock as LockIcon,
 } from '@mui/icons-material';
-import { theme } from '@/theme';
+import { ReactNode } from 'react';
 
 function getInitials(name: string): string {
   return name
@@ -89,7 +89,7 @@ export default function UserProfilePage() {
 
   const handleLogout = () => {
     logout.mutate(undefined, {
-      onSuccess: () => router.replace('/auth-test'),
+      onSuccess: () => router.replace('/user/auth'),
     });
   };
 
@@ -116,7 +116,7 @@ export default function UserProfilePage() {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Увійдіть, щоб переглянути профіль
           </Typography>
-          <Button variant="contained" onClick={() => router.push('/auth-test')}>
+          <Button variant="contained" onClick={() => router.push('/user/auth')}>
             Увійти
           </Button>
         </Paper>
@@ -235,7 +235,7 @@ function InfoRow({
   value,
   mono = false,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string;
   mono?: boolean;

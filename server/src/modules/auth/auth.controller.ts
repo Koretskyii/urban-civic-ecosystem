@@ -63,10 +63,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with Google' })
   @ApiOkResponse({ description: 'User logged in successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  async googleLogin(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {}
+  async googleLogin() {
+    // This route is just a trigger for the Google OAuth flow.
+  }
 
   @Get('google/callback')
   @UseGuards(GoogleGuard)

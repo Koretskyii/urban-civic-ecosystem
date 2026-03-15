@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, ExtractJwt } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_MESSAGES } from '../constants/index.js';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
@@ -19,9 +20,9 @@ export class JwtRefreshStrategy extends PassportStrategy(
       secretOrKey: secret,
       passReqToCallback: true,
     });
-  }
+  } 
 
-  validate(req: Request, payload: any) {
+  validate(_req: Request, payload: any) {
     if (!payload) {
       throw new UnauthorizedException(ERROR_MESSAGES.INVALID_REFRESH_TOKEN);
     }
