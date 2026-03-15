@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/config';
-import { HTTP_METHODS } from '@/constants';
+import { HTTP_METHODS } from '@/constants/constants';
+import { ERROR_MESSAGES } from '@/constants';
 import { useAuthStore } from '@/store';
 
 type RequestOptions = {
@@ -38,8 +39,11 @@ class ApiClient {
     if (!res.ok) {
       const error = await res
         .json()
-        .catch(() => ({ message: 'Network error' }));
-      throw new ApiError(res.status, error.message || 'Something went wrong');
+        .catch(() => ({ message: ERROR_MESSAGES.NETWORK_ERROR }));
+      throw new ApiError(
+        res.status,
+        error.message || ERROR_MESSAGES.UNKNOWN_ERROR,
+      );
     }
 
     if (res.status === 204) return undefined as T;

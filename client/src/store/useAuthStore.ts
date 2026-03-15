@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '@/types';
-import { AUTH_STORAGE_KEY } from '@/constants';
+import { AUTH_STORAGE_KEY } from '@/constants/constants';
 
 interface AuthState {
   user: User | null;
