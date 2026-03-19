@@ -48,9 +48,9 @@ export const UCE_COLORS = {
     },
     dark: {
       primary: '#000000de',
-      secondary: '#00000099'
-    }
-  }
+      secondary: '#00000099',
+    },
+  },
 };
 
 const didactGothic = Didact_Gothic({

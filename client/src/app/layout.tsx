@@ -20,9 +20,7 @@ export default function RootLayout({
         <ThemeRegistry>
           <QueryProvider>
             <Header />
-            <main>
-              {children}
-            </main>
+            <main>{children}</main>
             <Footer />
           </QueryProvider>
         </ThemeRegistry>
