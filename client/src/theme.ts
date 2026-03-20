@@ -15,7 +15,7 @@ declare module '@mui/material/styles' {
   }
 }
 
-const UCE_COLORS = {
+export const UCE_COLORS = {
   deepBlue: {
     main: '#0C263D',
     light: '#1A3A57',
@@ -40,6 +40,16 @@ const UCE_COLORS = {
     main: '#316B50',
     light: '#4A8A6C',
     dark: '#234D39',
+  },
+  text: {
+    light: {
+      primary: '#FFFFFF',
+      secondary: '#E0E0E0',
+    },
+    dark: {
+      primary: '#000000de',
+      secondary: '#00000099',
+    },
   },
 };
 
