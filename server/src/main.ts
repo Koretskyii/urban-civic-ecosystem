@@ -52,4 +52,4 @@ async function bootstrap() {
     console.log('Using self-signed certificate for local development');
   }
 }
-bootstrap();
+void bootstrap();

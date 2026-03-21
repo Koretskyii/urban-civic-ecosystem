@@ -8,6 +8,7 @@ import {
   Res,
   Req,
   Body,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { LoginDto, RegisterDto } from './dto/index.js';
@@ -28,6 +29,8 @@ import {
 import { PermissionsGuard } from '../rbac/guards/index.js';
 import { JWTExpiredGuard } from './guards/jwt-expired.guard.js';
 import { GoogleGuard } from './guards/google.guard.js';
+import type { OAuthUserData, User } from '@/types/auth.types.js';
+import type { User as PrismaUser } from '@/generated/prisma/client.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -54,8 +57,8 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ description: 'User logged in successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    return this.authService.login(req.user as any, res);
+  login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.authService.login(req.user as PrismaUser, res);
   }
 
   @Get('google')
@@ -63,10 +66,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with Google' })
   @ApiOkResponse({ description: 'User logged in successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  async googleLogin(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {}
+  googleLogin() {
+    // Guard handles the redirect to Google
+  }
 
   @Get('google/callback')
   @UseGuards(GoogleGuard)
@@ -74,7 +76,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'User logged in successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    await this.authService.validateOAuthUser(req.user as any, res);
+    await this.authService.validateOAuthUser(req.user as OAuthUserData, res);
 
     const clientUrl = new URL(
       '/auth/google/callback',
@@ -101,7 +103,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user' })
   @ApiOkResponse({ description: 'User logged out successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid refresh token' })
-  async logout(@Res({ passthrough: true }) res: Response) {
+  logout(@Res({ passthrough: true }) res: Response) {
     return this.authService.logout(res);
   }
 
@@ -112,7 +114,10 @@ export class AuthController {
   @ApiOkResponse({ description: 'User profile retrieved successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid access token' })
   async profile(@Req() req: Request) {
-    const user = req.user as any;
-    return this.authService.getProfile(user.id);
+    const user = req.user as User;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return this.authService.getProfile(user?.id);
   }
 }
