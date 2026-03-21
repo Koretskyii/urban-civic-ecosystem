@@ -5,15 +5,15 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
-    constructor(private configService: ConfigService) {
-        const adapter = new PrismaPg({
-            connectionString: configService.get<string>('db.url'),
-        })
-        super({
-            adapter,
-        });
-    }
-    async onModuleInit() {
-        await this.$connect();
-    }
+  constructor(private configService: ConfigService) {
+    const adapter = new PrismaPg({
+      connectionString: configService.get<string>('db.url'),
+    });
+    super({
+      adapter,
+    });
+  }
+  async onModuleInit() {
+    await this.$connect();
+  }
 }

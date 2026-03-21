@@ -7,6 +7,10 @@ import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { User } from '../../generated/prisma/client.js';
 import { AUTH_PROVIDERS, ERROR_MESSAGES } from './constants/index.js';
+import type {
+  User as UserAuthData,
+  OAuthUserData,
+} from '@/types/auth.types.js';
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -94,7 +98,7 @@ export class AuthService {
     };
   }
 
-  async login(user: User, res: Response) {
+  login(user: User, res: Response) {
     const accessToken = this.generateAccessToken(user);
     this.setRefreshCookie(res, this.generateRefreshToken(user));
 
@@ -105,7 +109,7 @@ export class AuthService {
   }
 
   async refresh(req: Request, res: Response) {
-    const { id, email } = req.user as { id: string; email: string };
+    const { id } = req.user as UserAuthData;
 
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
@@ -118,10 +122,7 @@ export class AuthService {
     return { accessToken };
   }
 
-  async validateOAuthUser(
-    user: { email: string; name: string; provider: string; providerId: string },
-    res: Response,
-  ) {
+  async validateOAuthUser(user: OAuthUserData, res: Response) {
     let userData = await this.findUser(user.email);
 
     if (userData && !userData.providerId) {
@@ -155,7 +156,7 @@ export class AuthService {
     };
   }
 
-  async logout(res: Response) {
+  logout(res: Response) {
     res.clearCookie('refresh_token', {
       httpOnly: true,
       secure: true,
@@ -170,7 +171,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
-    const { passwordHash, ...profile } = user;
+    const { passwordHash: _, ...profile } = user;
     return profile;
   }
 
