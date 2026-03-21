@@ -1,9 +1,33 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
-  }
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "useESM": true,
+        "tsconfig": "tsconfig.json"
+      }
+    ]
+  },
+  "extensionsToTreatAsEsm": [
+    ".ts"
+  ],
+  "setupFiles": [
+    "<rootDir>/setup.ts"
+  ],
+  "moduleNameMapper": {
+    "^@/(.*)\\.js$": "<rootDir>/../src/$1",
+    "^@/(.*)$": "<rootDir>/../src/$1",
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+  "transformIgnorePatterns": [
+    "node_modules/(?!(@nestjs|.*\\.mjs$))"
+  ]
 }
