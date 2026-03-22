@@ -57,7 +57,7 @@ export default function GoogleCallbackPage() {
       <Container sx={{ maxWidth: 520, margin: '40px auto' }}>
         <Typography variant="h1">❌ Google Auth Error</Typography>
         <Typography variant="body1">{error}</Typography>
-        <Link href="/auth-test" style={{ textDecoration: 'none' }}>
+        <Link href="/user/auth" style={{ textDecoration: 'none' }}>
           ← Повернутися
         </Link>
       </Container>
