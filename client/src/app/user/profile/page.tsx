@@ -89,7 +89,7 @@ export default function UserProfilePage() {
 
   const handleLogout = () => {
     logout.mutate(undefined, {
-      onSuccess: () => router.replace('/auth-test'),
+      onSuccess: () => router.replace('/user/auth'),
     });
   };
 
@@ -116,7 +116,7 @@ export default function UserProfilePage() {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Увійдіть, щоб переглянути профіль
           </Typography>
-          <Button variant="contained" onClick={() => router.push('/auth-test')}>
+          <Button variant="contained" onClick={() => router.push('/user/auth')}>
             Увійти
           </Button>
         </Paper>
