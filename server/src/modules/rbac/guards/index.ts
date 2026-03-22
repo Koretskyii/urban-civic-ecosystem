@@ -1,1 +1,1 @@
-export { PermissionsGuard } from './permissions.guard.js';
+export { PermissionsGuard } from './permissions.guard';

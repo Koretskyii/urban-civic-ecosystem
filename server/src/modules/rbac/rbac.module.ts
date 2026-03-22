@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { RbacService } from './rbac.service.js';
-import { PrismaModule } from '../../prisma/prisma.module.js';
+import { RbacService } from './rbac.service';
+import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
   providers: [RbacService],

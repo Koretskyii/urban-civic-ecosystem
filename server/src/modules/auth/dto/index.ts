@@ -1,2 +1,2 @@
-export { LoginDto } from './login.dto.js';
-export { RegisterDto } from './register.dto.js';
+export { LoginDto } from './login.dto';
+export { RegisterDto } from './register.dto';

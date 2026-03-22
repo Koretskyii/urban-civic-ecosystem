@@ -1,1 +1,1 @@
-export { RequirePermissions } from './permissions.decorators.js';
+export { RequirePermissions } from './permissions.decorators';

@@ -4,11 +4,11 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { RbacService } from '../rbac.service.js';
+import { RbacService } from '../rbac.service';
 import { Reflector } from '@nestjs/core';
-import { PERMISSIONS_KEY } from '../decorators/permissions.decorators.js';
-import type { RequestWithUser } from '@/types/auth.types.js';
-import { ERROR_MESSAGES } from '@/modules/auth/constants/errors.const.js';
+import { PERMISSIONS_KEY } from '../decorators/permissions.decorators';
+import type { RequestWithUser } from '@/types/auth.types';
+import { ERROR_MESSAGES } from '@/modules/auth/constants/errors.const';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
