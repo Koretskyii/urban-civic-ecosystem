@@ -1,5 +1,5 @@
-export { appConfig } from './app.config.js';
-export { jwtConfig } from './jwt.config.js';
-export { dbConfig } from './db.config.js';
-export { tlsConfig } from './tls.config.js';
-export { googleConfig } from './google.config.js';
+export { appConfig } from './app.config';
+export { jwtConfig } from './jwt.config';
+export { dbConfig } from './db.config';
+export { tlsConfig } from './tls.config';
+export { googleConfig } from './google.config';

@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "isolatedModules": true,
     "declaration": true,
@@ -15,8 +14,12 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"],
-      "generated/*": ["./generated/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "generated/*": [
+        "./generated/*"
+      ]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -10,11 +10,11 @@ import {
   Body,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthService } from './auth.service.js';
-import { LoginDto, RegisterDto } from './dto/index.js';
-import { LocalGuard } from './guards/local.guard.js';
-import { JWTGuard } from './guards/jwt.guard.js';
-import { JWTRefreshGuard } from './guards/jwt-refresh.guard.js';
+import { AuthService } from './auth.service';
+import { LoginDto, RegisterDto } from './dto/index';
+import { LocalGuard } from './guards/local.guard';
+import { JWTGuard } from './guards/jwt.guard';
+import { JWTRefreshGuard } from './guards/jwt-refresh.guard';
 import type { Request, Response } from 'express';
 import {
   ApiOperation,
@@ -26,11 +26,11 @@ import {
   ApiConflictResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { PermissionsGuard } from '../rbac/guards/index.js';
-import { JWTExpiredGuard } from './guards/jwt-expired.guard.js';
-import { GoogleGuard } from './guards/google.guard.js';
-import type { OAuthUserData, User } from '@/types/auth.types.js';
-import type { User as PrismaUser } from '@/generated/prisma/client.js';
+import { PermissionsGuard } from '../rbac/guards/index';
+import { JWTExpiredGuard } from './guards/jwt-expired.guard';
+import { GoogleGuard } from './guards/google.guard';
+import type { OAuthUserData, User } from '@/types/auth.types';
+import type { User as PrismaUser } from '@/generated/prisma/client';
 
 @ApiTags('Auth')
 @Controller('auth')
