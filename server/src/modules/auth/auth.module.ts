@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller.js';
-import { AuthService } from './auth.service.js';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PrismaModule } from '../../prisma/prisma.module.js';
-import { LocalStrategy } from './strategies/local.strategy.js';
-import { JwtStrategy } from './strategies/jwt.strategy.js';
-import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
-import { RbacModule } from '../rbac/rbac.module.js';
-import { GoogleStrategy } from './strategies/google.strategy.js';
-import { JwtExpiredStrategy } from './strategies/jwt-expired.strategy.js';
+import { PrismaModule } from '../../prisma/prisma.module';
+import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { RbacModule } from '../rbac/rbac.module';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { JwtExpiredStrategy } from './strategies/jwt-expired.strategy';
 
 @Module({
   imports: [

@@ -1,12 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../prisma/prisma.service.js';
-import { LoginDto, RegisterDto } from './dto/index.js';
+import { PrismaService } from '../../prisma/prisma.service';
+import { LoginDto, RegisterDto } from './dto/index';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
-import { User } from '../../generated/prisma/client.js';
-import { AUTH_PROVIDERS, ERROR_MESSAGES } from './constants/index.js';
+import { User } from '../../generated/prisma/client';
+import { AUTH_PROVIDERS, ERROR_MESSAGES } from './constants/index';
 import type {
   User as UserAuthData,
   OAuthUserData,

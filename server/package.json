@@ -4,21 +4,20 @@
   "description": "",
   "author": "",
   "private": true,
-  "type": "module",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build && tsc-alias",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:dev": "nest start --watch --exec \"node -r tsconfig-paths/register -r ts-node/register\"",
+    "start:debug": "nest start --debug --watch --exec \"node -r tsconfig-paths/register -r ts-node/register\"",
     "start:prod": "npm run build && node dist/src/main.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "test:cov": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "test:debug": "node --inspect-brk --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
-    "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -76,7 +75,6 @@
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
-    "preset": "ts-jest/presets/default-esm",
     "moduleFileExtensions": [
       "js",
       "json",
@@ -85,32 +83,18 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.ts$": [
-        "ts-jest",
-        {
-          "useESM": true,
-          "tsconfig": "tsconfig.spec.json"
-        }
-      ]
+      "^.+\\.(t|j)s$": "ts-jest"
     },
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "setupFiles": [
-      "<rootDir>/../test/setup.ts"
-    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@/(.*)\\.js$": "<rootDir>/$1",
-      "^@/(.*)$": "<rootDir>/$1",
-      "^(\\.{1,2}/.*)\\.js$": "$1"
+      "^@/(.*)$": "<rootDir>/$1"
     },
-    "transformIgnorePatterns": [
-      "node_modules/(?!(@nestjs|.*\\.mjs$))"
+    "setupFiles": [
+      "<rootDir>/../test/setup.ts"
     ]
   }
 }
