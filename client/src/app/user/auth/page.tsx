@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useLogin, useRegister } from '@/hooks';
-import { useAuthStore } from '@/store';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
 import {
