@@ -4,6 +4,7 @@ import {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
+  ChangePasswordRequest,
 } from '@/types/auth.types';
 
 export const authApi = {
@@ -20,4 +21,7 @@ export const authApi = {
 
   getProfile: () =>
     apiClient.get<AuthResponse['user']>(API_ROUTES.auth.profile),
+
+  changePassword: (data: ChangePasswordRequest) =>
+    apiClient.patch(API_ROUTES.auth.changePassword, data),
 };

@@ -9,6 +9,7 @@ import {
   Req,
   Body,
   UnauthorizedException,
+  Patch,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/index';
@@ -31,11 +32,12 @@ import { JWTExpiredGuard } from './guards/jwt-expired.guard';
 import { GoogleGuard } from './guards/google.guard';
 import type { OAuthUserData, User } from '@/types/auth.types';
 import type { User as PrismaUser } from '@/generated/prisma/client';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
@@ -120,4 +122,19 @@ export class AuthController {
     }
     return this.authService.getProfile(user?.id);
   }
+
+  @UseGuards(JWTGuard)
+  @Patch('change-password')
+  @ApiOperation({ summary: 'Change user password' })
+  @ApiBearerAuth('access_token')
+  @ApiOkResponse({ description: 'User password changed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid access token' })
+  async changePassword(@Req() req: Request, @Body() body: ChangePasswordDto) {
+    const user = req.user as User;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return this.authService.changePassword(user?.id, body);
+  }
+
 }
