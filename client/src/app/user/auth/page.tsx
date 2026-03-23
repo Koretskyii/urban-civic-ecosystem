@@ -42,9 +42,6 @@ export default function AuthPage() {
   const register = useRegister();
   const router = useRouter();
 
-  // Store
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-
   const isRegister = tab === 0;
   const isPending = login.isPending || register.isPending;
   const error = login.error || register.error;

@@ -15,7 +15,7 @@ import {
     Lock as LockIcon,
     Close as CloseIcon,
     Visibility,
-    VisibilityOff
+    VisibilityOff,
 } from '@mui/icons-material';
 import { useChangePassword } from '@/hooks';
 
@@ -24,7 +24,10 @@ interface ChangePasswordDialogProps {
     setIsOpenValue: (value: boolean) => void;
 }
 
-export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: ChangePasswordDialogProps) {
+export default function ChangePasswordDialog({
+    isOpenValue,
+    setIsOpenValue,
+}: ChangePasswordDialogProps) {
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,7 +46,7 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
         setConfirmPasswordError(false);
         setGlobalError('');
         setShowPasswords(false);
-    }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,15 +75,17 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
                 onSuccess: () => {
                     handleCancel();
                 },
-                onError: (err: any) => {
-                    setGlobalError(err.response?.data?.message || 'Помилка зміни пароля');
-                }
-            }
+                onError: () => {
+                    setGlobalError('Помилка зміни пароля');
+                },
+            },
         );
-    }
+    };
 
     const handleClickShowPassword = () => setShowPasswords((show) => !show);
-    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleMouseDownPassword = (
+        event: React.MouseEvent<HTMLButtonElement>,
+    ) => {
         event.preventDefault();
     };
 
@@ -109,10 +114,17 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
             fullWidth
             maxWidth="xs"
             PaperProps={{
-                sx: { borderRadius: 3, p: 1 }
+                sx: { borderRadius: 3, p: 1 },
             }}
         >
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+            <DialogTitle
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    pb: 1,
+                }}
+            >
                 Зміна паролю
                 <IconButton onClick={handleCancel} size="small">
                     <CloseIcon />
@@ -120,9 +132,14 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
             </DialogTitle>
 
             <form onSubmit={handleSubmit}>
-                <DialogContent dividers sx={{ borderBottom: 'none', borderTop: 'none', pt: 2, pb: 3 }}>
+                <DialogContent
+                    dividers
+                    sx={{ borderBottom: 'none', borderTop: 'none', pt: 2, pb: 3 }}
+                >
                     <Stack spacing={2.5}>
-                        {globalError && <Typography color='error'>{globalError}</Typography>}
+                        {globalError && (
+                            <Typography color="error">{globalError}</Typography>
+                        )}
                         <TextField
                             fullWidth
                             label="Старий пароль"
@@ -134,7 +151,7 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
                                 input: {
                                     startAdornment: getStartAdornment(),
                                     endAdornment: getEndAdornment(),
-                                }
+                                },
                             }}
                         />
                         <TextField
@@ -148,7 +165,7 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
                                 input: {
                                     startAdornment: getStartAdornment(),
                                     endAdornment: getEndAdornment(),
-                                }
+                                },
                             }}
                             error={confirmPasswordError}
                         />
@@ -163,7 +180,7 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
                                 input: {
                                     startAdornment: getStartAdornment(),
                                     endAdornment: getEndAdornment(),
-                                }
+                                },
                             }}
                             error={confirmPasswordError}
                         />
@@ -171,10 +188,19 @@ export default function ChangePasswordDialog({ isOpenValue, setIsOpenValue }: Ch
                 </DialogContent>
 
                 <DialogActions sx={{ px: 3, pb: 2, pt: 0 }}>
-                    <Button onClick={handleCancel} color="inherit" disabled={changePasswordMutation.isPending}>
+                    <Button
+                        onClick={handleCancel}
+                        color="inherit"
+                        disabled={changePasswordMutation.isPending}
+                    >
                         Скасувати
                     </Button>
-                    <Button type="submit" variant="contained" color="primary" disabled={changePasswordMutation.isPending}>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        disabled={changePasswordMutation.isPending}
+                    >
                         {changePasswordMutation.isPending ? 'Збереження...' : 'Змінити'}
                     </Button>
                 </DialogActions>

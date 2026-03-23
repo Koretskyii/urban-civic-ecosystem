@@ -230,7 +230,10 @@ export default function UserProfilePage() {
           </Stack>
         </Paper>
       </Container>
-      <ChangePasswordDialog isOpenValue={isPasswordModalOpen} setIsOpenValue={setIsPasswordModalOpen} />
+      <ChangePasswordDialog
+        isOpenValue={isPasswordModalOpen}
+        setIsOpenValue={setIsPasswordModalOpen}
+      />
     </>
   );
 }
@@ -282,6 +285,5 @@ function InfoRow({
         </Typography>
       </Box>
     </Box>
-
   );
 }
