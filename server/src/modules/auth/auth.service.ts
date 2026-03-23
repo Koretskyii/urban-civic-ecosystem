@@ -11,6 +11,7 @@ import type {
   User as UserAuthData,
   OAuthUserData,
 } from '@/types/auth.types.js';
+import { ChangePasswordDto } from './dto';
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -34,7 +35,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async validateLogin(loginData: LoginDto): Promise<User> {
     const user = await this.findUser(loginData.email);
@@ -194,5 +195,32 @@ export class AuthService {
 
   private setRefreshCookie(res: Response, token: string): void {
     res.cookie('refresh_token', token, REFRESH_COOKIE_OPTIONS);
+  }
+
+  async changePassword(userId: string, body: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+    if (!user.passwordHash) {
+      throw new UnauthorizedException(ERROR_MESSAGES.OAUTH_LOGIN_REQUIRED);
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      body.currentPassword,
+      user.passwordHash,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_PASSWORD);
+    }
+
+    const newPasswordHash = await bcrypt.hash(body.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newPasswordHash },
+    });
+
+    const { passwordHash: _, ...profile } = user;
+    return profile;
   }
 }

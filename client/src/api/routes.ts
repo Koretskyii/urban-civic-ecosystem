@@ -5,5 +5,6 @@ export const API_ROUTES = {
     refresh: '/auth/refresh',
     logout: '/auth/logout',
     profile: '/auth/profile',
+    changePassword: '/auth/change-password',
   },
 } as const;

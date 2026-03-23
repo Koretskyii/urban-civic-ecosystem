@@ -3,6 +3,7 @@
 import { useCurrentUser, useLogout } from '@/hooks';
 import { useAuthStore } from '@/store';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import {
   Container,
   Typography,
@@ -24,7 +25,7 @@ import {
   Google as GoogleIcon,
   Lock as LockIcon,
 } from '@mui/icons-material';
-import { theme } from '@/theme';
+import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 
 function getInitials(name: string): string {
   return name
@@ -87,6 +88,8 @@ export default function UserProfilePage() {
   const logout = useLogout();
   const router = useRouter();
 
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
   const handleLogout = () => {
     logout.mutate(undefined, {
       onSuccess: () => router.replace('/user/auth'),
@@ -127,105 +130,108 @@ export default function UserProfilePage() {
   const isGoogleUser = profile.provider === 'google';
 
   return (
-    <Container maxWidth="sm" sx={{ py: 6 }}>
-      {/* Header card */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-          background: (theme) =>
-            `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}12 100%)`,
-        }}
-      >
-        {/* Avatar + Name */}
-        <Box
+    <>
+      <Container maxWidth="sm" sx={{ py: 6 }}>
+        {/* Header card */}
+        <Paper
+          elevation={0}
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 1.5,
+            p: 4,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            background: (theme) =>
+              `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}12 100%)`,
           }}
         >
-          <Avatar
+          {/* Avatar + Name */}
+          <Box
             sx={{
-              width: 96,
-              height: 96,
-              bgcolor: 'primary.main',
-              fontSize: '2rem',
-              fontWeight: 700,
-              boxShadow: '0 4px 14px rgba(12, 38, 61, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1.5,
             }}
           >
-            {getInitials(profile.name)}
-          </Avatar>
+            <Avatar
+              sx={{
+                width: 96,
+                height: 96,
+                bgcolor: 'primary.main',
+                fontSize: '2rem',
+                fontWeight: 700,
+                boxShadow: '0 4px 14px rgba(12, 38, 61, 0.25)',
+              }}
+            >
+              {getInitials(profile.name)}
+            </Avatar>
 
-          <Typography variant="h2" sx={{ textAlign: 'center' }}>
-            {profile.name}
-          </Typography>
+            <Typography variant="h2" sx={{ textAlign: 'center' }}>
+              {profile.name}
+            </Typography>
 
-          <Chip
-            icon={isGoogleUser ? <GoogleIcon /> : <LockIcon />}
-            label={isGoogleUser ? 'Google аккаунт' : 'Локальний аккаунт'}
-            size="small"
-            variant="outlined"
-            sx={{
-              borderColor: isGoogleUser ? 'secondary.main' : 'success.main',
-              color: isGoogleUser ? 'secondary.dark' : 'success.dark',
-              '& .MuiChip-icon': {
-                color: 'inherit',
-                fontSize: 16,
-              },
-            }}
-          />
-        </Box>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Info rows */}
-        <Stack spacing={1.5}>
-          <InfoRow icon={<EmailIcon />} label="Email" value={profile.email} />
-          <InfoRow icon={<PersonIcon />} label="ID" value={profile.id} mono />
-          {profile.createdAt && (
-            <InfoRow
-              icon={<CalendarIcon />}
-              label="Зареєстровано"
-              value={formatDate(profile.createdAt)}
+            <Chip
+              icon={isGoogleUser ? <GoogleIcon /> : <LockIcon />}
+              label={isGoogleUser ? 'Google аккаунт' : 'Локальний аккаунт'}
+              size="small"
+              variant="outlined"
+              sx={{
+                borderColor: isGoogleUser ? 'secondary.main' : 'success.main',
+                color: isGoogleUser ? 'secondary.dark' : 'success.dark',
+                '& .MuiChip-icon': {
+                  color: 'inherit',
+                  fontSize: 16,
+                },
+              }}
             />
-          )}
-        </Stack>
+          </Box>
 
-        <Divider sx={{ my: 3 }} />
+          <Divider sx={{ my: 3 }} />
 
-        {/* Action buttons */}
-        <Stack spacing={1.5}>
-          {!isGoogleUser && (
+          {/* Info rows */}
+          <Stack spacing={1.5}>
+            <InfoRow icon={<EmailIcon />} label="Email" value={profile.email} />
+            <InfoRow icon={<PersonIcon />} label="ID" value={profile.id} mono />
+            {profile.createdAt && (
+              <InfoRow
+                icon={<CalendarIcon />}
+                label="Зареєстровано"
+                value={formatDate(profile.createdAt)}
+              />
+            )}
+          </Stack>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Action buttons */}
+          <Stack spacing={1.5}>
+            {!isGoogleUser && (
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<LockIcon />}
+                onClick={() => setIsPasswordModalOpen(true)}
+                sx={{ py: 1.2 }}
+              >
+                Змінити пароль
+              </Button>
+            )}
             <Button
               variant="outlined"
+              color="error"
               fullWidth
-              startIcon={<LockIcon />}
-              onClick={() => router.push('/user/change-password')}
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+              disabled={logout.isPending}
               sx={{ py: 1.2 }}
             >
-              Змінити пароль
+              {logout.isPending ? 'Вихід...' : 'Вийти з аккаунту'}
             </Button>
-          )}
-          <Button
-            variant="outlined"
-            color="error"
-            fullWidth
-            startIcon={<LogoutIcon />}
-            onClick={handleLogout}
-            disabled={logout.isPending}
-            sx={{ py: 1.2 }}
-          >
-            {logout.isPending ? 'Вихід...' : 'Вийти з аккаунту'}
-          </Button>
-        </Stack>
-      </Paper>
-    </Container>
+          </Stack>
+        </Paper>
+      </Container>
+      <ChangePasswordDialog isOpenValue={isPasswordModalOpen} setIsOpenValue={setIsPasswordModalOpen} />
+    </>
   );
 }
 
@@ -276,5 +282,6 @@ function InfoRow({
         </Typography>
       </Box>
     </Box>
+
   );
 }

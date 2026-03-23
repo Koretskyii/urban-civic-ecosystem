@@ -23,3 +23,8 @@ export type AuthResponse = {
   accessToken: string;
   user: User;
 };
+
+export type ChangePasswordRequest = {
+  currentPassword: string;
+  newPassword: string;
+};
