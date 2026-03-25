@@ -4,7 +4,7 @@ import { ROLES } from './constants/roles.const';
 
 @Injectable()
 export class RbacService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Check whether a user has a specific permission within a given city.
