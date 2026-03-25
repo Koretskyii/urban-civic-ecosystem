@@ -103,10 +103,8 @@ model Role {
   name   String
   cityId String
 
-  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
-
-  users       UserRole[]
-  permissions RolePermission[]
+  city  City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  users UserRole[]
 
   @@unique([cityId, name])
 }
@@ -115,7 +113,7 @@ model Permission {
   id  String @id @default(cuid())
   key String @unique
 
-  roles RolePermission[]
+  rolePermissions RolePermission[]
 }
 
 model UserRole {
@@ -128,14 +126,15 @@ model UserRole {
   @@id([userId, roleId])
 }
 
+/// Global role-permission mapping — shared across all cities.
+/// roleName matches Role.name (no FK intentionally — roles are fixed constants).
 model RolePermission {
-  roleId       String
+  roleName     String
   permissionId String
 
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
-  @@id([roleId, permissionId])
+  @@id([roleName, permissionId])
 }
 
 //////////////////// CITY REQUESTS ////////////////////
