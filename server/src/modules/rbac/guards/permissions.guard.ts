@@ -15,7 +15,7 @@ export class PermissionsGuard implements CanActivate {
   constructor(
     private readonly rbacService: RbacService,
     private readonly reflector: Reflector,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(

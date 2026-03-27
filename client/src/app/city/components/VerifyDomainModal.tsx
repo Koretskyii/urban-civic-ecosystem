@@ -53,9 +53,9 @@ export function VerifyDomainModal({
       await cityApi.verifyDomain({ domain, token });
       // Success - close the modal
       onClose();
-    } catch (err: any) {
+    } catch (err) {
       setError(
-        err.message ||
+        (err as Error).message ||
           'Не вдалося перевірити домен. Переконайтеся, що TXT запис додано правильно.',
       );
     } finally {
@@ -142,7 +142,7 @@ export function VerifyDomainModal({
                 </li>
                 <li>Значення запису: вставте скопійований токен</li>
                 <li>Зачекайте 5-10 хвилин для поширення DNS</li>
-                <li>Натисніть "Перевірити" для підтвердження</li>
+                <li>Натисніть &ldquo;Перевірити&rdquo; для підтвердження</li>
               </ol>
             </Typography>
           </Box>

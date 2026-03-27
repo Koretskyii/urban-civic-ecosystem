@@ -1,1 +1,2 @@
-import { jest } from "@jest/globals"; globalThis.jest = jest;
+import { jest } from '@jest/globals';
+globalThis.jest = jest;
