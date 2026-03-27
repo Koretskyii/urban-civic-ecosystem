@@ -266,7 +266,7 @@ export function CityInitForm() {
             <FormLabel sx={{ mb: 1, display: 'block' }}>
               Офіційний документ від муніципалітету
             </FormLabel>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Завантажте скан-копію документа з печаткою та підписом, який дає
               вам право виступати представником цього міста.
             </Typography>
