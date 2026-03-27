@@ -24,6 +24,15 @@ interface CityOption {
   region: string;
 }
 
+interface GeoName {
+  name: string;
+  adminName1?: string;
+}
+
+interface DomainToken {
+  token: string;
+}
+
 export function CityInitForm() {
   const {
     register,
@@ -56,7 +65,7 @@ export function CityInitForm() {
         const data = await res.json();
 
         if (data.geonames) {
-          const formattedOptions = data.geonames.map((item: any) => ({
+          const formattedOptions = data.geonames.map((item: GeoName) => ({
             label: item.name,
             region: item.adminName1 || 'Невідома область',
           }));
@@ -83,7 +92,7 @@ export function CityInitForm() {
     return () => clearTimeout(delayDebounceFn);
   }, [citySearchQuery]);
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: Record<string, unknown>) => {
     console.log('Form data:', data);
   };
 
@@ -99,7 +108,9 @@ export function CityInitForm() {
 
     setIsGeneratingToken(true);
     try {
-      const response: any = await cityApi.generateDomainToken(domainName);
+      const response = (await cityApi.generateDomainToken(
+        domainName,
+      )) as DomainToken;
       setVerificationToken(response.token);
       setModalOpen(true);
     } catch (error) {
@@ -127,7 +138,7 @@ export function CityInitForm() {
                 {...field}
                 value={value || null}
                 options={cityOptions}
-                getOptionLabel={(option: any) =>
+                getOptionLabel={(option: string | CityOption) =>
                   typeof option === 'string'
                     ? option
                     : `${option.label} (${option.region})`
@@ -135,7 +146,7 @@ export function CityInitForm() {
                 onInputChange={(_, newInputValue) =>
                   setCitySearchQuery(newInputValue)
                 }
-                onChange={(_, newValue: any) => {
+                onChange={(_, newValue: CityOption | null) => {
                   onChange(newValue ? newValue.label : null);
 
                   if (newValue?.region) {

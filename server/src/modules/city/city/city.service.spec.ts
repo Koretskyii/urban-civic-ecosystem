@@ -73,7 +73,7 @@ describe('CityService', () => {
       // Mock DNS response with correct token
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(null, [[token]]);
-        return {} as any;
+        return {};
       });
 
       const result = await service.verifyDomain(domain, token);
@@ -93,7 +93,7 @@ describe('CityService', () => {
       // Mock DNS response without correct token
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(null, [['wrong-token']]);
-        return {} as any;
+        return {};
       });
 
       await expect(service.verifyDomain(domain, token)).rejects.toThrow(
@@ -104,8 +104,8 @@ describe('CityService', () => {
     it('should throw error on DNS lookup failure', async () => {
       // Mock DNS error
       mockResolveTxt.mockImplementation((hostname, callback) => {
-        callback(new Error('ENOTFOUND'), undefined as any);
-        return {} as any;
+        callback(new Error('ENOTFOUND'), []);
+        return {};
       });
 
       await expect(service.verifyDomain(domain, token)).rejects.toThrow(
@@ -116,7 +116,7 @@ describe('CityService', () => {
     it('should delete token after successful verification', async () => {
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(null, [[token]]);
-        return {} as any;
+        return {};
       });
 
       await service.verifyDomain(domain, token);
@@ -131,7 +131,7 @@ describe('CityService', () => {
       // Mock DNS response with multiple TXT records
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(null, [['some-other-record'], [token], ['another-record']]);
-        return {} as any;
+        return {};
       });
 
       const result = await service.verifyDomain(domain, token);

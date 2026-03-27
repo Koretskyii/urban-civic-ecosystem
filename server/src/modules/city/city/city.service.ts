@@ -53,7 +53,9 @@ export class CityService {
         );
         throw error;
       }
-      console.error(`Domain verification failed for ${domain}: ${error}`);
+      console.error(
+        `Domain verification failed for ${domain}: ${error instanceof Error ? error.message : String(error)}`,
+      );
 
       // DNS lookup failed
       throw new BadRequestException(

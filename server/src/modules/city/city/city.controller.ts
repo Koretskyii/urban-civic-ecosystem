@@ -6,7 +6,7 @@ export class CityController {
   constructor(private readonly cityService: CityService) {}
 
   @Post('domain/generate-token')
-  async generateDomainToken(@Body('domain') domain: string) {
+  generateDomainToken(@Body('domain') domain: string) {
     return this.cityService.generateDomainToken(domain);
   }
 
