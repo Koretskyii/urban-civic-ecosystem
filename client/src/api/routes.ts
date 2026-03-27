@@ -6,4 +6,8 @@ export const API_ROUTES = {
     logout: '/auth/logout',
     profile: '/auth/profile',
   },
+  city: {
+    generateDomainToken: '/city/domain/generate-token',
+    verifyDomain: '/city/domain/verify',
+  },
 } as const;
