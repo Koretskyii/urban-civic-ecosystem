@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { googleConfig } from './config/google.config';
+import { CityModule } from './modules/city/city/city.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { googleConfig } from './config/google.config';
     PrismaModule,
     AuthModule,
     RbacModule,
+    CityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

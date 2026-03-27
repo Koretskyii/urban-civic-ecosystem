@@ -8,6 +8,7 @@ const FooterBox = styled(Box)({
   color: UCE_COLORS.text.light.primary,
   height: `8rem`,
   padding: `2rem 0rem 2rem 0rem`,
+  marginTop: `2rem`,
 });
 const FooterContainer = styled(Container)({
   margin: `0 2rem`,
