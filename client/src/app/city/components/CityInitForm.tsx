@@ -226,7 +226,7 @@ export function CityInitForm() {
 
           {useDnsVerification && (
             <Box sx={{ mt: 1, p: 2, bgcolor: '#f9f9f9', borderRadius: 1 }}>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Додайте TXT запис зі спеціальним токеном до вашого домену, щоб
                 ми могли підтвердити, що ви представляєте офіційний сайт міста.
               </Typography>
