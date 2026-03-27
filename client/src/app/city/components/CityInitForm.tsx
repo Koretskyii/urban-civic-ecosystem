@@ -19,10 +19,10 @@ import { useForm, Controller } from 'react-hook-form';
 import { cityApi } from '@/api/endpoints';
 import { VerifyDomainModal } from './VerifyDomainModal';
 
-interface CityOption {
+type CityOption = {
   label: string;
   region: string;
-}
+};
 
 interface GeoName {
   name: string;
@@ -146,11 +146,13 @@ export function CityInitForm() {
                 onInputChange={(_, newInputValue) =>
                   setCitySearchQuery(newInputValue)
                 }
-                onChange={(_, newValue: CityOption | null) => {
-                  onChange(newValue ? newValue.label : null);
-
-                  if (newValue?.region) {
-                    setValue('region', newValue.region);
+                onChange={(_, newValue: string | CityOption | null) => {
+                  if (typeof newValue === 'string') {
+                    onChange(newValue);
+                    setValue('region', '');
+                  } else {
+                    onChange(newValue?.label || '');
+                    setValue('region', newValue?.region || '');
                   }
                 }}
                 renderInput={(params) => (
