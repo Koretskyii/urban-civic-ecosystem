@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useLogin, useRegister } from '@/hooks';
-import { useAuthStore } from '@/store';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
 import {
@@ -41,9 +40,6 @@ export default function AuthPage() {
   const login = useLogin();
   const register = useRegister();
   const router = useRouter();
-
-  // Store
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const isRegister = tab === 0;
   const isPending = login.isPending || register.isPending;
