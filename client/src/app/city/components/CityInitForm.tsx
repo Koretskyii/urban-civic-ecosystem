@@ -58,7 +58,14 @@ export function CityInitForm() {
 
     const delayDebounceFn = setTimeout(async () => {
       try {
-        const username = 'koretskyiii';
+        const username = process.env.NEXT_PUBLIC_GEONAMES_USERNAME;
+
+        if (!username) {
+          console.error(
+            'GeoNames username is not configured. Please set NEXT_PUBLIC_GEONAMES_USERNAME.',
+          );
+          return;
+        }
         const res = await fetch(
           `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(citySearchQuery)}&country=UA&featureClass=P&maxRows=10&username=${username}&lang=uk`,
         );
