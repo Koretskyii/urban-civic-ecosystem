@@ -89,7 +89,7 @@ export function VerifyDomainModal({
           />
 
           <Box>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Токен для DNS TXT запису
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
@@ -124,7 +124,7 @@ export function VerifyDomainModal({
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
               Інструкція:
             </Typography>
-            <Typography variant="body2" color="textSecondary" component="div">
+            <Typography variant="body2" color="text.secondary" component="div">
               <ol style={{ margin: 0, paddingLeft: '20px' }}>
                 <li>Скопіюйте токен вище, натиснувши кнопку копіювання</li>
                 <li>Додайте TXT запис до DNS налаштувань вашого домену</li>
