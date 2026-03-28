@@ -34,7 +34,7 @@ enum ReactionType {
 model City {
   id     String @id @default(cuid())
   name   String
-  region String?
+  region String
 
   users                UserCity[]
   roles                Role[]
