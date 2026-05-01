@@ -37,7 +37,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
@@ -136,5 +136,4 @@ export class AuthController {
     }
     return this.authService.changePassword(user?.id, body);
   }
-
 }
