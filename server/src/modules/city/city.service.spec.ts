@@ -2,8 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { CityService } from './city.service';
 import * as dns from 'dns';
+import { PrismaService } from '@/prisma/prisma.service';
+import { R2StorageService } from '../r2/r2.service';
 
-// Mock dns module
 jest.mock('dns', () => ({
   resolveTxt: jest.fn(),
 }));
@@ -13,10 +14,26 @@ describe('CityService', () => {
   const mockResolveTxt = dns.resolveTxt as jest.MockedFunction<
     typeof dns.resolveTxt
   >;
+  const mockPrismaService = {
+    $transaction: jest.fn(),
+  };
+  const mockR2StorageService = {
+    uploadCityVerificationDocument: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CityService],
+      providers: [
+        CityService,
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService,
+        },
+        {
+          provide: R2StorageService,
+          useValue: mockR2StorageService,
+        },
+      ],
     }).compile();
 
     service = module.get<CityService>(CityService);
@@ -70,7 +87,6 @@ describe('CityService', () => {
     });
 
     it('should successfully verify domain if TXT record is found', async () => {
-      // Mock DNS response with correct token
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(null, [[token]]);
         return {};
@@ -90,7 +106,6 @@ describe('CityService', () => {
     });
 
     it('should throw error if TXT record is not found', async () => {
-      // Mock DNS response without correct token
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(null, [['wrong-token']]);
         return {};
@@ -102,7 +117,6 @@ describe('CityService', () => {
     });
 
     it('should throw error on DNS lookup failure', async () => {
-      // Mock DNS error
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(new Error('ENOTFOUND'), []);
         return {};
@@ -121,14 +135,12 @@ describe('CityService', () => {
 
       await service.verifyDomain(domain, token);
 
-      // Retry verification should fail
       await expect(service.verifyDomain(domain, token)).rejects.toThrow(
         'Токен не знайдено',
       );
     });
 
     it('should handle multiple TXT records', async () => {
-      // Mock DNS response with multiple TXT records
       mockResolveTxt.mockImplementation((hostname, callback) => {
         callback(null, [['some-other-record'], [token], ['another-record']]);
         return {};
