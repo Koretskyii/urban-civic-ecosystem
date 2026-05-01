@@ -8,4 +8,7 @@ export const cityApi = {
   verifyDomain: (data: { domain: string; token: string }) => {
     return apiClient.post(API_ROUTES.city.verifyDomain, data);
   },
+  initializeCity: (data: FormData) => {
+    return apiClient.postFormData(API_ROUTES.city.initializeCity, data);
+  },
 };

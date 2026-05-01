@@ -18,6 +18,7 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { cityApi } from '@/api/endpoints';
 import { VerifyDomainModal } from './VerifyDomainModal';
+import { useAuthStore } from '@/store';
 
 type CityOption = {
   label: string;
@@ -49,6 +50,8 @@ export function CityInitForm() {
 
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [citySearchQuery, setCitySearchQuery] = useState('');
+
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (citySearchQuery.length < 2) {
@@ -99,10 +102,6 @@ export function CityInitForm() {
     return () => clearTimeout(delayDebounceFn);
   }, [citySearchQuery]);
 
-  const onSubmit = (data: Record<string, unknown>) => {
-    console.log('Form data:', data);
-  };
-
   const onDomainVerify = async () => {
     const domainName = getValues('domain');
     if (!domainName) {
@@ -127,8 +126,37 @@ export function CityInitForm() {
     }
   };
 
+  const initializeCityEnvironment = async () => {
+    const values = getValues();
+    const files = values.document as FileList | undefined;
+    const document = files?.[0];
+
+    if (!document) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', String(values.name || ''));
+    formData.append('region', String(values.region || ''));
+    formData.append('document', document);
+
+    if (values.domain) {
+      formData.append('domain', String(values.domain));
+    }
+
+    if (user?.id) {
+      formData.append('userId', user.id);
+    }
+
+    try {
+      await cityApi.initializeCity(formData);
+    } catch (error) {
+      console.error('Помилка при ініціалізації міста:', error);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(initializeCityEnvironment)}>
       <FormGroup sx={{ gap: 3, mt: 2, maxWidth: 600, mx: 'auto' }}>
         <Typography variant="h5" sx={{ mb: 1 }}>
           Ініціалізація міста

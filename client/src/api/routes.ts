@@ -10,5 +10,6 @@ export const API_ROUTES = {
   city: {
     generateDomainToken: '/city/domain/generate-token',
     verifyDomain: '/city/domain/verify',
+    initializeCity: '/city/initialize',
   },
 } as const;
