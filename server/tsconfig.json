@@ -25,6 +25,12 @@
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+      "jest",
+      "mocha",
+      "node",
+      "multer",
+    ]
   }
 }

@@ -35,7 +35,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   async validateLogin(loginData: LoginDto): Promise<User> {
     const user = await this.findUser(loginData.email);

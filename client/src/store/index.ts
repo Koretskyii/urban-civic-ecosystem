@@ -1,4 +1,6 @@
 export { useAuthStore } from './useAuthStore';
 export { useAppStore } from './useAppStore';
+export { useCityStore } from './useCityStore';
 
-export type { City, Notification } from './useAppStore';
+export type { City } from './useCityStore';
+export type { Notification } from './useAppStore';

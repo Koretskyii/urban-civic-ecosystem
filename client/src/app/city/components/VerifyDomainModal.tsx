@@ -34,6 +34,7 @@ export function VerifyDomainModal({
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [isDomainVerified, setIsDomainVerified] = useState(false);
 
   const handleCopyToken = async () => {
     try {
@@ -45,14 +46,25 @@ export function VerifyDomainModal({
     }
   };
 
+  type VerifyDomainResponse = {
+    data: {
+      success: boolean;
+    };
+  };
   const handleVerify = async () => {
     setIsVerifying(true);
     setError(null);
 
     try {
-      await cityApi.verifyDomain({ domain, token });
+      const response: VerifyDomainResponse = (await cityApi.verifyDomain({
+        domain,
+        token,
+      })) as VerifyDomainResponse;
       // Success - close the modal
-      onClose();
+      if (response?.data?.success) {
+        onClose();
+        setIsDomainVerified(true);
+      }
     } catch (err) {
       setError(
         (err as Error).message ||
@@ -119,7 +131,6 @@ export function VerifyDomainModal({
 
           <Divider />
 
-          {/* Instructions */}
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
               Інструкція:
@@ -147,13 +158,15 @@ export function VerifyDomainModal({
             </Typography>
           </Box>
 
-          {/* Error Message */}
           {error && (
             <Alert severity="error" onClose={() => setError(null)}>
               {error}
             </Alert>
           )}
         </Box>
+        {isDomainVerified && (
+          <Box sx={{ color: 'success.main' }}>Домен успішно верифіковано!</Box>
+        )}
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>

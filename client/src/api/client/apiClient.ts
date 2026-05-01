@@ -7,6 +7,7 @@ type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   headers?: Record<string, string>;
+  isFormData?: boolean;
 };
 
 class ApiClient {
@@ -23,17 +24,26 @@ class ApiClient {
   }
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { method = 'GET', body, headers = {} } = options;
+    const { method = 'GET', body, headers = {}, isFormData = false } = options;
+
+    const requestHeaders: Record<string, string> = {
+      ...this.getAuthHeaders(),
+      ...headers,
+    };
+
+    if (!isFormData) {
+      requestHeaders['Content-Type'] = 'application/json';
+    }
 
     const res = await fetch(`${this.baseUrl}${endpoint}`, {
       method,
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.getAuthHeaders(),
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers: requestHeaders,
+      body: body
+        ? isFormData
+          ? (body as FormData)
+          : JSON.stringify(body)
+        : undefined,
     });
 
     if (!res.ok) {
@@ -57,6 +67,14 @@ class ApiClient {
 
   post<T>(endpoint: string, body: unknown) {
     return this.request<T>(endpoint, { method: HTTP_METHODS.POST, body });
+  }
+
+  postFormData<T>(endpoint: string, body: FormData) {
+    return this.request<T>(endpoint, {
+      method: HTTP_METHODS.POST,
+      body,
+      isFormData: true,
+    });
   }
 
   put<T>(endpoint: string, body: unknown) {
