@@ -6,6 +6,7 @@ import { promisify } from 'util';
 import { R2StorageService } from '../r2/r2.service';
 import { ROLES } from '../rbac/constants/roles.const';
 import { CITY_ERRORS } from '../rbac/constants/city.const';
+import { ALERT_TYPES } from '@/shared/constants/alerts.const';
 
 const resolveTxt = promisify(dns.resolveTxt);
 
@@ -14,7 +15,7 @@ export class CityService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly r2StorageService: R2StorageService,
-  ) {}
+  ) { }
   private tokenStore = new Map<string, string>(); // TODO: Replace with persistent storage in production
 
   generateDomainToken(domain: string) {
@@ -206,6 +207,105 @@ export class CityService {
       });
 
       return { success: true, message: 'City environment initialized', city };
+    });
+  }
+
+  async prepareNewCity({ userId, cityId }: { userId: string, cityId: string }) {
+    await this.prisma.$transaction(async (tx) => {
+      const city = await tx.city.findUnique({
+        where: { id: cityId },
+      });
+
+      if (!city) {
+        throw new BadRequestException(CITY_ERRORS.CITY_NOT_FOUND);
+      }
+
+      const community = await tx.community.create({
+        data: {
+          cityId: cityId,
+          name: `${city.name} - Загальна спільнота`,
+          description: `Загальна спільнота для мешканців міста ${city.name}`,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      await tx.communityMember.create({
+        data: {
+          userId: userId,
+          communityId: community.id,
+        },
+      });
+
+      const chat = await tx.chat.create({
+        data: {
+          cityId: cityId,
+          communityId: community.id,
+          contextType: 'community',
+        },
+        select: {
+          id: true,
+        }
+      });
+
+      await tx.message.create({
+        data: {
+          authorId: userId,
+          chatId: chat.id,
+          content: `Вітаємо у спільноті міста ${city.name}!`,
+        }
+      });
+
+      await tx.post.create({
+        data: {
+          authorId: userId,
+          communityId: community.id,
+          content: `Вітаємо у спільноті міста ${city.name}!`,
+        }
+      });
+
+      const alertTypes = await tx.alertType.findMany();
+
+      const alertSubscriptionData = alertTypes.map((type) => ({
+        userId: userId,
+        cityId: cityId,
+        alertTypeId: type.id,
+      }))
+
+      await tx.alertSubscription.createMany({
+        data: alertSubscriptionData
+      })
+
+      const otherAlertType = await tx.alertType.findFirst({
+        where: {
+          name: ALERT_TYPES.OTHER,
+        }
+      })
+
+      if (!otherAlertType) {
+        throw new Error(CITY_ERRORS.ALERT_TYPE_NOT_FOUND);
+      }
+
+      await tx.alert.create({
+        data: {
+          authorId: userId,
+          cityId: cityId,
+          typeId: otherAlertType.id,
+          content: `Так будуть виглядати термінові оголошення в межах даного міста.`
+        }
+      })
+
+      await tx.generalNews.create({
+        data: {
+          cityId: city.id,
+          title: `Перші новини міста ${city.name}`,
+          content: `Так будуть виглядати загальні новини міста ${city.name}.`,
+          publisherId: userId,
+        }
+      })
+
+
     });
   }
 }
