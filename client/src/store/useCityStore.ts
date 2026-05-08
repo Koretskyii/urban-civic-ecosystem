@@ -1,12 +1,5 @@
 import { create } from 'zustand';
-
-export type City = {
-  id: string;
-  name: string;
-  region: string;
-  domain: string | null;
-};
-
+import { City } from '@/types';
 interface CityStore {
   currentCity: City | null;
   cities: City[];

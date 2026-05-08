@@ -8,6 +8,7 @@ export const API_ROUTES = {
     changePassword: '/auth/change-password',
   },
   city: {
+    getAll: '/city',
     generateDomainToken: '/city/domain/generate-token',
     verifyDomain: '/city/domain/verify',
     initializeCity: '/city/initialize',

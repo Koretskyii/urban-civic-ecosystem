@@ -4,3 +4,7 @@ export type {
   LoginRequest,
   AuthResponse,
 } from './auth.types';
+
+export type {
+  City,
+} from './city.types';

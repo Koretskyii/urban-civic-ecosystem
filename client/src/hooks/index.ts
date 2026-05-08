@@ -5,3 +5,7 @@ export {
   useLogout,
   useChangePassword,
 } from './useAuth';
+
+export {
+  useCities,
+} from './useCities';

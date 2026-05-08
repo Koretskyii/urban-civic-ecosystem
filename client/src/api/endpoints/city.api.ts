@@ -1,5 +1,6 @@
 import { apiClient } from '../client';
 import { API_ROUTES } from '../routes';
+import { City } from '@/store';
 
 export const cityApi = {
   generateDomainToken: (domain: string) => {
@@ -10,5 +11,8 @@ export const cityApi = {
   },
   initializeCity: (data: FormData) => {
     return apiClient.postFormData(API_ROUTES.city.initializeCity, data);
+  },
+  getAllCities: () => {
+    return apiClient.get<City[]>(API_ROUTES.city.getAll);
   },
 };
