@@ -63,9 +63,25 @@ export class CityService {
         `Domain verification failed for ${domain}: ${error instanceof Error ? error.message : String(error)}`,
       );
 
-      // DNS lookup failed
-      throw new BadRequestException(CITY_ERRORS.DNS_LOOKUP_FAILED(domain));
     }
+  }
+
+  async getAllCities() {
+    return this.prisma.city.findMany({
+      select: {
+        id: true,
+        name: true,
+        region: true,
+        cityDomain: {
+          select: {
+            domainName: true,
+          }
+        }
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
   }
 
   async initializeCityEnvironment(

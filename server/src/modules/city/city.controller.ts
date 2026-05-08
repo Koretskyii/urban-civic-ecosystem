@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   UseInterceptors,
   UploadedFile,
@@ -18,6 +19,12 @@ export class CityController {
   generateDomainToken(@Body('domain') domain: string) {
     return this.cityService.generateDomainToken(domain);
   }
+
+  @Get()
+  async getAllCities() {
+    return this.cityService.getAllCities();
+  }
+
 
   @Post('domain/verify')
   async verifyDomain(@Body() body: { domain: string; token: string }) {
