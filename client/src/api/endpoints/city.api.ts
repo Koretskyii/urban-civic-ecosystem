@@ -1,6 +1,6 @@
 import { apiClient } from '../client';
 import { API_ROUTES } from '../routes';
-import { City } from '@/store';
+import { City, Alert, News, Post } from '@/types';
 
 export const cityApi = {
   generateDomainToken: (domain: string) => {
@@ -16,6 +16,15 @@ export const cityApi = {
     return apiClient.get<City[]>(API_ROUTES.city.getAll);
   },
   getCityById: (id: string) => {
-    return apiClient.get<City>(`${API_ROUTES.city.getAll}/${id}`);
+    return apiClient.get<City>(API_ROUTES.city.getById(id));
+  },
+  getCityAlerts: (cityId: string) => {
+    return apiClient.get<Alert[]>(API_ROUTES.alerts.all(cityId));
+  },
+  getCityNews: (cityId: string) => {
+    return apiClient.get<News[]>(API_ROUTES.news.all(cityId));
+  },
+  getCityPosts: (cityId: string) => {
+    return apiClient.get<Post[]>(API_ROUTES.posts.all(cityId));
   },
 };

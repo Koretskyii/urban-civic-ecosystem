@@ -48,6 +48,10 @@ export const queryKeys = {
     all: (cityId: string) => ['alerts', cityId] as const,
   },
 
+  posts: {
+    all: (cityId: string) => ['posts', cityId] as const,
+  },
+
   chats: {
     all: (cityId: string) => ['chats', cityId] as const,
     messages: (chatId: string) => ['chats', chatId, 'messages'] as const,

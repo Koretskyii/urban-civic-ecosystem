@@ -7,4 +7,7 @@ export type {
 
 export type {
   City,
+  Alert,
+  News,
+  Post,
 } from './city.types';
