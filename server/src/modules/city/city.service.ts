@@ -242,25 +242,19 @@ export class CityService {
         },
       });
 
+      await this.prepareNewCity(tx, { userId, cityId: city.id, cityName: city.name });
+
       return { success: true, message: 'City environment initialized', city };
     });
   }
 
-  async prepareNewCity({ userId, cityId }: { userId: string, cityId: string }) {
-    await this.prisma.$transaction(async (tx) => {
-      const city = await tx.city.findUnique({
-        where: { id: cityId },
-      });
-
-      if (!city) {
-        throw new BadRequestException(CITY_ERRORS.CITY_NOT_FOUND);
-      }
+  private async prepareNewCity(tx: any, { userId, cityId, cityName }: { userId: string, cityId: string, cityName: string }) {
 
       const community = await tx.community.create({
         data: {
           cityId: cityId,
-          name: `${city.name} - Загальна спільнота`,
-          description: `Загальна спільнота для мешканців міста ${city.name}`,
+          name: `${cityName} - Загальна спільнота`,
+          description: `Загальна спільнота для мешканців міста ${cityName}`,
         },
         select: {
           id: true,
@@ -289,7 +283,7 @@ export class CityService {
         data: {
           authorId: userId,
           chatId: chat.id,
-          content: `Вітаємо у спільноті міста ${city.name}!`,
+          content: `Вітаємо у спільноті міста ${cityName}!`,
         }
       });
 
@@ -297,13 +291,13 @@ export class CityService {
         data: {
           authorId: userId,
           communityId: community.id,
-          content: `Вітаємо у спільноті міста ${city.name}!`,
+          content: `Вітаємо у спільноті міста ${cityName}!`,
         }
       });
 
       const alertTypes = await tx.alertType.findMany();
 
-      const alertSubscriptionData = alertTypes.map((type) => ({
+      const alertSubscriptionData = alertTypes.map((type: any) => ({
         userId: userId,
         cityId: cityId,
         alertTypeId: type.id,
@@ -334,14 +328,11 @@ export class CityService {
 
       await tx.generalNews.create({
         data: {
-          cityId: city.id,
-          title: `Перші новини міста ${city.name}`,
-          content: `Так будуть виглядати загальні новини міста ${city.name}.`,
+          cityId: cityId,
+          title: `Перші новини міста ${cityName}`,
+          content: `Так будуть виглядати загальні новини міста ${cityName}.`,
           publisherId: userId,
         }
       })
-
-
-    });
   }
 }

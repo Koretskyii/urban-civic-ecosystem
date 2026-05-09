@@ -14,7 +14,7 @@ import { CityInitData } from '@/types/city.types';
 
 @Controller('city')
 export class CityController {
-  constructor(private readonly cityService: CityService) {}
+  constructor(private readonly cityService: CityService) { }
 
   @Post('domain/generate-token')
   generateDomainToken(@Body('domain') domain: string) {
@@ -73,7 +73,6 @@ export class CityController {
     if (!document) {
       throw new BadRequestException('Завантажте документ');
     }
-
     return this.cityService.initializeCityEnvironment(data, document);
   }
 }
