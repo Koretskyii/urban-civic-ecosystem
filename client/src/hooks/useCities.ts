@@ -13,3 +13,11 @@ export function useCities() {
     },
   });
 }
+
+export function useCityById(id: string) {
+  return useQuery({
+    queryKey: queryKeys.cities.detail(id),
+    queryFn: () => cityApi.getCityById(id),
+    enabled: !!id,
+  });
+}

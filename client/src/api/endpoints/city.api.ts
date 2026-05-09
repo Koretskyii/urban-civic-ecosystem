@@ -15,4 +15,7 @@ export const cityApi = {
   getAllCities: () => {
     return apiClient.get<City[]>(API_ROUTES.city.getAll);
   },
+  getCityById: (id: string) => {
+    return apiClient.get<City>(`${API_ROUTES.city.getAll}/${id}`);
+  },
 };

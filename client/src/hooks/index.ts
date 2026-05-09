@@ -8,4 +8,5 @@ export {
 
 export {
   useCities,
+  useCityById,
 } from './useCities';

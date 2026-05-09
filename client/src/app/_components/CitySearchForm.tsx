@@ -15,11 +15,7 @@ export default function CitySearchForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedCity) {
-      const params = new URLSearchParams();
-      params.set('query', selectedCity.name);
-      router.push(`?${params.toString()}`);
-    } else {
-      router.push('?');
+      router.push(`/city/${selectedCity.id}`);
     }
   };
 
@@ -33,45 +29,45 @@ export default function CitySearchForm() {
         onSubmit={handleSubmit}
         sx={{ display: 'flex', gap: 2, alignItems: 'center' }}
       >
-      <Autocomplete
-        options={cities}
-        getOptionLabel={(option) => `${option.name} (${option.region})`}
-        value={selectedCity}
-        onChange={(event, newValue) => {
-          setSelectedCity(newValue);
-        }}
-        loading={isLoading}
-        sx={{ minWidth: 300 }}
-        noOptionsText="Міст не знайдено"
-        loadingText="Завантаження..."
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            placeholder="Оберіть місто"
-            size="medium"
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {isLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
-      />
-      <Button
-        type="submit"
-        variant="contained"
-        size="large"
-        startIcon={<SearchIcon />}
-        sx={{ height: 56 }}
-        disabled={isLoading}
-      >
-        Обрати
-      </Button>
+        <Autocomplete
+          options={cities}
+          getOptionLabel={(option) => `${option.name} (${option.region})`}
+          value={selectedCity}
+          onChange={(event, newValue) => {
+            setSelectedCity(newValue);
+          }}
+          loading={isLoading}
+          sx={{ minWidth: 300 }}
+          noOptionsText="Міст не знайдено"
+          loadingText="Завантаження..."
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              placeholder="Оберіть місто"
+              size="medium"
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {isLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+        />
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          startIcon={<SearchIcon />}
+          sx={{ height: 56 }}
+          disabled={isLoading}
+        >
+          Обрати
+        </Button>
       </Box>
     </Box>
   );
