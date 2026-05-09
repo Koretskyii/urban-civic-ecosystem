@@ -18,6 +18,11 @@ export class PostsService {
                 communityId: true,
                 content: true,
                 createdAt: true,
+                author: {
+                    select: {
+                        name: true,
+                    }
+                }
             },
             orderBy: {
                 createdAt: 'desc',
