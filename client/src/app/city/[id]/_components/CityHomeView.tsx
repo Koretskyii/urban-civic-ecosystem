@@ -33,7 +33,8 @@ const SECTIONS = [
   },
   {
     label: 'Оголошення',
-    description: 'Термінові оголошення, попередження та оперативні повідомлення для мешканців',
+    description:
+      'Термінові оголошення, попередження та оперативні повідомлення для мешканців',
     icon: <NotificationsActiveRoundedIcon sx={{ fontSize: 36 }} />,
     path: '/alerts',
     color: 'warning.dark',
@@ -41,7 +42,7 @@ const SECTIONS = [
   },
   {
     label: 'Пости',
-    description: "Публікації мешканців та спільноти вашого міста",
+    description: 'Публікації мешканців та спільноти вашого міста',
     icon: <ArticleRoundedIcon sx={{ fontSize: 36 }} />,
     path: '/posts',
     color: 'success.main',
@@ -57,7 +58,8 @@ const SECTIONS = [
   },
   {
     label: 'Проєкти',
-    description: 'Міські ініціативи, голосування та краудфандинг проектів розвитку міста',
+    description:
+      'Міські ініціативи, голосування та краудфандинг проектів розвитку міста',
     icon: <AccountTreeRoundedIcon sx={{ fontSize: 36 }} />,
     path: '/projects',
     color: 'success.dark',
@@ -65,7 +67,8 @@ const SECTIONS = [
   },
   {
     label: 'Зареєструвати проблему',
-    description: 'Повідомте про проблему міста — дороги, освітлення, комунальні послуги',
+    description:
+      'Повідомте про проблему міста — дороги, освітлення, комунальні послуги',
     icon: <ReportProblemRoundedIcon sx={{ fontSize: 36 }} />,
     path: '/problem',
     color: 'error.main',
@@ -113,7 +116,9 @@ export default function CityHomeView({ cityId }: { cityId: string }) {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <LocationCityRoundedIcon sx={{ fontSize: 48, color: 'secondary.light' }} />
+          <LocationCityRoundedIcon
+            sx={{ fontSize: 48, color: 'secondary.light' }}
+          />
           <Box>
             <Typography variant="h1" sx={{ color: 'white', lineHeight: 1.1 }}>
               {city.name}
@@ -121,13 +126,21 @@ export default function CityHomeView({ cityId }: { cityId: string }) {
             <Chip
               label={city.region}
               size="small"
-              sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', mt: 0.5 }}
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.15)',
+                color: 'white',
+                mt: 0.5,
+              }}
             />
           </Box>
         </Box>
-        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', maxWidth: 520 }}>
-          Ласкаво просимо до міського цифрового середовища. Тут ви можете стежити за новинами,
-          спілкуватися у спільноті та реєструвати міські проблеми.
+        <Typography
+          variant="body1"
+          sx={{ color: 'rgba(255,255,255,0.8)', maxWidth: 520 }}
+        >
+          Ласкаво просимо до міського цифрового середовища. Тут ви можете
+          стежити за новинами, спілкуватися у спільноті та реєструвати міські
+          проблеми.
         </Typography>
       </Box>
 
@@ -174,10 +187,16 @@ export default function CityHomeView({ cityId }: { cityId: string }) {
                   sx={{
                     p: 3,
                     height: '100%',
-                    bgcolor: section.featured ? 'rgba(208, 0, 0, 0.03)' : 'transparent',
+                    bgcolor: section.featured
+                      ? 'rgba(208, 0, 0, 0.03)'
+                      : 'transparent',
                     display: 'flex',
-                    flexDirection: section.featured ? { xs: 'column', sm: 'row' } : 'column',
-                    alignItems: section.featured ? { sm: 'center' } : 'flex-start',
+                    flexDirection: section.featured
+                      ? { xs: 'column', sm: 'row' }
+                      : 'column',
+                    alignItems: section.featured
+                      ? { sm: 'center' }
+                      : 'flex-start',
                     gap: section.featured ? 3 : 2,
                   }}
                 >

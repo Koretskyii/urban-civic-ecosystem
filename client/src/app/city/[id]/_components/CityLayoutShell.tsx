@@ -32,7 +32,11 @@ const COLLAPSED_WIDTH = 64;
 const NAV_ITEMS = [
   { label: 'Головна', icon: <HomeRoundedIcon />, path: '' },
   { label: 'Новини', icon: <FeedRoundedIcon />, path: '/news' },
-  { label: 'Оголошення', icon: <NotificationsActiveRoundedIcon />, path: '/alerts' },
+  {
+    label: 'Оголошення',
+    icon: <NotificationsActiveRoundedIcon />,
+    path: '/alerts',
+  },
   { label: 'Пости', icon: <ArticleRoundedIcon />, path: '/posts' },
   { label: "Ком'юніті", icon: <GroupsRoundedIcon />, path: '/community' },
   { label: 'Проєкти', icon: <AccountTreeRoundedIcon />, path: '/projects' },
@@ -84,7 +88,10 @@ export default function CityLayoutShell({
             pt: 1.5,
           }}
         >
-          <Tooltip title={collapsed ? 'Розгорнути' : 'Згорнути'} placement="right">
+          <Tooltip
+            title={collapsed ? 'Розгорнути' : 'Згорнути'}
+            placement="right"
+          >
             <IconButton
               onClick={() => setCollapsed((v) => !v)}
               size="small"
@@ -93,7 +100,11 @@ export default function CityLayoutShell({
                 '&:hover': { color: 'white', bgcolor: 'primary.light' },
               }}
             >
-              {collapsed ? <ChevronRightRoundedIcon /> : <ChevronLeftRoundedIcon />}
+              {collapsed ? (
+                <ChevronRightRoundedIcon />
+              ) : (
+                <ChevronLeftRoundedIcon />
+              )}
             </IconButton>
           </Tooltip>
         </Box>
@@ -101,11 +112,21 @@ export default function CityLayoutShell({
         {/* City brand */}
         {!collapsed && (
           <Box sx={{ px: 3, pb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-              <LocationCityRoundedIcon sx={{ fontSize: 28, color: 'secondary.light', flexShrink: 0 }} />
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}
+            >
+              <LocationCityRoundedIcon
+                sx={{ fontSize: 28, color: 'secondary.light', flexShrink: 0 }}
+              />
               <Typography
                 variant="h3"
-                sx={{ color: 'white', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                sx={{
+                  color: 'white',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
               >
                 {isLoading ? '...' : city?.name}
               </Typography>
@@ -114,7 +135,12 @@ export default function CityLayoutShell({
               <Chip
                 label={city.region}
                 size="small"
-                sx={{ bgcolor: 'primary.light', color: 'white', fontSize: '0.75rem', height: 22 }}
+                sx={{
+                  bgcolor: 'primary.light',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  height: 22,
+                }}
               />
             )}
           </Box>
@@ -123,8 +149,13 @@ export default function CityLayoutShell({
         {/* Collapsed city icon */}
         {collapsed && (
           <Box sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
-            <Tooltip title={isLoading ? '...' : (city?.name ?? '')} placement="right">
-              <LocationCityRoundedIcon sx={{ fontSize: 28, color: 'secondary.light' }} />
+            <Tooltip
+              title={isLoading ? '...' : (city?.name ?? '')}
+              placement="right"
+            >
+              <LocationCityRoundedIcon
+                sx={{ fontSize: 28, color: 'secondary.light' }}
+              />
             </Tooltip>
           </Box>
         )}
@@ -136,7 +167,9 @@ export default function CityLayoutShell({
           {NAV_ITEMS.map((item) => {
             const fullPath = `${baseRoute}${item.path}`;
             const isActive =
-              item.path === '' ? pathname === baseRoute : pathname.startsWith(fullPath);
+              item.path === ''
+                ? pathname === baseRoute
+                : pathname.startsWith(fullPath);
 
             return (
               <Tooltip
@@ -154,13 +187,25 @@ export default function CityLayoutShell({
                     justifyContent: collapsed ? 'center' : 'flex-start',
                     minWidth: 0,
                     bgcolor: isActive
-                      ? item.accent ? 'error.main' : 'secondary.main'
-                      : item.accent ? 'rgba(208, 0, 0, 0.15)' : 'transparent',
-                    color: isActive ? 'white' : item.accent ? 'error.light' : 'rgba(255,255,255,0.8)',
+                      ? item.accent
+                        ? 'error.main'
+                        : 'secondary.main'
+                      : item.accent
+                        ? 'rgba(208, 0, 0, 0.15)'
+                        : 'transparent',
+                    color: isActive
+                      ? 'white'
+                      : item.accent
+                        ? 'error.light'
+                        : 'rgba(255,255,255,0.8)',
                     '&:hover': {
                       bgcolor: isActive
-                        ? item.accent ? 'error.dark' : 'secondary.dark'
-                        : item.accent ? 'rgba(208, 0, 0, 0.25)' : 'primary.light',
+                        ? item.accent
+                          ? 'error.dark'
+                          : 'secondary.dark'
+                        : item.accent
+                          ? 'rgba(208, 0, 0, 0.25)'
+                          : 'primary.light',
                       color: 'white',
                     },
                     transition: 'all 0.2s ease',
@@ -179,7 +224,11 @@ export default function CityLayoutShell({
                     <ListItemText
                       primary={item.label}
                       slotProps={{
-                        primary: { fontSize: '0.95rem', fontWeight: isActive ? 700 : 400, noWrap: true },
+                        primary: {
+                          fontSize: '0.95rem',
+                          fontWeight: isActive ? 700 : 400,
+                          noWrap: true,
+                        },
                       }}
                     />
                   )}

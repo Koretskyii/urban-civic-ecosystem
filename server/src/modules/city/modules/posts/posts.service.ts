@@ -3,30 +3,30 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class PostsService {
-    constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
-    async getCityPosts(cityId: string) {
-        return this.prisma.post.findMany({
-            where: {
-                community: {
-                    cityId,
-                },
-            },
-            select: {
-                id: true,
-                authorId: true,
-                communityId: true,
-                content: true,
-                createdAt: true,
-                author: {
-                    select: {
-                        name: true,
-                    }
-                }
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+  async getCityPosts(cityId: string) {
+    return this.prisma.post.findMany({
+      where: {
+        community: {
+          cityId,
+        },
+      },
+      select: {
+        id: true,
+        authorId: true,
+        communityId: true,
+        content: true,
+        createdAt: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }

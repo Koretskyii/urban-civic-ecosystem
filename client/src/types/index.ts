@@ -5,10 +5,4 @@ export type {
   AuthResponse,
 } from './auth.types';
 
-export type {
-  City,
-  Alert,
-  News,
-  Post,
-  Community,
-} from './city.types';
+export type { City, Alert, News, Post, Community } from './city.types';

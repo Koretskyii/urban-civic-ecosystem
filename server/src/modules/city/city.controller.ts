@@ -14,7 +14,7 @@ import { CityInitData } from '@/types/city.types';
 
 @Controller('city')
 export class CityController {
-  constructor(private readonly cityService: CityService) { }
+  constructor(private readonly cityService: CityService) {}
 
   @Post('domain/generate-token')
   generateDomainToken(@Body('domain') domain: string) {
@@ -30,7 +30,6 @@ export class CityController {
   async getCityById(@Param('id') id: string) {
     return this.cityService.getCityById(id);
   }
-
 
   @Post('domain/verify')
   async verifyDomain(@Body() body: { domain: string; token: string }) {

@@ -6,7 +6,4 @@ export {
   useChangePassword,
 } from './useAuth';
 
-export {
-  useCities,
-  useCityById,
-} from './useCities';
+export { useCities, useCityById } from './useCities';

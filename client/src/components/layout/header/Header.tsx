@@ -13,7 +13,7 @@ const HeaderAppBar = styled(AppBar)({
 export default function Header() {
   return (
     <HeaderBox>
-      <HeaderAppBar position='sticky'>
+      <HeaderAppBar position="sticky">
         <Toolbar>
           <Typography>Urban Civic Ecosystem</Typography>
           <Box>

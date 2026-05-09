@@ -9,8 +9,15 @@ import { PostsModule } from './modules/posts/posts.module';
 import { CommunityModule } from './modules/community/community.module';
 
 @Module({
-  imports: [PrismaModule, R2Module, AlertsModule, NewsModule, PostsModule, CommunityModule],
+  imports: [
+    PrismaModule,
+    R2Module,
+    AlertsModule,
+    NewsModule,
+    PostsModule,
+    CommunityModule,
+  ],
   controllers: [CityController],
   providers: [CityService],
 })
-export class CityModule { }
+export class CityModule {}

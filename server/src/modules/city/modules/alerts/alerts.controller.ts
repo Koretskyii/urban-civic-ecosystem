@@ -3,10 +3,10 @@ import { AlertsService } from './alerts.service';
 
 @Controller('/city/:cityId/alerts')
 export class AlertsController {
-    constructor(private readonly alertsService: AlertsService) { }
+  constructor(private readonly alertsService: AlertsService) {}
 
-    @Get()
-    async getCityAlerts(@Param('cityId') cityId: string) {
-        return this.alertsService.getCityAlerts(cityId);
-    }
+  @Get()
+  async getCityAlerts(@Param('cityId') cityId: string) {
+    return this.alertsService.getCityAlerts(cityId);
+  }
 }

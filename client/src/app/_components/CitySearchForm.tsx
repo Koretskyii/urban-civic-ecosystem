@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, TextField, Button, Autocomplete, CircularProgress, Typography } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Button,
+  Autocomplete,
+  CircularProgress,
+  Typography,
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useCities } from '@/hooks';
 import { City } from '@/types';
@@ -20,7 +27,14 @@ export default function CitySearchForm() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 4,
+      }}
+    >
       <Typography variant="h4" fontWeight={700}>
         Оберіть своє місто з переліку
       </Typography>
@@ -50,7 +64,9 @@ export default function CitySearchForm() {
                 ...params.InputProps,
                 endAdornment: (
                   <>
-                    {isLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                    {isLoading ? (
+                      <CircularProgress color="inherit" size={20} />
+                    ) : null}
                     {params.InputProps.endAdornment}
                   </>
                 ),
