@@ -15,11 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <ThemeRegistry>
           <QueryProvider>
             <Header />
-            <main>{children}</main>
+            <main style={{ flexGrow: 1 }}>{children}</main>
             <Footer />
           </QueryProvider>
         </ThemeRegistry>

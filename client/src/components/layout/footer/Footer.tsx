@@ -4,11 +4,10 @@ import styled from '@emotion/styled';
 import { Box, Container, Grid, Typography } from '@mui/material';
 
 const FooterBox = styled(Box)({
-  backgroundColor: UCE_COLORS.deepBlue.main,
+  backgroundColor: '#1A3A57',
   color: UCE_COLORS.text.light.primary,
   height: `8rem`,
   padding: `2rem 0rem 2rem 0rem`,
-  marginTop: `2rem`,
 });
 const FooterContainer = styled(Container)({
   margin: `0 2rem`,
