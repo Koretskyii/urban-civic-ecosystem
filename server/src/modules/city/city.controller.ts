@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Param,
   Body,
   UseInterceptors,
   UploadedFile,
@@ -23,6 +24,11 @@ export class CityController {
   @Get()
   async getAllCities() {
     return this.cityService.getAllCities();
+  }
+
+  @Get(':id')
+  async getCityById(@Param('id') id: string) {
+    return this.cityService.getCityById(id);
   }
 
 

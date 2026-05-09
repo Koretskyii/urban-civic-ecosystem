@@ -84,6 +84,26 @@ export class CityService {
     });
   }
 
+  async getCityById(id: string) {
+    const city = await this.prisma.city.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        region: true,
+        cityDomain: {
+          select: { domainName: true },
+        },
+      },
+    });
+
+    if (!city) {
+      throw new BadRequestException(CITY_ERRORS.CITY_NOT_FOUND);
+    }
+
+    return city;
+  }
+
   async initializeCityEnvironment(
     data: CityInitData,
     document: Express.Multer.File,
