@@ -23,4 +23,7 @@ export const API_ROUTES = {
   posts: {
     all: (cityId: string): string => `/city/${cityId}/posts`,
   },
+  community: {
+    detail: (cityId: string): string => `/city/${cityId}/community`,
+  },
 } as const;

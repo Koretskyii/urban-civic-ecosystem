@@ -1,3 +1,8 @@
-export default function CityCommunityPage() {
-  return <h2>Ком'юніті — coming soon</h2>;
+import CommunityView from "./_components/CommunityView";
+
+export default async function CityCommunityPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return (
+    <CommunityView cityId={id} />
+  );
 }

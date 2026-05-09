@@ -10,4 +10,5 @@ export type {
   Alert,
   News,
   Post,
+  Community,
 } from './city.types';

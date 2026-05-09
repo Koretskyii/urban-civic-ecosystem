@@ -1,6 +1,6 @@
 import { apiClient } from '../client';
 import { API_ROUTES } from '../routes';
-import { City, Alert, News, Post } from '@/types';
+import { City, Alert, News, Post, Community } from '@/types';
 
 export const cityApi = {
   generateDomainToken: (domain: string) => {
@@ -26,5 +26,8 @@ export const cityApi = {
   },
   getCityPosts: (cityId: string) => {
     return apiClient.get<Post[]>(API_ROUTES.posts.all(cityId));
+  },
+  getCityCommunity: (cityId: string) => {
+    return apiClient.get<Community>(API_ROUTES.community.detail(cityId));
   },
 };

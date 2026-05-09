@@ -25,4 +25,32 @@ export type Post = {
     communityId: string;
     content: string;
     createdAt: string;
+    author?: {
+        name: string;
+    };
+}
+
+export type Message = {
+    id: string;
+    content: string;
+    timestamp: string;
+    authorId: string;
+    author?: {
+        name: string;
+    };
+}
+
+export type Chat = {
+    id: string;
+    messages: Message[];
+}
+
+export type Community = {
+    id: string;
+    name: string;
+    description: string;
+    cityId: string;
+    createdAt: string;
+    chats: Chat[];
+    posts: Post[];
 }

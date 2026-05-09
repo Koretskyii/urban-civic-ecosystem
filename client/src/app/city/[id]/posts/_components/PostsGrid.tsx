@@ -62,6 +62,10 @@ export default function PostsGrid({ cityId }: { cityId: string }) {
                         minute: '2-digit'
                     });
 
+                    const authorName = post.author 
+                        ? post.author.name
+                        : 'Невідомий користувач';
+
                     return (
                         <Grid size={{ xs: 12, md: 6, lg: 4 }} key={post.id}>
                             <Card
@@ -88,6 +92,9 @@ export default function PostsGrid({ cityId }: { cityId: string }) {
                                             <PersonRoundedIcon fontSize="small" />
                                         </Avatar>
                                         <Box>
+                                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
+                                                {authorName}
+                                            </Typography>
                                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                                                 {formattedDate} о {formattedTime}
                                             </Typography>

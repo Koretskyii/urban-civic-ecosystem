@@ -46,3 +46,11 @@ export function useCityPosts(cityId: string) {
   });
 }
 
+export function useCityCommunity(cityId: string) {
+  return useQuery({
+    queryKey: queryKeys.communities.all(cityId),
+    queryFn: () => cityApi.getCityCommunity(cityId),
+    enabled: !!cityId,
+  });
+}
+
