@@ -16,6 +16,8 @@ import FeedRoundedIcon from '@mui/icons-material/FeedRounded';
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import ReportProblemRoundedIcon from '@mui/icons-material/ReportProblemRounded';
+import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
+import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { useCityById } from '@/hooks';
@@ -30,6 +32,14 @@ const SECTIONS = [
     bgColor: 'rgba(63, 136, 197, 0.08)',
   },
   {
+    label: 'Оголошення',
+    description: 'Термінові оголошення, попередження та оперативні повідомлення для мешканців',
+    icon: <NotificationsActiveRoundedIcon sx={{ fontSize: 36 }} />,
+    path: '/alerts',
+    color: 'warning.dark',
+    bgColor: 'rgba(255, 186, 8, 0.08)',
+  },
+  {
     label: 'Пости',
     description: "Публікації мешканців та спільноти вашого міста",
     icon: <ArticleRoundedIcon sx={{ fontSize: 36 }} />,
@@ -42,8 +52,16 @@ const SECTIONS = [
     description: 'Тематичні групи та спільноти за інтересами',
     icon: <GroupsRoundedIcon sx={{ fontSize: 36 }} />,
     path: '/community',
-    color: 'warning.dark',
-    bgColor: 'rgba(255, 186, 8, 0.08)',
+    color: 'secondary.dark',
+    bgColor: 'rgba(63, 136, 197, 0.06)',
+  },
+  {
+    label: 'Проєкти',
+    description: 'Міські ініціативи, голосування та краудфандинг проектів розвитку міста',
+    icon: <AccountTreeRoundedIcon sx={{ fontSize: 36 }} />,
+    path: '/projects',
+    color: 'success.dark',
+    bgColor: 'rgba(49, 107, 80, 0.06)',
   },
   {
     label: 'Зареєструвати проблему',

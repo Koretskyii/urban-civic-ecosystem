@@ -19,6 +19,8 @@ import FeedRoundedIcon from '@mui/icons-material/FeedRounded';
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import ReportProblemRoundedIcon from '@mui/icons-material/ReportProblemRounded';
+import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
+import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -30,8 +32,10 @@ const COLLAPSED_WIDTH = 64;
 const NAV_ITEMS = [
   { label: 'Головна', icon: <HomeRoundedIcon />, path: '' },
   { label: 'Новини', icon: <FeedRoundedIcon />, path: '/news' },
+  { label: 'Оголошення', icon: <NotificationsActiveRoundedIcon />, path: '/alerts' },
   { label: 'Пости', icon: <ArticleRoundedIcon />, path: '/posts' },
   { label: "Ком'юніті", icon: <GroupsRoundedIcon />, path: '/community' },
+  { label: 'Проєкти', icon: <AccountTreeRoundedIcon />, path: '/projects' },
   {
     label: 'Реєстрація проблеми',
     icon: <ReportProblemRoundedIcon />,
