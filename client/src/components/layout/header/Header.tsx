@@ -1,5 +1,5 @@
 'use client';
-import { UCE_COLORS } from '@/theme';
+
 import { useTranslations } from 'next-intl';
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';

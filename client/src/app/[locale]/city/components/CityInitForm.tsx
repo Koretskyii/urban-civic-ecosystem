@@ -100,7 +100,7 @@ export function CityInitForm() {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [citySearchQuery]);
+  }, [citySearchQuery, t]);
 
   const onDomainVerify = async () => {
     const domainName = getValues('domain');
