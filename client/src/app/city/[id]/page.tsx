@@ -1,11 +1,11 @@
 import CityHomeView from './_components/CityHomeView';
 
 interface CityPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default async function CityPage(props: CityPageProps) {
-  const { id } = await props.params;
+  const { id } = props.params;
 
   return <CityHomeView cityId={id} />;
 }
