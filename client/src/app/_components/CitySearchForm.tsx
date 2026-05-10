@@ -52,7 +52,7 @@ export default function CitySearchForm() {
           }}
           loading={isLoading}
           sx={{ minWidth: 300 }}
-          noOptionsText="Міст не знайдено"
+          noOptionsText="Місто не знайдено"
           loadingText="Завантаження..."
           renderInput={(params) => (
             <TextField
