@@ -72,15 +72,14 @@ export class CityService {
         domain,
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Domain verification failed for ${domain}: ${errorMessage}`);
+
       if (error instanceof BadRequestException) {
-        console.error(
-          `Domain verification failed for ${domain}: ${error.message}`,
-        );
         throw error;
       }
-      console.error(
-        `Domain verification failed for ${domain}: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      
+      throw new BadRequestException(CITY_ERRORS.DNS_RECORD_NOT_FOUND);
     }
   }
 
