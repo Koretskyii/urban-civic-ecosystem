@@ -1,7 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { AlertsService } from './alerts.service';
 
-@Controller('/city/:cityId/alerts')
+@Controller('city/:cityId/alerts')
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 
