@@ -6,7 +6,6 @@ export class AlertsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getCityAlerts(cityId: string) {
-    console.log(cityId, 'cityId');
     const alerts = await this.prisma.alert.findMany({
       where: {
         cityId: cityId,
@@ -21,7 +20,6 @@ export class AlertsService {
       },
     });
 
-    console.log(alerts);
     return alerts;
   }
 }

@@ -1,4 +1,5 @@
 import { PrismaService } from '@/prisma/prisma.service';
+import { Prisma } from '../../generated/prisma/client';
 import { CityInitData } from '@/types/city.types';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as dns from 'dns';
@@ -252,7 +253,7 @@ export class CityService {
   }
 
   private async prepareNewCity(
-    tx: any,
+    tx: Prisma.TransactionClient,
     {
       userId,
       cityId,
@@ -306,7 +307,7 @@ export class CityService {
 
     const alertTypes = await tx.alertType.findMany();
 
-    const alertSubscriptionData = alertTypes.map((type: any) => ({
+    const alertSubscriptionData = alertTypes.map((type: { id: string }) => ({
       userId: userId,
       cityId: cityId,
       alertTypeId: type.id,

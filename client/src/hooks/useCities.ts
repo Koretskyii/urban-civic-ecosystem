@@ -8,7 +8,6 @@ export function useCities() {
     queryKey: queryKeys.cities.all(),
     queryFn: async () => {
       const response: City[] = await cityApi.getAllCities();
-      console.log(response);
       return response;
     },
   });
