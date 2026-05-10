@@ -7,7 +7,7 @@ type UploadResult = {
   url: string;
 };
 
-interface uploadVerificationDocumentParams {
+interface UploadVerificationDocumentParams {
   cityId: string;
   fileName: string;
   mimeType?: string;
@@ -47,7 +47,7 @@ export class R2StorageService {
   }
 
   async uploadCityVerificationDocument(
-    params: uploadVerificationDocumentParams,
+    params: UploadVerificationDocumentParams,
   ): Promise<UploadResult> {
     const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const key = `city-init/${params.cityId}/${Date.now()}-${safeName}`;
