@@ -50,6 +50,54 @@ export const uk = {
     projectsComingSoon: 'Проєкти — coming soon',
     problemComingSoon: 'Реєстрація проблеми — coming soon',
   },
+  cityNav: {
+    expand: 'Розгорнути',
+    collapse: 'Згорнути',
+    items: {
+      home: 'Головна',
+      news: 'Новини',
+      alerts: 'Оголошення',
+      posts: 'Пости',
+      community: "Ком'юніті",
+      projects: 'Проєкти',
+      problem: 'Реєстрація проблеми',
+    },
+  },
+  cityHome: {
+    heroText:
+      'Ласкаво просимо до міського цифрового середовища. Тут ви можете стежити за новинами, спілкуватися у спільноті та реєструвати міські проблеми.',
+    sectionsTitle: 'Розділи',
+    sectionsSubtitle: 'Оберіть розділ для роботи з міським середовищем',
+    sections: {
+      news: {
+        title: 'Стрічка новин',
+        description: 'Офіційні новини та оголошення від міської адміністрації',
+      },
+      alerts: {
+        title: 'Оголошення',
+        description:
+          'Термінові оголошення, попередження та оперативні повідомлення для мешканців',
+      },
+      posts: {
+        title: 'Пости',
+        description: 'Публікації мешканців та спільноти вашого міста',
+      },
+      community: {
+        title: "Ком'юніті",
+        description: 'Тематичні групи та спільноти за інтересами',
+      },
+      projects: {
+        title: 'Проєкти',
+        description:
+          'Міські ініціативи, голосування та краудфандинг проектів розвитку міста',
+      },
+      problem: {
+        title: 'Зареєструвати проблему',
+        description:
+          'Повідомте про проблему міста — дороги, освітлення, комунальні послуги',
+      },
+    },
+  },
   community: {
     loadError: 'Помилка завантаження спільноти.',
     membersTitle: 'Учасники спільноти (1,248)',
@@ -99,8 +147,7 @@ export const uk = {
     domainLabel: 'Домен',
     tokenLabel: 'Токен для DNS TXT запису',
     instructionsTitle: 'Інструкція:',
-    stepCopy:
-      'Скопіюйте токен вище, натиснувши кнопку копіювання',
+    stepCopy: 'Скопіюйте токен вище, натиснувши кнопку копіювання',
     stepAddDns: 'Додайте TXT запис до DNS налаштувань вашого домену',
     recordNameLabel: 'Назва запису:',
     recordValueLabel: 'Значення запису: вставте скопійований токен',
@@ -144,5 +191,18 @@ export const uk = {
     fileFormatError: 'Тільки PDF, JPG, PNG або DOC(X) формати підтримуються',
     submit: 'Створити простір міста',
     unknownRegion: 'Невідома область',
+  },
+  profile: {
+    authRequiredTitle: 'Необхідна авторизація',
+    authRequiredSubtitle: 'Увійдіть, щоб переглянути профіль',
+    loginAction: 'Увійти',
+    googleAccount: 'Google аккаунт',
+    localAccount: 'Локальний аккаунт',
+    emailLabel: 'Email',
+    idLabel: 'ID',
+    registeredLabel: 'Зареєстровано',
+    changePassword: 'Змінити пароль',
+    logoutPending: 'Вихід...',
+    logout: 'Вийти з аккаунту',
   },
 };
