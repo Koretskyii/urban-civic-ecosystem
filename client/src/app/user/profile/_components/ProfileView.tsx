@@ -245,12 +245,7 @@ export default function UserProfilePage() {
   );
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-  mono = false,
-}: InfoRowProps) {
+function InfoRow({ icon, label, value, mono = false }: InfoRowProps) {
   return (
     <Box
       sx={{

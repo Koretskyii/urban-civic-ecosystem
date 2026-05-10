@@ -34,7 +34,7 @@ export class CityService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly r2StorageService: R2StorageService,
-  ) { }
+  ) {}
   private tokenStore = new Map<string, string>(); // TODO: Replace with persistent storage in production
 
   generateDomainToken(domain: string) {

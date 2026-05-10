@@ -46,7 +46,9 @@ export class R2StorageService {
     });
   }
 
-  async uploadCityVerificationDocument(params: uploadVerificationDocumentParams): Promise<UploadResult> {
+  async uploadCityVerificationDocument(
+    params: uploadVerificationDocumentParams,
+  ): Promise<UploadResult> {
     const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const key = `city-init/${params.cityId}/${Date.now()}-${safeName}`;
 

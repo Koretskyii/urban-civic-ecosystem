@@ -14,7 +14,7 @@ import { CityInitData, DomainVerificationData } from '@/types';
 
 @Controller('city')
 export class CityController {
-  constructor(private readonly cityService: CityService) { }
+  constructor(private readonly cityService: CityService) {}
 
   @Post('domain/generate-token')
   generateDomainToken(@Body('domain') domain: string) {

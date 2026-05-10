@@ -68,7 +68,7 @@ export function VerifyDomainModal({
     } catch (err) {
       setError(
         (err as Error).message ||
-        'Не вдалося перевірити домен. Переконайтеся, що TXT запис додано правильно.',
+          'Не вдалося перевірити домен. Переконайтеся, що TXT запис додано правильно.',
       );
     } finally {
       setIsVerifying(false);
