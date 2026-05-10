@@ -38,6 +38,11 @@ describe('CityService', () => {
 
     service = module.get<CityService>(CityService);
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should be defined', () => {
