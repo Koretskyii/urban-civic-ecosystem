@@ -7,6 +7,7 @@ import { authApi } from '@/api/endpoints';
 import { Container, Typography } from '@mui/material';
 import Link from 'next/link';
 import { ERROR_MESSAGES } from '@/constants';
+import { useTranslations } from 'next-intl';
 
 function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -18,6 +19,7 @@ function deleteCookie(name: string) {
 }
 
 export default function GoogleCallbackPage() {
+  const t = useTranslations();
   const router = useRouter();
   const { setUser } = useAuthStore.getState();
   const [error, setError] = useState<string | null>(null);
@@ -55,10 +57,10 @@ export default function GoogleCallbackPage() {
   if (error) {
     return (
       <Container sx={{ maxWidth: 520, margin: '40px auto' }}>
-        <Typography variant="h1">❌ Google Auth Error</Typography>
+        <Typography variant="h1">{t('googleCallback.errorTitle')}</Typography>
         <Typography variant="body1">{error}</Typography>
         <Link href="/user/auth" style={{ textDecoration: 'none' }}>
-          ← Повернутися
+          {t('googleCallback.back')}
         </Link>
       </Container>
     );
@@ -73,7 +75,7 @@ export default function GoogleCallbackPage() {
       }}
     >
       <Typography variant="body1">
-        ⏳ Обробка Google автентифікації...
+        {t('googleCallback.processing')}
       </Typography>
     </Container>
   );

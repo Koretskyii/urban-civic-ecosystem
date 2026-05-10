@@ -13,8 +13,10 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import { useCities } from '@/hooks';
 import { City } from '@/types';
+import { useTranslations } from 'next-intl';
 
 export default function CitySearchForm() {
+  const t = useTranslations();
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const router = useRouter();
   const { data: cities = [], isLoading } = useCities();
@@ -36,7 +38,7 @@ export default function CitySearchForm() {
       }}
     >
       <Typography variant="h4" fontWeight={700}>
-        Оберіть своє місто з переліку
+        {t('citySearch.title')}
       </Typography>
       <Box
         component="form"
@@ -52,13 +54,13 @@ export default function CitySearchForm() {
           }}
           loading={isLoading}
           sx={{ minWidth: 300 }}
-          noOptionsText="Місто не знайдено"
-          loadingText="Завантаження..."
+          noOptionsText={t('citySearch.noOptions')}
+          loadingText={t('citySearch.loading')}
           renderInput={(params) => (
             <TextField
               {...params}
               variant="outlined"
-              placeholder="Оберіть місто"
+              placeholder={t('citySearch.placeholder')}
               size="medium"
               InputProps={{
                 ...params.InputProps,
@@ -82,7 +84,7 @@ export default function CitySearchForm() {
           sx={{ height: 56 }}
           disabled={isLoading}
         >
-          Обрати
+          {t('common.select')}
         </Button>
       </Box>
     </Box>

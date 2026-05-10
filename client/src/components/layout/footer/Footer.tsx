@@ -1,5 +1,6 @@
 'use client';
 import { UCE_COLORS } from '@/theme';
+import { useTranslations } from 'next-intl';
 import styled from '@emotion/styled';
 import { Box, Container, Grid, Typography } from '@mui/material';
 
@@ -14,14 +15,14 @@ const FooterContainer = styled(Container)({
 });
 
 export default function Footer() {
+  const t = useTranslations();
+
   return (
     <FooterBox>
       <FooterContainer>
         <Grid container spacing={2}>
           <Grid size={6}>
-            <Typography>
-              © 2026 Urban Civic Ecosystem. All rights reserved.
-            </Typography>
+            <Typography>{t('footer.rights')}</Typography>
           </Grid>
         </Grid>
       </FooterContainer>

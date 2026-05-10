@@ -1,3 +1,8 @@
+import { createTranslator } from 'next-intl';
+import { uk } from '@/i18n/uk';
+
 export default function CityProjectsPage() {
-  return <h2>Проєкти — coming soon</h2>;
+  const t = createTranslator({ locale: 'uk', messages: uk });
+
+  return <h2>{t('cityPages.projectsComingSoon')}</h2>;
 }

@@ -13,12 +13,14 @@ import {
 } from '@mui/material';
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import { useTranslations } from 'next-intl';
 
 interface PostsGridProps {
   cityId: string;
 }
 
 export default function PostsGrid(props: PostsGridProps) {
+  const t = useTranslations();
   const { cityId } = props;
   const { data: posts, isLoading, error } = useCityPosts(cityId);
 
@@ -33,7 +35,7 @@ export default function PostsGrid(props: PostsGridProps) {
   if (error) {
     return (
       <Typography color="error" sx={{ mt: 2 }}>
-        Помилка завантаження постів.
+        {t('posts.loadError')}
       </Typography>
     );
   }
@@ -41,7 +43,7 @@ export default function PostsGrid(props: PostsGridProps) {
   if (!posts || posts.length === 0) {
     return (
       <Typography color="text.secondary" sx={{ mt: 2 }}>
-        Немає постів для відображення.
+        {t('posts.empty')}
       </Typography>
     );
   }
@@ -60,7 +62,7 @@ export default function PostsGrid(props: PostsGridProps) {
         >
           <ArticleRoundedIcon />
         </Box>
-        <Typography variant="h3">Пости спільноти</Typography>
+        <Typography variant="h3">{t('posts.title')}</Typography>
       </Box>
 
       <Grid container spacing={3}>
@@ -78,7 +80,7 @@ export default function PostsGrid(props: PostsGridProps) {
 
           const authorName = post.author
             ? post.author.name
-            : 'Невідомий користувач';
+            : t('common.unknownUser');
 
           return (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={post.id}>
@@ -136,7 +138,8 @@ export default function PostsGrid(props: PostsGridProps) {
                         variant="caption"
                         sx={{ color: 'text.secondary' }}
                       >
-                        {formattedDate} о {formattedTime}
+                        {formattedDate} {t('common.timeSeparator')}{' '}
+                        {formattedTime}
                       </Typography>
                     </Box>
                   </Box>
@@ -158,7 +161,7 @@ export default function PostsGrid(props: PostsGridProps) {
                     variant="caption"
                     sx={{ color: 'success.main', fontWeight: 500 }}
                   >
-                    Публікація мешканця
+                    {t('posts.residentPost')}
                   </Typography>
                 </CardContent>
               </Card>

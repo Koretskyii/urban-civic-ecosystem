@@ -19,6 +19,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { cityApi } from '@/api/endpoints';
 import { VerifyDomainModal } from './VerifyDomainModal';
 import { useAuthStore } from '@/store';
+import { useTranslations } from 'next-intl';
 
 type CityOption = {
   label: string;
@@ -35,6 +36,7 @@ interface DomainToken {
 }
 
 export function CityInitForm() {
+  const t = useTranslations();
   const {
     register,
     handleSubmit,
@@ -64,9 +66,7 @@ export function CityInitForm() {
         const username = process.env.NEXT_PUBLIC_GEONAMES_USERNAME;
 
         if (!username) {
-          console.error(
-            'GeoNames username is not configured. Please set NEXT_PUBLIC_GEONAMES_USERNAME.',
-          );
+          console.error(t('cityInit.geonamesMissing'));
           return;
         }
         const res = await fetch(
@@ -77,7 +77,7 @@ export function CityInitForm() {
         if (data.geonames) {
           const formattedOptions = data.geonames.map((item: GeoName) => ({
             label: item.name,
-            region: item.adminName1 || 'Невідома область',
+            region: item.adminName1 || t('cityInit.unknownRegion'),
           }));
 
           const uniqueOptions = Array.from(
@@ -95,7 +95,7 @@ export function CityInitForm() {
           setCityOptions(uniqueOptions || []);
         }
       } catch (err) {
-        console.error('Помилка при завантаженні міст з GeoNames', err);
+        console.error(t('cityInit.geonamesLoadError'), err);
       }
     }, 500);
 
@@ -120,7 +120,7 @@ export function CityInitForm() {
       setVerificationToken(response.token);
       setModalOpen(true);
     } catch (error) {
-      console.error('Помилка при генерації токена:', error);
+      console.error(t('cityInit.tokenGenerateError'), error);
     } finally {
       setIsGeneratingToken(false);
     }
@@ -151,7 +151,7 @@ export function CityInitForm() {
     try {
       await cityApi.initializeCity(formData);
     } catch (error) {
-      console.error('Помилка при ініціалізації міста:', error);
+      console.error(t('cityInit.initError'), error);
     }
   };
 
@@ -159,7 +159,7 @@ export function CityInitForm() {
     <form onSubmit={handleSubmit(initializeCityEnvironment)}>
       <FormGroup sx={{ gap: 3, mt: 2, maxWidth: 600, mx: 'auto' }}>
         <Typography variant="h5" sx={{ mb: 1 }}>
-          Ініціалізація міста
+          {t('cityInit.title')}
         </Typography>
 
         <FormControl error={!!errors.name} fullWidth>
@@ -167,7 +167,7 @@ export function CityInitForm() {
             name="name"
             control={control}
             defaultValue={null}
-            rules={{ required: 'Оберіть місто зі списку' }}
+            rules={{ required: t('cityInit.selectCityError') }}
             render={({ field: { value, onChange, ...field } }) => (
               <Autocomplete
                 {...field}
@@ -193,10 +193,10 @@ export function CityInitForm() {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Пошук міста"
+                    label={t('cityInit.searchLabel')}
                     variant="standard"
                     error={!!errors.name}
-                    placeholder="Почніть вводити назву міста..."
+                    placeholder={t('cityInit.searchPlaceholder')}
                   />
                 )}
               />
@@ -209,26 +209,26 @@ export function CityInitForm() {
 
         <FormControl error={!!errors.region} fullWidth variant="standard">
           <InputLabel htmlFor="region" shrink>
-            Область
+            {t('cityInit.regionLabel')}
           </InputLabel>
           <Input
             id="region"
             {...register('region', {
-              required: "Область є обов'язковою",
+              required: t('cityInit.regionRequired'),
               minLength: {
                 value: 3,
-                message: 'Область має містити принаймні 3 символи',
+                message: t('cityInit.regionMin'),
               },
               maxLength: {
                 value: 50,
-                message: 'Область не може перевищувати 50 символів',
+                message: t('cityInit.regionMax'),
               },
               pattern: {
                 value: /^[а-яА-ЯёЁїЇєЄ\s\-]+$/,
-                message: 'Область може містити лише літери, пробіли та дефіси',
+                message: t('cityInit.regionPattern'),
               },
             })}
-            placeholder="Наприклад: Київська область"
+            placeholder={t('cityInit.regionPlaceholder')}
           />
           {errors.region && (
             <FormHelperText>{errors.region.message as string}</FormHelperText>
@@ -237,7 +237,7 @@ export function CityInitForm() {
 
         <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, mt: 2 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Верифікація представника
+            {t('cityInit.representativeTitle')}
           </Typography>
 
           <FormControlLabel
@@ -248,29 +248,29 @@ export function CityInitForm() {
                 color="primary"
               />
             }
-            label="Перевірка через DNS TXT (Опціонально)"
+            label={t('cityInit.dnsToggleLabel')}
             sx={{ mb: 2 }}
           />
 
           {useDnsVerification && (
             <Box sx={{ mt: 1, p: 2, bgcolor: '#f9f9f9', borderRadius: 1 }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Додайте TXT запис зі спеціальним токеном до вашого домену, щоб
-                ми могли підтвердити, що ви представляєте офіційний сайт міста.
+                {t('cityInit.dnsHelper')}
               </Typography>
               <FormControl error={!!errors.domain} fullWidth sx={{ mb: 2 }}>
-                <InputLabel htmlFor="domain">Домен муніципалітету</InputLabel>
+                <InputLabel htmlFor="domain">
+                  {t('cityInit.domainLabel')}
+                </InputLabel>
                 <Input
                   id="domain"
                   {...register('domain', {
-                    required: "Домен є обов'язковим для DNS-верифікації",
+                    required: t('cityInit.domainRequired'),
                     pattern: {
                       value: /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                      message:
-                        'Введіть валідний домен (наприклад: kyivcity.gov.ua)',
+                      message: t('cityInit.domainInvalid'),
                     },
                   })}
-                  placeholder="Наприклад: kyivcity.gov.ua"
+                  placeholder={t('cityInit.domainPlaceholder')}
                 />
                 {errors.domain && (
                   <FormHelperText>
@@ -285,18 +285,19 @@ export function CityInitForm() {
                 onClick={onDomainVerify}
                 disabled={isGeneratingToken}
               >
-                {isGeneratingToken ? 'Генерація токена...' : 'Перевірити DNS'}
+                {isGeneratingToken
+                  ? t('cityInit.generateToken')
+                  : t('cityInit.verifyDns')}
               </Button>
             </Box>
           )}
 
           <Box sx={{ mt: 1 }}>
             <FormLabel sx={{ mb: 1, display: 'block' }}>
-              Офіційний документ від муніципалітету
+              {t('cityInit.documentTitle')}
             </FormLabel>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Завантажте скан-копію документа з печаткою та підписом, який дає
-              вам право виступати представником цього міста.
+              {t('cityInit.documentHelp')}
             </Typography>
             <FormControl error={!!errors.document} fullWidth>
               <Input
@@ -304,13 +305,13 @@ export function CityInitForm() {
                 id="document"
                 inputProps={{ accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx' }}
                 {...register('document', {
-                  required: 'Завантажте документ',
+                  required: t('cityInit.documentRequired'),
                   validate: {
                     lessThan5MB: (files) =>
                       !files ||
                       files.length === 0 ||
                       files[0]?.size < 5000000 ||
-                      'Файл має бути менше 5MB',
+                      t('cityInit.fileSizeError'),
                     acceptedFormats: (files) =>
                       !files ||
                       files.length === 0 ||
@@ -321,7 +322,7 @@ export function CityInitForm() {
                         'application/msword',
                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                       ].includes(files[0]?.type) ||
-                      'Тільки PDF, JPG, PNG або DOC(X) формати підтримуються',
+                      t('cityInit.fileFormatError'),
                   },
                 })}
               />
@@ -341,7 +342,7 @@ export function CityInitForm() {
           size="large"
           sx={{ mt: 1 }}
         >
-          Створити простір міста
+          {t('cityInit.submit')}
         </Button>
       </FormGroup>
 

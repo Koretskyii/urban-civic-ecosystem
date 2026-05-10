@@ -11,12 +11,14 @@ import {
   Divider,
 } from '@mui/material';
 import FeedRoundedIcon from '@mui/icons-material/FeedRounded';
+import { useTranslations } from 'next-intl';
 
 interface NewsGridProps {
   cityId: string;
 }
 
 export default function NewsGrid(props: NewsGridProps) {
+  const t = useTranslations();
   const { cityId } = props;
   const { data: news, isLoading, error } = useCityNews(cityId);
 
@@ -31,7 +33,7 @@ export default function NewsGrid(props: NewsGridProps) {
   if (error) {
     return (
       <Typography color="error" sx={{ mt: 2 }}>
-        Помилка завантаження новин.
+        {t('news.loadError')}
       </Typography>
     );
   }
@@ -39,7 +41,7 @@ export default function NewsGrid(props: NewsGridProps) {
   if (!news || news.length === 0) {
     return (
       <Typography color="text.secondary" sx={{ mt: 2 }}>
-        Немає новин для відображення.
+        {t('news.empty')}
       </Typography>
     );
   }
@@ -58,7 +60,7 @@ export default function NewsGrid(props: NewsGridProps) {
         >
           <FeedRoundedIcon />
         </Box>
-        <Typography variant="h3">Стрічка новин</Typography>
+        <Typography variant="h3">{t('news.title')}</Typography>
       </Box>
 
       <Grid container spacing={3}>
@@ -106,7 +108,8 @@ export default function NewsGrid(props: NewsGridProps) {
                     variant="caption"
                     sx={{ color: 'text.secondary', mb: 1.5, display: 'block' }}
                   >
-                    {formattedDate} о {formattedTime}
+                    {formattedDate} {t('common.timeSeparator')}{' '}
+                    {formattedTime}
                   </Typography>
 
                   <Typography
@@ -134,7 +137,7 @@ export default function NewsGrid(props: NewsGridProps) {
                     variant="caption"
                     sx={{ color: 'primary.light', fontWeight: 500 }}
                   >
-                    Офіційне джерело
+                    {t('news.officialSource')}
                   </Typography>
                 </CardContent>
               </Card>

@@ -1,5 +1,6 @@
 'use client';
 import { UCE_COLORS } from '@/theme';
+import { useTranslations } from 'next-intl';
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -11,13 +12,15 @@ const HeaderAppBar = styled(AppBar)({
 });
 
 export default function Header() {
+  const t = useTranslations();
+
   return (
     <HeaderBox>
       <HeaderAppBar position="sticky">
         <Toolbar>
-          <Typography>Urban Civic Ecosystem</Typography>
+          <Typography>{t('app.name')}</Typography>
           <Box>
-            <Button>Auth</Button>
+            <Button>{t('header.authButton')}</Button>
           </Box>
         </Toolbar>
       </HeaderAppBar>

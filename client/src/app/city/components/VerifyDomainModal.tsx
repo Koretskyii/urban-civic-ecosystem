@@ -17,6 +17,7 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { cityApi } from '@/api/endpoints';
+import { useTranslations } from 'next-intl';
 
 interface VerifyDomainModalProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function VerifyDomainModal({
   domain,
   token,
 }: VerifyDomainModalProps) {
+  const t = useTranslations();
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -68,7 +70,7 @@ export function VerifyDomainModal({
     } catch (err) {
       setError(
         (err as Error).message ||
-          'Не вдалося перевірити домен. Переконайтеся, що TXT запис додано правильно.',
+          t('verifyDomain.errorFallback'),
       );
     } finally {
       setIsVerifying(false);
@@ -85,13 +87,13 @@ export function VerifyDomainModal({
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        <Typography variant="h6">Верифікація домену</Typography>
+        <Typography variant="h6">{t('verifyDomain.title')}</Typography>
       </DialogTitle>
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
           <TextField
-            label="Домен"
+            label={t('verifyDomain.domainLabel')}
             value={domain}
             fullWidth
             InputProps={{
@@ -102,7 +104,7 @@ export function VerifyDomainModal({
 
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Токен для DNS TXT запису
+              {t('verifyDomain.tokenLabel')}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
               <TextField
@@ -133,14 +135,14 @@ export function VerifyDomainModal({
 
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Інструкція:
+              {t('verifyDomain.instructionsTitle')}
             </Typography>
             <Typography variant="body2" color="text.secondary" component="div">
               <ol style={{ margin: 0, paddingLeft: '20px' }}>
-                <li>Скопіюйте токен вище, натиснувши кнопку копіювання</li>
-                <li>Додайте TXT запис до DNS налаштувань вашого домену</li>
+                <li>{t('verifyDomain.stepCopy')}</li>
+                <li>{t('verifyDomain.stepAddDns')}</li>
                 <li>
-                  Назва запису:{' '}
+                  {t('verifyDomain.recordNameLabel')}{' '}
                   <code
                     style={{
                       background: '#f5f5f5',
@@ -151,9 +153,9 @@ export function VerifyDomainModal({
                     _urban-civic-verify
                   </code>
                 </li>
-                <li>Значення запису: вставте скопійований токен</li>
-                <li>Зачекайте 5-10 хвилин для поширення DNS</li>
-                <li>Натисніть &ldquo;Перевірити&rdquo; для підтвердження</li>
+                <li>{t('verifyDomain.recordValueLabel')}</li>
+                <li>{t('verifyDomain.stepWait')}</li>
+                <li>{t('verifyDomain.stepVerify')}</li>
               </ol>
             </Typography>
           </Box>
@@ -165,13 +167,15 @@ export function VerifyDomainModal({
           )}
         </Box>
         {isDomainVerified && (
-          <Box sx={{ color: 'success.main' }}>Домен успішно верифіковано!</Box>
+          <Box sx={{ color: 'success.main' }}>
+            {t('verifyDomain.verified')}
+          </Box>
         )}
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleClose} disabled={isVerifying}>
-          Скасувати
+          {t('common.cancel')}
         </Button>
         <Button
           onClick={handleVerify}
@@ -180,7 +184,7 @@ export function VerifyDomainModal({
           disabled={isVerifying}
           startIcon={isVerifying && <CircularProgress size={16} />}
         >
-          {isVerifying ? 'Перевірка...' : 'Перевірити'}
+          {isVerifying ? t('common.verifying') : t('common.verify')}
         </Button>
       </DialogActions>
     </Dialog>

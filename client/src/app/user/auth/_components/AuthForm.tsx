@@ -26,8 +26,10 @@ import {
   PersonAdd as RegisterIcon,
   Login as LoginIcon,
 } from '@mui/icons-material';
+import { useTranslations } from 'next-intl';
 
 export default function AuthPage() {
+  const t = useTranslations();
   const [tab, setTab] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -79,14 +81,14 @@ export default function AuthPage() {
       >
         {/* Header */}
         <Typography variant="h2" sx={{ textAlign: 'center', mb: 1 }}>
-          Urban Civic
+          {t('app.shortName')}
         </Typography>
         <Typography
           variant="body2"
           color="text.secondary"
           sx={{ textAlign: 'center', mb: 3 }}
         >
-          Платформа міської громадської екосистеми
+          {t('app.tagline')}
         </Typography>
 
         {/* Tabs */}
@@ -102,8 +104,8 @@ export default function AuthPage() {
             },
           }}
         >
-          <Tab label="Реєстрація" />
-          <Tab label="Вхід" />
+          <Tab label={t('auth.registerTab')} />
+          <Tab label={t('auth.loginTab')} />
         </Tabs>
 
         {/* Error */}
@@ -118,7 +120,7 @@ export default function AuthPage() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {isRegister && (
               <TextField
-                label="Ім'я"
+                label={t('auth.nameLabel')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 fullWidth
@@ -128,7 +130,7 @@ export default function AuthPage() {
               />
             )}
             <TextField
-              label="Email"
+              label={t('auth.emailLabel')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -138,7 +140,7 @@ export default function AuthPage() {
               autoFocus={!isRegister}
             />
             <TextField
-              label="Пароль"
+              label={t('auth.passwordLabel')}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -180,10 +182,10 @@ export default function AuthPage() {
               sx={{ py: 1.5, mt: 1 }}
             >
               {isPending
-                ? 'Обробка...'
+                ? t('common.processing')
                 : isRegister
-                  ? 'Зареєструватися'
-                  : 'Увійти'}
+                  ? t('auth.register')
+                  : t('auth.login')}
             </Button>
           </Box>
         </Box>
@@ -191,7 +193,7 @@ export default function AuthPage() {
         {/* Divider */}
         <Divider sx={{ my: 3 }}>
           <Typography variant="body2" color="text.secondary">
-            або
+            {t('common.or')}
           </Typography>
         </Divider>
 
@@ -213,7 +215,7 @@ export default function AuthPage() {
             },
           }}
         >
-          Увійти через Google
+          {t('auth.loginWithGoogle')}
         </Button>
       </Paper>
     </Container>

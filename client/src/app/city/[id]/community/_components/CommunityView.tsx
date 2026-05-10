@@ -18,12 +18,14 @@ import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
+import { useTranslations } from 'next-intl';
 
 interface CommunityViewProps {
   cityId: string;
 }
 
 export default function CommunityView(props: CommunityViewProps) {
+  const t = useTranslations();
   const { cityId } = props;
   const { data: community, isLoading, error } = useCityCommunity(cityId);
 
@@ -38,7 +40,7 @@ export default function CommunityView(props: CommunityViewProps) {
   if (error || !community) {
     return (
       <Typography color="error" sx={{ mt: 2 }}>
-        Помилка завантаження спільноти.
+        {t('community.loadError')}
       </Typography>
     );
   }
@@ -90,7 +92,9 @@ export default function CommunityView(props: CommunityViewProps) {
                 justifyContent: 'space-between',
               }}
             >
-              <Typography variant="h6">Учасники спільноти (1,248)</Typography>
+              <Typography variant="h6">
+                {t('community.membersTitle')}
+              </Typography>
               <AvatarGroup
                 max={6}
                 sx={{
@@ -101,20 +105,41 @@ export default function CommunityView(props: CommunityViewProps) {
                   },
                 }}
               >
-                <Avatar alt="Олександр" src="/static/images/avatar/1.jpg" />
-                <Avatar alt="Марія" src="/static/images/avatar/2.jpg" />
-                <Avatar alt="Іван" src="/static/images/avatar/3.jpg" />
-                <Avatar alt="Анна" src="/static/images/avatar/4.jpg" />
-                <Avatar alt="Петро" src="/static/images/avatar/5.jpg" />
-                <Avatar alt="Олена" src="/static/images/avatar/6.jpg" />
-                <Avatar alt="Денис" src="/static/images/avatar/7.jpg" />
+                <Avatar
+                  alt={t('community.memberNames.alexander')}
+                  src="/static/images/avatar/1.jpg"
+                />
+                <Avatar
+                  alt={t('community.memberNames.maria')}
+                  src="/static/images/avatar/2.jpg"
+                />
+                <Avatar
+                  alt={t('community.memberNames.ivan')}
+                  src="/static/images/avatar/3.jpg"
+                />
+                <Avatar
+                  alt={t('community.memberNames.anna')}
+                  src="/static/images/avatar/4.jpg"
+                />
+                <Avatar
+                  alt={t('community.memberNames.petro')}
+                  src="/static/images/avatar/5.jpg"
+                />
+                <Avatar
+                  alt={t('community.memberNames.olena')}
+                  src="/static/images/avatar/6.jpg"
+                />
+                <Avatar
+                  alt={t('community.memberNames.denys')}
+                  src="/static/images/avatar/7.jpg"
+                />
               </AvatarGroup>
             </CardContent>
           </Card>
 
           {/* Posts Section */}
           <Typography variant="h5" sx={{ mb: 3 }}>
-            Останні публікації
+            {t('community.latestPostsTitle')}
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {posts.map((post) => {
@@ -129,7 +154,7 @@ export default function CommunityView(props: CommunityViewProps) {
               });
               const authorName = post.author
                 ? post.author.name
-                : 'Невідомий користувач';
+                : t('common.unknownUser');
 
               return (
                 <Card
@@ -166,7 +191,8 @@ export default function CommunityView(props: CommunityViewProps) {
                           variant="caption"
                           sx={{ color: 'text.secondary' }}
                         >
-                          {formattedDate} о {formattedTime}
+                          {formattedDate} {t('common.timeSeparator')}{' '}
+                          {formattedTime}
                         </Typography>
                       </Box>
                     </Box>
@@ -179,7 +205,7 @@ export default function CommunityView(props: CommunityViewProps) {
             })}
             {posts.length === 0 && (
               <Typography color="text.secondary">
-                Поки що немає публікацій.
+                {t('community.noPosts')}
               </Typography>
             )}
           </Box>
@@ -211,7 +237,7 @@ export default function CommunityView(props: CommunityViewProps) {
               }}
             >
               <ChatBubbleOutlineRoundedIcon color="primary" />
-              <Typography variant="h6">Чат громади</Typography>
+              <Typography variant="h6">{t('community.chatTitle')}</Typography>
             </Box>
 
             <Box
@@ -230,7 +256,9 @@ export default function CommunityView(props: CommunityViewProps) {
                   'uk-UA',
                   { hour: '2-digit', minute: '2-digit' },
                 );
-                const authorName = msg.author ? msg.author.name : 'Гість';
+                const authorName = msg.author
+                  ? msg.author.name
+                  : t('common.guest');
                 // Mock logic: assume some messages are 'mine' based on random or we can just render all the same for now
                 // Actually, let's just render all left-aligned for simplicity since we don't have current user id easily available here
                 return (
@@ -268,7 +296,7 @@ export default function CommunityView(props: CommunityViewProps) {
                   align="center"
                   sx={{ mt: 2 }}
                 >
-                  Немає повідомлень. Почніть спілкування першим!
+                  {t('community.noMessages')}
                 </Typography>
               )}
             </Box>
@@ -287,7 +315,7 @@ export default function CommunityView(props: CommunityViewProps) {
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="Написати повідомлення..."
+                  placeholder={t('community.messagePlaceholder')}
                   variant="outlined"
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
                 />

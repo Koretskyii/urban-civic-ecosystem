@@ -18,6 +18,7 @@ import {
   VisibilityOff,
 } from '@mui/icons-material';
 import { useChangePassword } from '@/hooks';
+import { useTranslations } from 'next-intl';
 
 interface ChangePasswordDialogProps {
   isOpenValue: boolean;
@@ -28,6 +29,7 @@ export default function ChangePasswordDialog({
   isOpenValue,
   setIsOpenValue,
 }: ChangePasswordDialogProps) {
+  const t = useTranslations();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -54,18 +56,18 @@ export default function ChangePasswordDialog({
     setConfirmPasswordError(false);
 
     if (newPassword === oldPassword) {
-      setGlobalError('Новий пароль не може співпадати зі старим!');
+      setGlobalError(t('changePassword.errors.sameAsOld'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setConfirmPasswordError(true);
-      setGlobalError('Паролі не збігаються!');
+      setGlobalError(t('changePassword.errors.mismatch'));
       return;
     }
 
     if (newPassword.length < 6) {
-      setGlobalError('Новий пароль має містити щонайменше 6 символів!');
+      setGlobalError(t('changePassword.errors.tooShort'));
       return;
     }
 
@@ -76,7 +78,7 @@ export default function ChangePasswordDialog({
           handleCancel();
         },
         onError: () => {
-          setGlobalError('Помилка зміни пароля');
+          setGlobalError(t('changePassword.errors.changeFailed'));
         },
       },
     );
@@ -125,7 +127,7 @@ export default function ChangePasswordDialog({
           pb: 1,
         }}
       >
-        Зміна паролю
+        {t('changePassword.title')}
         <IconButton onClick={handleCancel} size="small">
           <CloseIcon />
         </IconButton>
@@ -142,7 +144,7 @@ export default function ChangePasswordDialog({
             )}
             <TextField
               fullWidth
-              label="Старий пароль"
+              label={t('changePassword.oldLabel')}
               type={showPasswords ? 'text' : 'password'}
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -156,7 +158,7 @@ export default function ChangePasswordDialog({
             />
             <TextField
               fullWidth
-              label="Новий пароль"
+              label={t('changePassword.newLabel')}
               type={showPasswords ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -171,7 +173,7 @@ export default function ChangePasswordDialog({
             />
             <TextField
               fullWidth
-              label="Повторіть новий пароль"
+              label={t('changePassword.confirmLabel')}
               type={showPasswords ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -193,7 +195,7 @@ export default function ChangePasswordDialog({
             color="inherit"
             disabled={changePasswordMutation.isPending}
           >
-            Скасувати
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
@@ -201,7 +203,9 @@ export default function ChangePasswordDialog({
             color="primary"
             disabled={changePasswordMutation.isPending}
           >
-            {changePasswordMutation.isPending ? 'Збереження...' : 'Змінити'}
+            {changePasswordMutation.isPending
+              ? t('changePassword.saving')
+              : t('changePassword.submit')}
           </Button>
         </DialogActions>
       </form>
