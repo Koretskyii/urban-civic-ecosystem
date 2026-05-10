@@ -7,6 +7,13 @@ type UploadResult = {
   url: string;
 };
 
+interface UploadVerificationDocumentParams {
+  cityId: string;
+  fileName: string;
+  mimeType?: string;
+  buffer: Buffer;
+}
+
 @Injectable()
 export class R2StorageService {
   private readonly s3Client: S3Client;
@@ -39,12 +46,9 @@ export class R2StorageService {
     });
   }
 
-  async uploadCityVerificationDocument(params: {
-    cityId: string;
-    fileName: string;
-    mimeType?: string;
-    buffer: Buffer;
-  }): Promise<UploadResult> {
+  async uploadCityVerificationDocument(
+    params: UploadVerificationDocumentParams,
+  ): Promise<UploadResult> {
     const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const key = `city-init/${params.cityId}/${Date.now()}-${safeName}`;
 

@@ -1,4 +1,5 @@
 import { PrismaService } from '@/prisma/prisma.service';
+import { Prisma } from '../../generated/prisma/client';
 import { CityInitData } from '@/types/city.types';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as dns from 'dns';
@@ -6,6 +7,25 @@ import { promisify } from 'util';
 import { R2StorageService } from '../r2/r2.service';
 import { ROLES } from '../rbac/constants/roles.const';
 import { CITY_ERRORS } from '../rbac/constants/city.const';
+import { ALERT_TYPES } from '@/shared/constants/alerts.const';
+
+interface CityTransactionData {
+  name: string;
+  region: string;
+  cityDomain?: {
+    create: {
+      domainName: string;
+      token: string;
+      ownerId: string;
+    };
+  };
+}
+
+interface PrepareNewCityParams {
+  userId: string;
+  cityId: string;
+  cityName: string;
+}
 
 const resolveTxt = promisify(dns.resolveTxt);
 
@@ -52,19 +72,53 @@ export class CityService {
         domain,
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Domain verification failed for ${domain}: ${errorMessage}`);
+
       if (error instanceof BadRequestException) {
-        console.error(
-          `Domain verification failed for ${domain}: ${error.message}`,
-        );
         throw error;
       }
-      console.error(
-        `Domain verification failed for ${domain}: ${error instanceof Error ? error.message : String(error)}`,
-      );
-
-      // DNS lookup failed
-      throw new BadRequestException(CITY_ERRORS.DNS_LOOKUP_FAILED(domain));
+      
+      throw new BadRequestException(CITY_ERRORS.DNS_RECORD_NOT_FOUND);
     }
+  }
+
+  async getAllCities() {
+    return this.prisma.city.findMany({
+      select: {
+        id: true,
+        name: true,
+        region: true,
+        cityDomain: {
+          select: {
+            domainName: true,
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  async getCityById(id: string) {
+    const city = await this.prisma.city.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        region: true,
+        cityDomain: {
+          select: { domainName: true },
+        },
+      },
+    });
+
+    if (!city) {
+      throw new BadRequestException(CITY_ERRORS.CITY_NOT_FOUND);
+    }
+
+    return city;
   }
 
   async initializeCityEnvironment(
@@ -107,17 +161,7 @@ export class CityService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const cityData: {
-        name: string;
-        region: string;
-        cityDomain?: {
-          create: {
-            domainName: string;
-            token: string;
-            ownerId: string;
-          };
-        };
-      } = {
+      const cityData: CityTransactionData = {
         name,
         region,
       };
@@ -205,7 +249,104 @@ export class CityService {
         },
       });
 
+      await this.prepareNewCity(tx, {
+        userId,
+        cityId: city.id,
+        cityName: city.name,
+      });
+
       return { success: true, message: 'City environment initialized', city };
+    });
+  }
+
+  private async prepareNewCity(
+    tx: Prisma.TransactionClient,
+    params: PrepareNewCityParams,
+  ) {
+    const { userId, cityId, cityName } = params;
+    const community = await tx.community.create({
+      data: {
+        cityId: cityId,
+        name: `${cityName} - Загальна спільнота`,
+        description: `Загальна спільнота для мешканців міста ${cityName}`,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    await tx.communityMember.create({
+      data: {
+        userId: userId,
+        communityId: community.id,
+      },
+    });
+
+    const chat = await tx.chat.create({
+      data: {
+        cityId: cityId,
+        communityId: community.id,
+        contextType: 'community',
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    await tx.message.create({
+      data: {
+        authorId: userId,
+        chatId: chat.id,
+        content: `Вітаємо у спільноті міста ${cityName}!`,
+      },
+    });
+
+    await tx.post.create({
+      data: {
+        authorId: userId,
+        communityId: community.id,
+        content: `Вітаємо у спільноті міста ${cityName}!`,
+      },
+    });
+
+    const alertTypes = await tx.alertType.findMany();
+
+    const alertSubscriptionData = alertTypes.map((type: { id: string }) => ({
+      userId: userId,
+      cityId: cityId,
+      alertTypeId: type.id,
+    }));
+
+    await tx.alertSubscription.createMany({
+      data: alertSubscriptionData,
+    });
+
+    const otherAlertType = await tx.alertType.findFirst({
+      where: {
+        name: ALERT_TYPES.OTHER,
+      },
+    });
+
+    if (!otherAlertType) {
+      throw new Error(CITY_ERRORS.ALERT_TYPE_NOT_FOUND);
+    }
+
+    await tx.alert.create({
+      data: {
+        authorId: userId,
+        cityId: cityId,
+        typeId: otherAlertType.id,
+        content: `Так будуть виглядати термінові оголошення в межах даного міста.`,
+      },
+    });
+
+    await tx.generalNews.create({
+      data: {
+        cityId: cityId,
+        title: `Перші новини міста ${cityName}`,
+        content: `Так будуть виглядати загальні новини міста ${cityName}.`,
+        publisherId: userId,
+      },
     });
   }
 }

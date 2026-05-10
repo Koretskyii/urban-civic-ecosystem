@@ -3,6 +3,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { ROLES } from "@/modules/rbac/constants/roles.const";
 import { ALL_PERMISSIONS, ROLE_PERMISSIONS } from "@/modules/rbac/constants/rolePermissions.const";
+import { ALERT_TYPES } from '@/shared/constants/alerts.const';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -63,10 +64,23 @@ async function seedRolesForAllCities() {
     }
 }
 
+async function seedDefaultAlertTypes() {
+    console.log('Seeding default alert types...');
+
+    const defaultAlertTypes = Object.values(ALERT_TYPES).map((alertType) => ({ name: alertType }));
+    await prisma.alertType.createMany({
+        data: defaultAlertTypes,
+        skipDuplicates: true,
+    })
+
+    console.log(`✓ ${Object.keys(ALERT_TYPES).length} default alert types seeded.`);
+}
+
 async function main() {
     await seedPermissions();
     await seedRolePermissions();
     await seedRolesForAllCities();
+    await seedDefaultAlertTypes();
 }
 
 main()

@@ -24,6 +24,11 @@ interface VerifyDomainModalProps {
   domain: string;
   token: string;
 }
+interface VerifyDomainResponse {
+  data: {
+    success: boolean;
+  };
+}
 
 export function VerifyDomainModal({
   open,
@@ -46,11 +51,6 @@ export function VerifyDomainModal({
     }
   };
 
-  type VerifyDomainResponse = {
-    data: {
-      success: boolean;
-    };
-  };
   const handleVerify = async () => {
     setIsVerifying(true);
     setError(null);

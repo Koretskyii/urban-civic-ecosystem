@@ -7,6 +7,8 @@ export const CITY_ERRORS = {
   DNS_RECORD_NOT_FOUND:
     'DNS TXT запис не знайдено. Переконайтеся, що ви додали запис _urban-civic-verify з правильним токеном і зачекайте поширення DNS (5-10 хвилин).',
   ADMIN_ROLE_NOT_FOUND: 'Admin role not found after city creation',
+  CITY_NOT_FOUND: 'Місто не знайдено',
+  ALERT_TYPE_NOT_FOUND: 'Alert type not found',
 
   CITY_ALREADY_EXISTS: (name: string, region: string) =>
     `Міське середовище "${name}" (${region}) вже існує`,

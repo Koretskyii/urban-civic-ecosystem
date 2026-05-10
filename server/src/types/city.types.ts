@@ -6,9 +6,14 @@ export interface CityInitData {
   userId?: string;
 }
 
-export type City = {
+export interface DomainVerificationData {
+  domain: string;
+  token: string;
+}
+
+export interface City {
   id: string;
   name: string;
   region: string;
   domain: string | null;
-};
+}

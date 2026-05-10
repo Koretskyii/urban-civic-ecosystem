@@ -4,21 +4,23 @@ import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 const HeaderBox = styled(Box)({
-  marginBottom: '2rem',
-  color: UCE_COLORS.text.light.primary,
+  backgroundColor: '#1A3A57',
+});
+const HeaderAppBar = styled(AppBar)({
+  backgroundColor: '#1A3A57',
 });
 
 export default function Header() {
   return (
     <HeaderBox>
-      <AppBar>
+      <HeaderAppBar position="sticky">
         <Toolbar>
           <Typography>Urban Civic Ecosystem</Typography>
           <Box>
             <Button>Auth</Button>
           </Box>
         </Toolbar>
-      </AppBar>
+      </HeaderAppBar>
     </HeaderBox>
   );
 }

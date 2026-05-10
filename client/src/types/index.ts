@@ -4,3 +4,12 @@ export type {
   LoginRequest,
   AuthResponse,
 } from './auth.types';
+
+export type {
+  City,
+  Alert,
+  News,
+  Post,
+  Community,
+  DomainVerificationData,
+} from './city.types';

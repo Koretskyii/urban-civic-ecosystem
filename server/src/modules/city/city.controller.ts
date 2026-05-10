@@ -1,6 +1,8 @@
 import {
   Controller,
   Post,
+  Get,
+  Param,
   Body,
   UseInterceptors,
   UploadedFile,
@@ -8,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CityService } from './city.service';
-import { CityInitData } from '@/types/city.types';
+import { CityInitData, DomainVerificationData } from '@/types';
 
 @Controller('city')
 export class CityController {
@@ -19,8 +21,18 @@ export class CityController {
     return this.cityService.generateDomainToken(domain);
   }
 
+  @Get()
+  async getAllCities() {
+    return this.cityService.getAllCities();
+  }
+
+  @Get(':id')
+  async getCityById(@Param('id') id: string) {
+    return this.cityService.getCityById(id);
+  }
+
   @Post('domain/verify')
-  async verifyDomain(@Body() body: { domain: string; token: string }) {
+  async verifyDomain(@Body() body: DomainVerificationData) {
     return this.cityService.verifyDomain(body.domain, body.token);
   }
 
@@ -60,7 +72,6 @@ export class CityController {
     if (!document) {
       throw new BadRequestException('Завантажте документ');
     }
-
     return this.cityService.initializeCityEnvironment(data, document);
   }
 }
