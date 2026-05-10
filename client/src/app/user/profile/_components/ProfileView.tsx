@@ -27,6 +27,13 @@ import {
 } from '@mui/icons-material';
 import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 
+interface InfoRowProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  mono?: boolean;
+}
+
 function getInitials(name: string): string {
   return name
     .split(' ')
@@ -243,12 +250,7 @@ function InfoRow({
   label,
   value,
   mono = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+}: InfoRowProps) {
   return (
     <Box
       sx={{

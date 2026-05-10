@@ -10,11 +10,11 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CityService } from './city.service';
-import { CityInitData } from '@/types/city.types';
+import { CityInitData, DomainVerificationData } from '@/types';
 
 @Controller('city')
 export class CityController {
-  constructor(private readonly cityService: CityService) {}
+  constructor(private readonly cityService: CityService) { }
 
   @Post('domain/generate-token')
   generateDomainToken(@Body('domain') domain: string) {
@@ -32,7 +32,7 @@ export class CityController {
   }
 
   @Post('domain/verify')
-  async verifyDomain(@Body() body: { domain: string; token: string }) {
+  async verifyDomain(@Body() body: DomainVerificationData) {
     return this.cityService.verifyDomain(body.domain, body.token);
   }
 

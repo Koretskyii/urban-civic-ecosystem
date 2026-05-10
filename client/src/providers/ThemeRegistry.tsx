@@ -5,7 +5,11 @@ import { CssBaseline } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import { theme } from '@/theme';
 
-export function ThemeRegistry({ children }: { children: React.ReactNode }) {
+interface ThemeRegistryProps {
+  children: React.ReactNode;
+}
+
+export function ThemeRegistry({ children }: ThemeRegistryProps) {
   return (
     <AppRouterCacheProvider>
       <ThemeProvider theme={theme}>

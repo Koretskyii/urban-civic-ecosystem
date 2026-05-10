@@ -26,6 +26,11 @@ import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { useCityById } from '@/hooks';
 
+interface CityLayoutShellProps {
+  cityId: string;
+  children: React.ReactNode;
+}
+
 const DRAWER_WIDTH = 260;
 const COLLAPSED_WIDTH = 64;
 
@@ -48,13 +53,8 @@ const NAV_ITEMS = [
   },
 ];
 
-export default function CityLayoutShell({
-  cityId,
-  children,
-}: {
-  cityId: string;
-  children: React.ReactNode;
-}) {
+export default function CityLayoutShell(props: CityLayoutShellProps) {
+  const { cityId, children } = props;
   const { data: city, isLoading } = useCityById(cityId);
   const pathname = usePathname();
   const router = useRouter();

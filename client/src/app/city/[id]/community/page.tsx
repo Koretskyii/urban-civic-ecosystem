@@ -1,10 +1,11 @@
 import CommunityView from './_components/CommunityView';
 
-export default async function CityCommunityPage({
-  params,
-}: {
+interface CityCommunityPageProps {
   params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+}
+
+export default async function CityCommunityPage(props: CityCommunityPageProps) {
+  const { id } = await props.params;
+
   return <CommunityView cityId={id} />;
 }

@@ -1,11 +1,11 @@
 import AlertsList from './_components/AlertsList';
 
-export default async function CityAlertsPage({
-  params,
-}: {
+interface CityAlertsPageProps {
   params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+}
+
+export default async function CityAlertsPage(props: CityAlertsPageProps) {
+  const { id } = await props.params;
 
   return (
     <>

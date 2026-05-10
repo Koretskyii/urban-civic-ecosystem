@@ -22,6 +22,9 @@ import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { useCityById } from '@/hooks';
 
+interface CityHomeViewProps {
+  cityId: string;
+}
 const SECTIONS = [
   {
     label: 'Стрічка новин',
@@ -77,7 +80,8 @@ const SECTIONS = [
   },
 ];
 
-export default function CityHomeView({ cityId }: { cityId: string }) {
+export default function CityHomeView(props: CityHomeViewProps) {
+  const { cityId } = props;
   const router = useRouter();
   const { data: city, isLoading } = useCityById(cityId);
   const baseRoute = `/city/${cityId}`;

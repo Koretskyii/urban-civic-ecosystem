@@ -6,10 +6,15 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as fs from 'fs';
 import * as path from 'path';
 
+interface HttpsOptions {
+  key: Buffer;
+  cert: Buffer;
+}
+
 async function bootstrap() {
   const tlsEnabled = process.env.TLS_ENABLED === 'true';
 
-  let httpsOptions: { key: Buffer; cert: Buffer } | undefined;
+  let httpsOptions: HttpsOptions | undefined;
   if (tlsEnabled) {
     const certPath = process.env.TLS_CERT_PATH || '../certs/cert.pem';
     const keyPath = process.env.TLS_KEY_PATH || '../certs/key.pem';

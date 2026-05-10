@@ -9,6 +9,24 @@ import { ROLES } from '../rbac/constants/roles.const';
 import { CITY_ERRORS } from '../rbac/constants/city.const';
 import { ALERT_TYPES } from '@/shared/constants/alerts.const';
 
+interface CityTransactionData {
+  name: string;
+  region: string;
+  cityDomain?: {
+    create: {
+      domainName: string;
+      token: string;
+      ownerId: string;
+    };
+  };
+}
+
+interface PrepareNewCityParams {
+  userId: string;
+  cityId: string;
+  cityName: string;
+}
+
 const resolveTxt = promisify(dns.resolveTxt);
 
 @Injectable()
@@ -16,7 +34,7 @@ export class CityService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly r2StorageService: R2StorageService,
-  ) {}
+  ) { }
   private tokenStore = new Map<string, string>(); // TODO: Replace with persistent storage in production
 
   generateDomainToken(domain: string) {
@@ -144,17 +162,7 @@ export class CityService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const cityData: {
-        name: string;
-        region: string;
-        cityDomain?: {
-          create: {
-            domainName: string;
-            token: string;
-            ownerId: string;
-          };
-        };
-      } = {
+      const cityData: CityTransactionData = {
         name,
         region,
       };
@@ -254,12 +262,9 @@ export class CityService {
 
   private async prepareNewCity(
     tx: Prisma.TransactionClient,
-    {
-      userId,
-      cityId,
-      cityName,
-    }: { userId: string; cityId: string; cityName: string },
+    params: PrepareNewCityParams,
   ) {
+    const { userId, cityId, cityName } = params;
     const community = await tx.community.create({
       data: {
         cityId: cityId,

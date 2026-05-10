@@ -1,11 +1,11 @@
 import NewsGrid from './_components/NewsGrid';
 
-export default async function CityNewsPage({
-  params,
-}: {
+interface CityNewsPageProps {
   params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+}
+
+export default async function CityNewsPage(props: CityNewsPageProps) {
+  const { id } = await props.params;
 
   return <NewsGrid cityId={id} />;
 }

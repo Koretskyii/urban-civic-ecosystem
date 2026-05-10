@@ -24,6 +24,11 @@ interface VerifyDomainModalProps {
   domain: string;
   token: string;
 }
+interface VerifyDomainResponse {
+  data: {
+    success: boolean;
+  };
+}
 
 export function VerifyDomainModal({
   open,
@@ -46,11 +51,6 @@ export function VerifyDomainModal({
     }
   };
 
-  type VerifyDomainResponse = {
-    data: {
-      success: boolean;
-    };
-  };
   const handleVerify = async () => {
     setIsVerifying(true);
     setError(null);
@@ -68,7 +68,7 @@ export function VerifyDomainModal({
     } catch (err) {
       setError(
         (err as Error).message ||
-          'Не вдалося перевірити домен. Переконайтеся, що TXT запис додано правильно.',
+        'Не вдалося перевірити домен. Переконайтеся, що TXT запис додано правильно.',
       );
     } finally {
       setIsVerifying(false);
