@@ -6,9 +6,10 @@ export const CITY_ERRORS = {
   INVALID_TOKEN: 'Невірний токен.',
   DNS_RECORD_NOT_FOUND:
     'DNS TXT запис не знайдено. Переконайтеся, що ви додали запис _urban-civic-verify з правильним токеном і зачекайте поширення DNS (5-10 хвилин).',
-  ADMIN_ROLE_NOT_FOUND: 'Admin role not found after city creation',
+  ADMIN_ROLE_NOT_FOUND: 'Адмін роль не знайдена після створення міста',
   CITY_NOT_FOUND: 'Місто не знайдено',
-  ALERT_TYPE_NOT_FOUND: 'Alert type not found',
+  ALERT_TYPE_NOT_FOUND: 'Тип оголошення не знайдено',
+  DOCUMENT_REQUIRED: 'Завантажте документ',
 
   CITY_ALREADY_EXISTS: (name: string, region: string) =>
     `Міське середовище "${name}" (${region}) вже існує`,
@@ -16,4 +17,9 @@ export const CITY_ERRORS = {
     `Домен "${domain}" вже зареєстрований за іншим містом`,
   DNS_LOOKUP_FAILED: (domain: string) =>
     `Не вдалося перевірити DNS записи для домену ${domain}. Переконайтеся, що TXT запис додано та DNS поширено.`,
+} as const;
+
+export const CITY_SUCCESS_MESSAGES = {
+  DOMAIN_VERIFIED: 'Домен успішно верифіковано!',
+  INITIALIZED: 'Міське середовище успішно створено!',
 } as const;

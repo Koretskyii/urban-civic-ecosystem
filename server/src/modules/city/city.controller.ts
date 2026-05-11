@@ -11,6 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CityService } from './city.service';
 import { CityInitData, DomainVerificationData } from '@/types';
+import { CITY_ERRORS } from '../rbac/constants/city.const';
 
 @Controller('city')
 export class CityController {
@@ -70,7 +71,7 @@ export class CityController {
     @UploadedFile() document: Express.Multer.File,
   ) {
     if (!document) {
-      throw new BadRequestException('Завантажте документ');
+      throw new BadRequestException(CITY_ERRORS.DOCUMENT_REQUIRED);
     }
     return this.cityService.initializeCityEnvironment(data, document);
   }

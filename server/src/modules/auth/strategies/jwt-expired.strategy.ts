@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import type { JwtPayload } from '../../../types/auth.types';
+import { ERROR_MESSAGES } from '../constants/index';
 
 @Injectable()
 export class JwtExpiredStrategy extends PassportStrategy(
@@ -13,7 +14,7 @@ export class JwtExpiredStrategy extends PassportStrategy(
     const secret = configService.get<string>('jwt.secret');
 
     if (!secret) {
-      throw new Error('JWT secret is not defined in the configuration');
+      throw new Error(ERROR_MESSAGES.JWT_SECRET_NOT_DEFINED);
     }
 
     super({

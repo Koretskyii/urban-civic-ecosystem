@@ -6,7 +6,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { User } from '../../generated/prisma/client';
-import { AUTH_PROVIDERS, ERROR_MESSAGES } from './constants/index';
+import {
+  AUTH_PROVIDERS,
+  ERROR_MESSAGES,
+  AUTH_SUCCESS_MESSAGES,
+} from './constants/index';
 import type {
   User as UserAuthData,
   OAuthUserData,
@@ -164,7 +168,7 @@ export class AuthService {
       sameSite: 'strict',
       path: '/auth/refresh',
     });
-    return { message: 'Logged out' };
+    return { message: AUTH_SUCCESS_MESSAGES.LOGGED_OUT };
   }
 
   async getProfile(userId: string) {
