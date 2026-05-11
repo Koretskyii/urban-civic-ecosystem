@@ -6,7 +6,10 @@ import * as dns from 'dns';
 import { promisify } from 'util';
 import { R2StorageService } from '../r2/r2.service';
 import { ROLES } from '../rbac/constants/roles.const';
-import { CITY_ERRORS } from '../rbac/constants/city.const';
+import {
+  CITY_ERRORS,
+  CITY_SUCCESS_MESSAGES,
+} from '../rbac/constants/city.const';
 import { ALERT_TYPES } from '@/shared/constants/alerts.const';
 
 interface CityTransactionData {
@@ -68,17 +71,20 @@ export class CityService {
 
       return {
         success: true,
-        message: 'Домен успішно верифіковано!',
+        message: CITY_SUCCESS_MESSAGES.DOMAIN_VERIFIED,
         domain,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`Domain verification failed for ${domain}: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error(
+        `Domain verification failed for ${domain}: ${errorMessage}`,
+      );
 
       if (error instanceof BadRequestException) {
         throw error;
       }
-      
+
       throw new BadRequestException(CITY_ERRORS.DNS_RECORD_NOT_FOUND);
     }
   }
@@ -255,7 +261,11 @@ export class CityService {
         cityName: city.name,
       });
 
-      return { success: true, message: 'City environment initialized', city };
+      return {
+        success: true,
+        message: CITY_SUCCESS_MESSAGES.INITIALIZED,
+        city,
+      };
     });
   }
 
