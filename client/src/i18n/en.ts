@@ -6,6 +6,9 @@ export const en = {
   },
   header: {
     authButton: 'Auth',
+    profile: 'Profile',
+    createCity: 'Create City',
+    signIn: 'Sign in',
   },
   footer: {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',
@@ -41,9 +44,6 @@ export const en = {
     errorTitle: '❌ Google Auth Error',
     back: '← Back',
     processing: '⏳ Processing Google authentication...',
-  },
-  cityCreate: {
-    title: 'Create City',
   },
   cityPages: {
     alertsTitle: 'Announcements',

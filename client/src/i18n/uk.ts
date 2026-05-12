@@ -6,6 +6,9 @@ export const uk = {
   },
   header: {
     authButton: 'Auth',
+    profile: 'Профіль',
+    createCity: 'Створити місто',
+    signIn: 'Авторизуватись',
   },
   footer: {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',
@@ -41,9 +44,6 @@ export const uk = {
     errorTitle: '❌ Google Auth Error',
     back: '← Повернутися',
     processing: '⏳ Обробка Google автентифікації...',
-  },
-  cityCreate: {
-    title: 'Create City',
   },
   cityPages: {
     alertsTitle: 'Оголошення',
