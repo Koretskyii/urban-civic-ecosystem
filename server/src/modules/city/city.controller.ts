@@ -7,36 +7,43 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CityService } from './city.service';
 import { CityInitData, DomainVerificationData } from '@/types';
 import { CITY_ERRORS } from '../rbac/constants/city.const';
+import { JWTGuard } from '../auth/guards/jwt.guard';
 
 @Controller('city')
 export class CityController {
   constructor(private readonly cityService: CityService) {}
 
+  @UseGuards(JWTGuard)
   @Post('domain/generate-token')
   generateDomainToken(@Body('domain') domain: string) {
     return this.cityService.generateDomainToken(domain);
   }
 
+  @UseGuards(JWTGuard)
   @Get()
   async getAllCities() {
     return this.cityService.getAllCities();
   }
 
+  @UseGuards(JWTGuard)
   @Get(':id')
   async getCityById(@Param('id') id: string) {
     return this.cityService.getCityById(id);
   }
 
+  @UseGuards(JWTGuard)
   @Post('domain/verify')
   async verifyDomain(@Body() body: DomainVerificationData) {
     return this.cityService.verifyDomain(body.domain, body.token);
   }
 
+  @UseGuards(JWTGuard)
   @Post('initialize')
   @UseInterceptors(
     FileInterceptor('document', {
