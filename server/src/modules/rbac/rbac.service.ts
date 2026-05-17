@@ -2,9 +2,99 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { ROLES } from './constants/roles.const';
 
+export type PermissionsByCity = Record<string, string[]>;
+
 @Injectable()
 export class RbacService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getUserRoleNames(userId: string, cityId: string): Promise<string[]> {
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId, role: { cityId } },
+      select: { role: { select: { name: true } } },
+    });
+
+    return userRoles.map((ur) => ur.role.name);
+  }
+
+  async getUserPermissions(userId: string, cityId: string): Promise<string[]> {
+    const roleNames = await this.getUserRoleNames(userId, cityId);
+
+    if (roleNames.length === 0) {
+      return [];
+    }
+
+    const rolePermissions = await this.prisma.rolePermission.findMany({
+      where: { roleName: { in: roleNames } },
+      select: { permission: { select: { key: true } } },
+    });
+
+    return Array.from(new Set(rolePermissions.map((rp) => rp.permission.key)));
+  }
+
+  async getUserPermissionsGlobal(userId: string): Promise<string[]> {
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      select: { role: { select: { name: true } } },
+    });
+    const roleNames = Array.from(new Set(userRoles.map((ur) => ur.role.name)));
+
+    if (roleNames.length === 0) {
+      return [];
+    }
+
+    const rolePermissions = await this.prisma.rolePermission.findMany({
+      where: { roleName: { in: roleNames } },
+      select: { permission: { select: { key: true } } },
+    });
+
+    return Array.from(new Set(rolePermissions.map((rp) => rp.permission.key)));
+  }
+
+  async getUserPermissionsByCity(userId: string): Promise<PermissionsByCity> {
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      select: {
+        role: {
+          select: {
+            cityId: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (userRoles.length === 0) {
+      return {};
+    }
+
+    const roleNames = Array.from(new Set(userRoles.map((ur) => ur.role.name)));
+    const rolePermissions = await this.prisma.rolePermission.findMany({
+      where: { roleName: { in: roleNames } },
+      select: {
+        roleName: true,
+        permission: { select: { key: true } },
+      },
+    });
+
+    const permissionsByRole = new Map<string, string[]>();
+    for (const rp of rolePermissions) {
+      const existing = permissionsByRole.get(rp.roleName) ?? [];
+      permissionsByRole.set(rp.roleName, [...existing, rp.permission.key]);
+    }
+
+    const result: PermissionsByCity = {};
+    for (const userRole of userRoles) {
+      const cityId = userRole.role.cityId;
+      const roleName = userRole.role.name;
+      const rolePermissionKeys = permissionsByRole.get(roleName) ?? [];
+      result[cityId] = Array.from(
+        new Set([...(result[cityId] ?? []), ...rolePermissionKeys]),
+      );
+    }
+
+    return result;
+  }
 
   /**
    * Check whether a user has a specific permission within a given city.
@@ -16,14 +106,8 @@ export class RbacService {
     cityId: string,
     permissionKey: string,
   ): Promise<boolean> {
-    const userRoles = await this.prisma.userRole.findMany({
-      where: { userId, role: { cityId } },
-      select: { role: { select: { name: true } } },
-    });
-
-    if (userRoles.length === 0) return false;
-
-    const roleNames = userRoles.map((ur) => ur.role.name);
+    const roleNames = await this.getUserRoleNames(userId, cityId);
+    if (roleNames.length === 0) return false;
 
     const match = await this.prisma.rolePermission.findFirst({
       where: {

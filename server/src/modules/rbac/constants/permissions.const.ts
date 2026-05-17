@@ -1,4 +1,10 @@
 export const PERMISSIONS_KEYS = {
+  // ─── Cities ───
+  CITY_CREATE: 'city:create',
+  CITY_UPDATE: 'city:update',
+  CITY_DELETE: 'city:delete',
+  CITY_MANAGE: 'city:manage',
+
   // ─── City Requests ───
   CITY_REQUEST_CREATE: 'city_request:create',
   CITY_REQUEST_UPDATE: 'city_request:update',

@@ -205,4 +205,10 @@ export const uk = {
     logoutPending: 'Вихід...',
     logout: 'Вийти з аккаунту',
   },
+  forbidden: {
+    title: 'Доступ заборонено',
+    description: 'У вас немає прав для перегляду цієї сторінки.',
+    goHome: 'На головну',
+    goBack: 'Назад',
+  },
 };
