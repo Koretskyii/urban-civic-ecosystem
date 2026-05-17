@@ -27,7 +27,6 @@ import {
   ApiConflictResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { PermissionsGuard } from '../rbac/guards/index';
 import { JWTExpiredGuard } from './guards/jwt-expired.guard';
 import { GoogleGuard } from './guards/google.guard';
 import type { OAuthUserData, User } from '@/types/auth.types';
@@ -109,7 +108,19 @@ export class AuthController {
     return this.authService.logout(res);
   }
 
-  @UseGuards(JWTGuard, PermissionsGuard)
+  @UseGuards(JWTGuard)
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiBearerAuth('access_token')
+  @ApiOkResponse({ description: 'Current user retrieved successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid access token' })
+  async me(@Req() req: Request) {
+    const user = req.user as User;
+    if (!user) throw new UnauthorizedException();
+    return this.authService.getMe(user.id);
+  }
+
+  @UseGuards(JWTGuard)
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile' })
   @ApiBearerAuth('access_token')
@@ -120,7 +131,7 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException();
     }
-    return this.authService.getProfile(user?.id);
+    return this.authService.getMe(user.id);
   }
 
   @UseGuards(JWTGuard)
