@@ -16,6 +16,7 @@ import type {
   OAuthUserData,
 } from '@/types/auth.types.js';
 import { ChangePasswordDto } from './dto';
+import { RbacService } from '../rbac/rbac.service';
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -30,7 +31,7 @@ const ACCESS_COOKIE_OPTIONS = {
   secure: true,
   sameSite: 'lax' as const, // lax needed for cross-origin redirect from Google
   path: '/',
-  maxAge: 60 * 1000, // 1 minute — just enough for the redirect
+  maxAge: 30 * 60 * 1000, // 30 minutes
 };
 
 @Injectable()
@@ -39,6 +40,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly rbacService: RbacService,
   ) {}
 
   async validateLogin(loginData: LoginDto): Promise<User> {
@@ -94,8 +96,9 @@ export class AuthService {
     }
 
     const user = await this.createLocalUser(name, email, password);
-    const accessToken = this.generateAccessToken(user);
+    const accessToken = await this.generateAccessToken(user);
     this.setRefreshCookie(res, this.generateRefreshToken(user));
+    this.setAccessCookie(res, accessToken);
 
     return {
       accessToken,
@@ -103,9 +106,10 @@ export class AuthService {
     };
   }
 
-  login(user: User, res: Response) {
-    const accessToken = this.generateAccessToken(user);
+  async login(user: User, res: Response) {
+    const accessToken = await this.generateAccessToken(user);
     this.setRefreshCookie(res, this.generateRefreshToken(user));
+    this.setAccessCookie(res, accessToken);
 
     return {
       accessToken,
@@ -121,8 +125,9 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
-    const accessToken = this.generateAccessToken(user);
+    const accessToken = await this.generateAccessToken(user);
     this.setRefreshCookie(res, this.generateRefreshToken(user));
+    this.setAccessCookie(res, accessToken);
 
     return { accessToken };
   }
@@ -151,9 +156,9 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_MESSAGES.OAUTH_USER_AUTH_FAILED);
     }
 
-    const accessToken = this.generateAccessToken(userData);
+    const accessToken = await this.generateAccessToken(userData);
     this.setRefreshCookie(res, this.generateRefreshToken(userData));
-    res.cookie('access_token', accessToken, ACCESS_COOKIE_OPTIONS);
+    this.setAccessCookie(res, accessToken);
 
     return {
       accessToken,
@@ -168,21 +173,36 @@ export class AuthService {
       sameSite: 'strict',
       path: '/auth/refresh',
     });
+    res.clearCookie('access_token', {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+    });
     return { message: AUTH_SUCCESS_MESSAGES.LOGGED_OUT };
   }
 
-  async getProfile(userId: string) {
+  async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
+
     const { passwordHash: _, ...profile } = user;
     return profile;
   }
 
-  private generateAccessToken(user: User): string {
+  private async generateAccessToken(user: User): Promise<string> {
+    const permissions = await this.rbacService.getUserPermissionsGlobal(
+      user.id,
+    );
+
     return this.jwtService.sign(
-      { sub: user.id, email: user.email },
+      {
+        sub: user.id,
+        email: user.email,
+        permissions,
+      },
       { expiresIn: Number(this.configService.get('jwt.expiresIn')) },
     );
   }
@@ -199,6 +219,10 @@ export class AuthService {
 
   private setRefreshCookie(res: Response, token: string): void {
     res.cookie('refresh_token', token, REFRESH_COOKIE_OPTIONS);
+  }
+
+  private setAccessCookie(res: Response, token: string): void {
+    res.cookie('access_token', token, ACCESS_COOKIE_OPTIONS);
   }
 
   async changePassword(userId: string, body: ChangePasswordDto) {
