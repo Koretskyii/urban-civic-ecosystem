@@ -13,3 +13,9 @@ export type {
   Community,
   DomainVerificationData,
 } from './city.types';
+
+export type {
+  PermissionKey,
+  RoleKey,
+  GetPermissionsResponse,
+} from './rbac.types';

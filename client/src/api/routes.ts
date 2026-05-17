@@ -4,8 +4,12 @@ export const API_ROUTES = {
     login: '/auth/login',
     refresh: '/auth/refresh',
     logout: '/auth/logout',
+    me: '/auth/me',
     profile: '/auth/profile',
     changePassword: '/auth/change-password',
+  },
+  users: {
+    permissions: '/users/me/permissions',
   },
   city: {
     getAll: '/city',

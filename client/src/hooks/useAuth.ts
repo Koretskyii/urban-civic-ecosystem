@@ -12,8 +12,8 @@ export function useCurrentUser() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return useQuery({
-    queryKey: queryKeys.auth.profile(),
-    queryFn: authApi.getProfile,
+    queryKey: queryKeys.auth.me(),
+    queryFn: () => authApi.getMe(),
     enabled: isAuthenticated,
   });
 }
