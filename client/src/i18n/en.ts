@@ -205,4 +205,10 @@ export const en = {
     logoutPending: 'Signing out...',
     logout: 'Sign out',
   },
+  forbidden: {
+    title: 'Access denied',
+    description: 'You do not have permission to view this page.',
+    goHome: 'Go home',
+    goBack: 'Go back',
+  },
 };

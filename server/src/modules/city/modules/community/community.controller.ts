@@ -1,7 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { CommunityService } from './community.service';
+import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
 
 @Controller('city/:cityId/community')
+@UseGuards(JWTGuard)
 export class CommunityController {
   constructor(private readonly communityService: CommunityService) {}
 

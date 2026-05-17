@@ -19,6 +19,8 @@ export const authApi = {
 
   logout: () => apiClient.post(API_ROUTES.auth.logout, {}),
 
+  getMe: () => apiClient.get<AuthResponse['user']>(API_ROUTES.auth.me),
+
   getProfile: () =>
     apiClient.get<AuthResponse['user']>(API_ROUTES.auth.profile),
 

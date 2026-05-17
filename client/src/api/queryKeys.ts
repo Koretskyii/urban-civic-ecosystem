@@ -5,6 +5,13 @@ export const queryKeys = {
     refresh: () => ['auth', 'refresh'] as const,
     logout: () => ['auth', 'logout'] as const,
     profile: () => ['auth', 'profile'] as const,
+    me: () => ['auth', 'me'] as const,
+  },
+
+  rbac: {
+    all: ['rbac'] as const,
+    permissions: (cityId: string) =>
+      [...queryKeys.rbac.all, 'permissions', cityId] as const,
   },
 
   cities: {

@@ -12,6 +12,8 @@ type RequestOptions = {
 
 class ApiClient {
   private baseUrl: string;
+  private isRefreshing = false;
+  private refreshPromise: Promise<string | null> | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -21,6 +23,41 @@ class ApiClient {
     const token = useAuthStore.getState().token;
 
     return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  private async refreshAccessToken(): Promise<string | null> {
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = (async () => {
+      try {
+        const res = await fetch(`${this.baseUrl}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!res.ok) {
+          useAuthStore.getState().logout();
+          return null;
+        }
+
+        const data = (await res.json()) as { accessToken: string };
+        useAuthStore.getState().setToken(data.accessToken);
+        return data.accessToken;
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+        useAuthStore.getState().logout();
+        return null;
+      } finally {
+        this.isRefreshing = false;
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
   }
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -50,6 +87,39 @@ class ApiClient {
       const error = await res
         .json()
         .catch(() => ({ message: ERROR_MESSAGES.NETWORK_ERROR }));
+
+      // Handle 401: try to refresh token
+      if (res.status === 401) {
+        const newToken = await this.refreshAccessToken();
+        if (newToken) {
+          // Retry the original request with new token
+          const retryHeaders: Record<string, string> = {
+            Authorization: `Bearer ${newToken}`,
+            ...headers,
+          };
+          if (!isFormData) {
+            retryHeaders['Content-Type'] = 'application/json';
+          }
+
+          const retryRes = await fetch(`${this.baseUrl}${endpoint}`, {
+            method,
+            credentials: 'include',
+            headers: retryHeaders,
+            body: body
+              ? isFormData
+                ? (body as FormData)
+                : JSON.stringify(body)
+              : undefined,
+          });
+
+          if (retryRes.ok) {
+            if (retryRes.status === 204) return undefined as T;
+            return retryRes.json();
+          }
+        }
+        useAuthStore.getState().logout();
+      }
+
       throw new ApiError(
         res.status,
         error.message || ERROR_MESSAGES.UNKNOWN_ERROR,
