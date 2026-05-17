@@ -12,6 +12,7 @@ import { RbacModule } from './modules/rbac/rbac.module';
 import { googleConfig } from './config/google.config';
 import { CityModule } from './modules/city/city.module';
 import { r2Config } from './config/r2.config';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { r2Config } from './config/r2.config';
     AuthModule,
     RbacModule,
     CityModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
