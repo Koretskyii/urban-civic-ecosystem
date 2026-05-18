@@ -14,6 +14,7 @@ export const API_ROUTES = {
   city: {
     getAll: '/city',
     getById: (id: string): string => `/city/${id}`,
+    join: (id: string): string => `/city/${id}/join`,
     generateDomainToken: '/city/domain/generate-token',
     verifyDomain: '/city/domain/verify',
     initializeCity: '/city/initialize',

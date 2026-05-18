@@ -8,12 +8,15 @@ import {
   UploadedFile,
   BadRequestException,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CityService } from './city.service';
 import { CityInitData, DomainVerificationData } from '@/types';
 import { CITY_ERRORS } from '../rbac/constants/city.const';
 import { JWTGuard } from '../auth/guards/jwt.guard';
+import type { User } from '@/types/auth.types';
 
 @Controller('city')
 export class CityController {
@@ -41,6 +44,16 @@ export class CityController {
   @Post('domain/verify')
   async verifyDomain(@Body() body: DomainVerificationData) {
     return this.cityService.verifyDomain(body.domain, body.token);
+  }
+
+  @UseGuards(JWTGuard)
+  @Post(':id/join')
+  async joinCity(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as User;
+    if (!user) {
+      throw new BadRequestException('User not authenticated');
+    }
+    return this.cityService.joinCity(id, user.id);
   }
 
   @UseGuards(JWTGuard)

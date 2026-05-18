@@ -6,7 +6,7 @@ export {
   useChangePassword,
 } from './useAuth';
 
-export { useCities, useCityById } from './useCities';
+export { useCities, useCityById, useJoinCity } from './useCities';
 
 export { useRBAC } from './useRBAC';
 export { usePermissions } from './usePermissions';
