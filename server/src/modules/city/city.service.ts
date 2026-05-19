@@ -127,6 +127,87 @@ export class CityService {
     return city;
   }
 
+  async joinCity(cityId: string, userId: string) {
+    const city = await this.prisma.city.findUnique({
+      where: { id: cityId },
+    });
+
+    if (!city) {
+      throw new BadRequestException(CITY_ERRORS.CITY_NOT_FOUND);
+    }
+
+    const existingMembership = await this.prisma.userCity.findUnique({
+      where: {
+        userId_cityId: {
+          userId,
+          cityId,
+        },
+      },
+    });
+
+    if (existingMembership) {
+      return { success: true, message: 'Already joined' };
+    }
+
+    const citizenRole = await this.prisma.role.findFirst({
+      where: {
+        cityId,
+        name: ROLES.CITIZEN,
+      },
+    });
+
+    if (!citizenRole) {
+      throw new BadRequestException('Citizen role not found for this city');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.userCity.create({
+        data: {
+          userId,
+          cityId,
+        },
+      });
+
+      await tx.userRole.create({
+        data: {
+          userId,
+          roleId: citizenRole.id,
+        },
+      });
+
+      // Also join the main community
+      const mainCommunity = await tx.community.findFirst({
+        where: { cityId },
+      });
+
+      if (mainCommunity) {
+        await tx.communityMember.create({
+          data: {
+            userId,
+            communityId: mainCommunity.id,
+          },
+        });
+      }
+
+      // Subscribe to all alert types for this city by default
+      const alertTypes = await tx.alertType.findMany();
+      if (alertTypes.length > 0) {
+        const alertSubscriptionData = alertTypes.map((type) => ({
+          userId,
+          cityId,
+          alertTypeId: type.id,
+        }));
+
+        await tx.alertSubscription.createMany({
+          data: alertSubscriptionData,
+          skipDuplicates: true,
+        });
+      }
+    });
+
+    return { success: true, message: 'Successfully joined city' };
+  }
+
   async initializeCityEnvironment(
     data: CityInitData,
     document: Express.Multer.File,
