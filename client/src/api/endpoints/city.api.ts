@@ -25,6 +25,9 @@ export const cityApi = {
   getCityById: (id: string) => {
     return apiClient.get<City>(API_ROUTES.city.getById(id));
   },
+  joinCity: (id: string) => {
+    return apiClient.post(API_ROUTES.city.join(id), {});
+  },
   getCityAlerts: (cityId: string) => {
     return apiClient.get<Alert[]>(API_ROUTES.alerts.all(cityId));
   },

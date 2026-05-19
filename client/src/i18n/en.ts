@@ -66,6 +66,8 @@ export const en = {
   cityHome: {
     heroText:
       'Welcome to the city digital hub. Here you can follow news, join the community, and report city issues.',
+    joinCity: 'Join City',
+    joined: 'Joined',
     sectionsTitle: 'Sections',
     sectionsSubtitle: 'Choose a section to explore your city space',
     sections: {

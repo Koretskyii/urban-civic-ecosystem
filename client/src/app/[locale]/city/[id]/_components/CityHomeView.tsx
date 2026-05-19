@@ -11,6 +11,7 @@ import {
   Divider,
   Chip,
   CircularProgress,
+  Button,
 } from '@mui/material';
 import FeedRoundedIcon from '@mui/icons-material/FeedRounded';
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
@@ -20,8 +21,12 @@ import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsAct
 import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import { useCityById } from '@/hooks';
+import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import { useCityById, useJoinCity, useRBAC } from '@/hooks';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/api/queryKeys';
 
 interface CityHomeViewProps {
   cityId: string;
@@ -76,10 +81,25 @@ export default function CityHomeView(props: CityHomeViewProps) {
   const { cityId } = props;
   const t = useTranslations();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: city, isLoading } = useCityById(cityId);
+  const { permissions, isLoading: isRbacLoading } = useRBAC({ cityId });
+  const { mutate: joinCity, isPending: isJoining } = useJoinCity();
   const baseRoute = `/city/${cityId}`;
 
-  if (isLoading || !city) {
+  const isMember = permissions && permissions.length > 0;
+
+  const handleJoin = () => {
+    joinCity(cityId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.rbac.permissions(cityId),
+        });
+      },
+    });
+  };
+
+  if (isLoading || isRbacLoading || !city) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
         <CircularProgress />
@@ -100,6 +120,11 @@ export default function CityHomeView(props: CityHomeViewProps) {
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          gap: 3,
           '&::after': {
             content: '""',
             position: 'absolute',
@@ -109,34 +134,85 @@ export default function CityHomeView(props: CityHomeViewProps) {
             height: 240,
             borderRadius: '50%',
             bgcolor: 'rgba(255,255,255,0.04)',
+            pointerEvents: 'none',
           },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <LocationCityRoundedIcon
-            sx={{ fontSize: 48, color: 'secondary.light' }}
-          />
-          <Box>
-            <Typography variant="h1" sx={{ color: 'white', lineHeight: 1.1 }}>
-              {city.name}
-            </Typography>
-            <Chip
-              label={city.region}
-              size="small"
+        <Box sx={{ zIndex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <LocationCityRoundedIcon
+              sx={{ fontSize: 48, color: 'secondary.light' }}
+            />
+            <Box>
+              <Typography variant="h1" sx={{ color: 'white', lineHeight: 1.1 }}>
+                {city.name}
+              </Typography>
+              <Chip
+                label={city.region}
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(255,255,255,0.15)',
+                  color: 'white',
+                  mt: 0.5,
+                }}
+              />
+            </Box>
+          </Box>
+          <Typography
+            variant="body1"
+            sx={{ color: 'rgba(255,255,255,0.8)', maxWidth: 520 }}
+          >
+            {t('cityHome.heroText')}
+          </Typography>
+        </Box>
+        <Box sx={{ zIndex: 1 }}>
+          {!isMember ? (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              startIcon={
+                isJoining ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <PersonAddRoundedIcon />
+                )
+              }
+              onClick={handleJoin}
+              disabled={isJoining}
               sx={{
-                bgcolor: 'rgba(255,255,255,0.15)',
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                fontWeight: 'bold',
+                boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 20px rgba(0,0,0,0.3)',
+                },
+                transition: 'all 0.2s',
+              }}
+            >
+              {t('cityHome.joinCity')}
+            </Button>
+          ) : (
+            <Chip
+              icon={<CheckCircleRoundedIcon />}
+              label={t('cityHome.joined')}
+              sx={{
+                bgcolor: 'success.main',
                 color: 'white',
-                mt: 0.5,
+                fontWeight: 'bold',
+                px: 1,
+                py: 2.5,
+                borderRadius: 2,
+                '& .MuiChip-icon': {
+                  color: 'white',
+                },
               }}
             />
-          </Box>
+          )}
         </Box>
-        <Typography
-          variant="body1"
-          sx={{ color: 'rgba(255,255,255,0.8)', maxWidth: 520 }}
-        >
-          {t('cityHome.heroText')}
-        </Typography>
       </Box>
 
       <Typography variant="h3" sx={{ mb: 0.5 }}>

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { cityApi } from '@/api/endpoints/city.api';
 import { queryKeys } from '@/api/queryKeys';
 import { City } from '@/types';
@@ -18,6 +18,12 @@ export function useCityById(id: string) {
     queryKey: queryKeys.cities.detail(id),
     queryFn: () => cityApi.getCityById(id),
     enabled: !!id,
+  });
+}
+
+export function useJoinCity() {
+  return useMutation({
+    mutationFn: (id: string) => cityApi.joinCity(id),
   });
 }
 
