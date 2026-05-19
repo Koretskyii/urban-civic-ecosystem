@@ -7,6 +7,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UnauthorizedException,
   UseGuards,
   Req,
 } from '@nestjs/common';
@@ -51,7 +52,7 @@ export class CityController {
   async joinCity(@Param('id') id: string, @Req() req: Request) {
     const user = req.user as User;
     if (!user) {
-      throw new BadRequestException('User not authenticated');
+      throw new UnauthorizedException();
     }
     return this.cityService.joinCity(id, user.id);
   }
