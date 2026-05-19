@@ -90,8 +90,15 @@ export default function AlertsList(props: AlertsListProps) {
 
                 <Box sx={{ flex: 1 }}>
                   <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 700, color: 'text.primary' }}
+                  >
+                    {alert.title}
+                  </Typography>
+
+                  <Typography
                     variant="body1"
-                    sx={{ mb: 1, fontWeight: 500, color: 'text.primary' }}
+                    sx={{ mt: 0.5, mb: 1, color: 'text.primary' }}
                   >
                     {alert.content}
                   </Typography>
@@ -100,7 +107,7 @@ export default function AlertsList(props: AlertsListProps) {
                     variant="body2"
                     sx={{ color: 'text.secondary', fontSize: '0.8rem' }}
                   >
-                    {formattedDate} о {formattedTime}
+                    {alert.alertType.name} · {formattedDate} о {formattedTime}
                   </Typography>
                 </Box>
               </Box>

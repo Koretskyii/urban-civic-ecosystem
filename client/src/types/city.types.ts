@@ -7,7 +7,11 @@ export interface City {
 
 export interface Alert {
   id: string;
+  title: string;
   content: string;
+  alertType: {
+    name: string;
+  };
   createdAt: string;
 }
 

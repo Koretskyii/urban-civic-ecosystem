@@ -12,7 +12,13 @@ export class AlertsService {
       },
       select: {
         id: true,
+        title: true,
         content: true,
+        alertType: {
+          select: {
+            name: true,
+          },
+        },
         createdAt: true,
       },
       orderBy: {

@@ -343,9 +343,9 @@ export class CityService {
 
     await tx.alert.create({
       data: {
-        authorId: userId,
         cityId: cityId,
-        typeId: otherAlertType.id,
+        alertTypeId: otherAlertType.id,
+        title: `Термінові оголошення міста ${cityName}`,
         content: `Так будуть виглядати термінові оголошення в межах даного міста.`,
       },
     });
