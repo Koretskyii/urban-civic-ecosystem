@@ -41,12 +41,12 @@ model City {
   cityRequests         CityRequest[]
   chats                Chat[]
   alerts               Alert[]
-  alertSubscriptions   AlertSubscription[] @relation("alertSubscriptions")
+  alertSubscriptions   AlertSubscription[]   @relation("alertSubscriptions")
   projects             Project[]
   communities          Community[]
   surveys              Survey[]
   crowdfundingProjects CrowdfundingProject[]
-  news                 GeneralNews[] @relation("news")
+  news                 GeneralNews[]         @relation("news")
 
   cityDomain CityDomain?
 
@@ -55,45 +55,45 @@ model City {
 }
 
 model CityDomain {
-  id String @id @default(cuid())
-  domainName String @unique
-  token String @unique
+  id         String    @id @default(cuid())
+  domainName String    @unique
+  token      String    @unique
   verifiedAt DateTime?
-  ownerId String
-  cityId String @unique
+  ownerId    String
+  cityId     String    @unique
 
   city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
 }
+
 //////////////////// USERS ////////////////////
 
 model User {
-  id           String @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
-  email        String @unique
+  email        String  @unique
   passwordHash String?
-  provider     String @default("local")
+  provider     String  @default("local")
   providerId   String?
 
-  memberships           UserCity[]
-  userRoles             UserRole[]
-  cityRequests          CityRequest[]
-  messages              Message[]
-  publishedAlerts       Alert[]
-  alertSubscriptions    AlertSubscription[]
-  posts                 Post[]
-  comments              Comment[]
-  reactions             Reaction[]
-  votes                 Vote[]
-  donations             Donation[]
-  crowdfundingProjects  CrowdfundingProject[] @relation("creator")
-  projectParticipants   ProjectParticipant[]
-  communityMemberships  CommunityMember[]
-  publishedNews         GeneralNews[]
-
-  @@unique([provider, providerId])
+  memberships          UserCity[]
+  userRoles            UserRole[]
+  cityRequests         CityRequest[]
+  messages             Message[]
+  alertSubscriptions   AlertSubscription[]
+  posts                Post[]
+  comments             Comment[]
+  reactions            Reaction[]
+  votes                Vote[]
+  donations            Donation[]
+  crowdfundingProjects CrowdfundingProject[] @relation("creator")
+  projectParticipants  ProjectParticipant[]
+  communityMemberships CommunityMember[]
+  publishedNews        GeneralNews[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerId])
 }
 
 model UserCity {
@@ -152,21 +152,21 @@ model RolePermission {
 //////////////////// CITY REQUESTS ////////////////////
 
 model CityRequest {
-  id          String @id @default(cuid())
+  id          String        @id @default(cuid())
   cityId      String
   userId      String
   title       String
   description String?
   status      RequestStatus @default(OPEN)
   location    String?
-  priority    Int @default(0)
+  priority    Int           @default(0)
   category    String?
 
   city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  chat   Chat?
-  reports Report[]
+  chat        Chat?
+  reports     Report[]
   attachments Attachment[]
 
   createdAt DateTime @default(now())
@@ -174,7 +174,7 @@ model CityRequest {
 }
 
 model Report {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   description String?
 
   cityRequestId String
@@ -187,7 +187,7 @@ model Report {
 }
 
 model Attachment {
-  id         String @id @default(cuid())
+  id         String  @id @default(cuid())
   fileName   String
   mimeType   String?
   url        String
@@ -207,11 +207,11 @@ model Attachment {
 //////////////////// CHAT ////////////////////
 
 model Chat {
-  id            String @id @default(cuid())
+  id            String  @id @default(cuid())
   cityId        String
   cityRequestId String? @unique
   communityId   String?
-  contextType   String @default("cityRequest")
+  contextType   String  @default("cityRequest")
 
   city        City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
   cityRequest CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
@@ -223,9 +223,9 @@ model Chat {
 
 model Message {
   id       String @id @default(cuid())
-  chatId  String
+  chatId   String
   authorId String
-  content String
+  content  String
 
   chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -236,24 +236,22 @@ model Message {
 //////////////////// ALERTS ////////////////////
 
 model Alert {
-  id        String @id @default(cuid())
-  cityId    String
-  typeId    String
-  authorId  String
-  content   String
-  timestamp DateTime @default(now())
+  id          String   @id @default(cuid())
+  cityId      String
+  alertTypeId String
+  title       String
+  content     String
+  timestamp   DateTime @default(now())
 
-  city   City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  type   AlertType @relation(fields: [typeId], references: [id], onDelete: Cascade)
-  author User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
 
 model AlertType {
-  id          String @id @default(cuid())
-  name        String
-  description String?
+  id   String @id @default(cuid())
+  name String @unique
 
   alerts        Alert[]
   subscriptions AlertSubscription[]
@@ -264,8 +262,8 @@ model AlertSubscription {
   cityId      String
   alertTypeId String
 
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  city      City @relation("alertSubscriptions", fields: [cityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city      City      @relation("alertSubscriptions", fields: [cityId], references: [id], onDelete: Cascade)
   alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
 
   @@id([userId, cityId, alertTypeId])
@@ -274,13 +272,13 @@ model AlertSubscription {
 //////////////////// PROJECTS ////////////////////
 
 model Project {
-  id          String @id @default(cuid())
+  id          String        @id @default(cuid())
   cityId      String
   title       String
   description String?
   status      ProjectStatus @default(ACTIVE)
 
-  city         City                  @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  city         City                 @relation(fields: [cityId], references: [id], onDelete: Cascade)
   events       Event[]
   participants ProjectParticipant[]
 
@@ -299,7 +297,7 @@ model ProjectParticipant {
 }
 
 model Event {
-  id        String @id @default(cuid())
+  id        String    @id @default(cuid())
   projectId String
   title     String
   startTime DateTime
@@ -314,21 +312,21 @@ model Event {
 //////////////////// COMMUNITY ////////////////////
 
 model Community {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   cityId      String
   name        String
   description String?
 
-  city      City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  posts     Post[]
-  members   CommunityMember[]
-  chats     Chat[]
+  city    City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  posts   Post[]
+  members CommunityMember[]
+  chats   Chat[]
 
   createdAt DateTime @default(now())
 }
 
 model CommunityMember {
-  userId    String
+  userId      String
   communityId String
 
   joinedAt DateTime @default(now())
@@ -345,8 +343,8 @@ model Post {
   communityId String
   content     String
 
-  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  community Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
   comments  Comment[]
   reactions Reaction[]
 
@@ -380,7 +378,7 @@ model Reaction {
 //////////////////// SURVEYS ////////////////////
 
 model Survey {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   cityId      String
   title       String
   description String?
@@ -418,17 +416,17 @@ model Vote {
 //////////////////// CROWDFUNDING ////////////////////
 
 model CrowdfundingProject {
-  id        String @id @default(cuid())
-  cityId    String
-  creatorId String
-  title     String
-  description String?
-  fundingGoal Decimal
-  currentAmount Decimal @default(0)
-  deadline  DateTime
+  id            String   @id @default(cuid())
+  cityId        String
+  creatorId     String
+  title         String
+  description   String?
+  fundingGoal   Decimal
+  currentAmount Decimal  @default(0)
+  deadline      DateTime
 
-  city      City @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  creator   User @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
+  city      City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  creator   User       @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
   donations Donation[]
 
   createdAt DateTime @default(now())
@@ -436,14 +434,14 @@ model CrowdfundingProject {
 }
 
 model Donation {
-  id        String @id @default(cuid())
-  projectId String
+  id            String   @id @default(cuid())
+  projectId     String
   contributorId String
-  amount    Decimal
-  timestamp DateTime @default(now())
+  amount        Decimal
+  timestamp     DateTime @default(now())
 
-  project   CrowdfundingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contributor User               @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  project     CrowdfundingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contributor User                @relation(fields: [contributorId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
@@ -451,7 +449,7 @@ model Donation {
 //////////////////// GENERAL NEWS ////////////////////
 
 model GeneralNews {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   cityId      String
   publisherId String
   title       String
