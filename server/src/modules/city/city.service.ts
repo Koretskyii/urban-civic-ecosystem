@@ -11,6 +11,7 @@ import {
   CITY_SUCCESS_MESSAGES,
 } from '../rbac/constants/city.const';
 import { ALERT_TYPES } from '@/shared/constants/alerts.const';
+import { DEFAULT_CITY_DEPARTMENTS } from '@/shared/constants/departments.const';
 
 interface CityTransactionData {
   name: string;
@@ -354,6 +355,19 @@ export class CityService {
     tx: Prisma.TransactionClient,
     params: PrepareNewCityParams,
   ) {
+    const txWithDepartmentDelegate = tx as Prisma.TransactionClient & {
+      department: {
+        createMany: (args: {
+          data: Array<{
+            cityId: string;
+            name: string;
+            type: string;
+            description?: string;
+          }>;
+          skipDuplicates: boolean;
+        }) => Promise<unknown>;
+      };
+    };
     const { userId, cityId, cityName } = params;
     const community = await tx.community.create({
       data: {
@@ -438,6 +452,14 @@ export class CityService {
         content: `Так будуть виглядати загальні новини міста ${cityName}.`,
         publisherId: userId,
       },
+    });
+
+    await txWithDepartmentDelegate.department.createMany({
+      data: DEFAULT_CITY_DEPARTMENTS.map((department) => ({
+        cityId,
+        ...department,
+      })),
+      skipDuplicates: true,
     });
   }
 }
