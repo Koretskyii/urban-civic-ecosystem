@@ -14,7 +14,9 @@ export class RbacService {
       select: { role: { select: { name: true } } },
     });
 
-    return userRoles.map((ur) => ur.role.name);
+    return userRoles
+      .map((userRole) => userRole.role?.name)
+      .filter((roleName): roleName is string => Boolean(roleName));
   }
 
   async getUserPermissions(userId: string, cityId: string): Promise<string[]> {
@@ -37,7 +39,13 @@ export class RbacService {
       where: { userId },
       select: { role: { select: { name: true } } },
     });
-    const roleNames = Array.from(new Set(userRoles.map((ur) => ur.role.name)));
+    const roleNames = Array.from(
+      new Set(
+        userRoles
+          .map((userRole) => userRole.role?.name)
+          .filter((roleName): roleName is string => Boolean(roleName)),
+      ),
+    );
 
     if (roleNames.length === 0) {
       return [];
@@ -85,6 +93,9 @@ export class RbacService {
 
     const result: PermissionsByCity = {};
     for (const userRole of userRoles) {
+      if (!userRole.role) {
+        continue;
+      }
       const cityId = userRole.role.cityId;
       const roleName = userRole.role.name;
       const rolePermissionKeys = permissionsByRole.get(roleName) ?? [];
