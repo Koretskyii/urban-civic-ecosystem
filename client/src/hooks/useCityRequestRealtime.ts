@@ -10,6 +10,7 @@ import {
 import {
   CITY_REQUESTS_JOIN_ROOM_EVENT,
   CITY_REQUESTS_REALTIME_EVENTS,
+  invalidateCityRequestRealtimeEventQueries,
   invalidateCityRequestQueries,
 } from '@/features/city-requests';
 import type { CityRequestRealtimeEnvelope } from '@/types';
@@ -37,21 +38,47 @@ export function useCityRequestRealtime({
 
     const handleReconnect = () => {
       socket.emit(CITY_REQUESTS_JOIN_ROOM_EVENT, { requestId });
+      invalidateCityRequestQueries(queryClient, cityId, requestId);
     };
     socket.on('connect', handleReconnect);
 
-    const refetchFromRealtime = (event: CityRequestRealtimeEnvelope) => {
-      if (event.requestId !== requestId) {
-        return;
-      }
-
-      // REST remains source of truth for reconnect/consistency.
-      invalidateCityRequestQueries(queryClient, cityId, requestId);
+    const isRealtimeEnvelope = (
+      event: unknown,
+    ): event is CityRequestRealtimeEnvelope => {
+      return (
+        typeof event === 'object' &&
+        event !== null &&
+        'requestId' in event &&
+        typeof (event as { requestId?: unknown }).requestId === 'string'
+      );
     };
 
+    const createRefetchFromRealtime =
+      (eventName: (typeof CITY_REQUESTS_REALTIME_EVENTS)[number]) =>
+      (event: unknown) => {
+        if (!isRealtimeEnvelope(event) || event.requestId !== requestId) {
+          return;
+        }
+
+        // REST remains source of truth for reconnect/consistency.
+        invalidateCityRequestRealtimeEventQueries(
+          queryClient,
+          cityId,
+          requestId,
+          eventName,
+        );
+      };
+
     const subscriptions = CITY_REQUESTS_REALTIME_EVENTS.map((eventName) =>
-      subscribeToCityRequestEvent(eventName, refetchFromRealtime),
+      subscribeToCityRequestEvent(
+        eventName,
+        createRefetchFromRealtime(eventName),
+      ),
     );
+
+    if (socket.connected) {
+      handleReconnect();
+    }
 
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
