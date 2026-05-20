@@ -67,17 +67,46 @@ export const uk = {
       lat: 'Широта',
       lng: 'Довгота',
       message: 'Напишіть повідомлення...',
+      department: 'Департамент',
+      status: 'Наступний статус',
+      reportType: 'Тип звіту',
+      reportText: 'Текст звіту',
+      filterStatus: 'Фільтр за статусом',
+      filterDepartment: 'Фільтр за департаментом',
+      filterPriority: 'Фільтр за пріоритетом',
     },
     actions: {
       create: 'Створити звернення',
       creating: 'Створення...',
       send: 'Надіслати',
+      assign: 'Призначити',
+      updateStatus: 'Оновити статус',
+      createReport: 'Створити звіт',
     },
+    viewModes: {
+      citizen: 'Режим мешканця',
+      municipality: 'Режим муніципалітету',
+    },
+    municipality: {
+      queueTitle: 'Черга муніципалітету',
+      queueHint:
+        'Використовуйте цю чергу для опрацювання звернень і координації служб.',
+      listTitle: 'Усі міські звернення',
+      controlsTitle: 'Інструменти муніципалітету',
+    },
+    timelineTitle: 'Таймлайн звернення',
+    timelineEmpty: 'Звітів поки немає.',
+    timelineNoDescription: 'Опис звіту відсутній.',
     errors: {
       required: 'Заголовок і координати є обовʼязковими.',
       coordinatesInvalid: 'Координати мають бути коректними числами.',
       createFailed: 'Не вдалося створити звернення.',
       messageFailed: 'Не вдалося надіслати повідомлення.',
+      departmentRequired: 'Потрібно обрати департамент.',
+      useReportForFinalStatus:
+        'Для статусів RESOLVED/REJECTED використовуйте створення звіту.',
+      reportTextRequired:
+        'Звіт для RESOLUTION/REJECTION має містити текст опису.',
     },
   },
   cityNav: {
