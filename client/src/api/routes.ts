@@ -31,4 +31,20 @@ export const API_ROUTES = {
   community: {
     detail: (cityId: string): string => `/city/${cityId}/community`,
   },
+  cityRequests: {
+    all: (cityId: string): string => `/city/${cityId}/requests`,
+    detail: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}`,
+    assign: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/assign`,
+    status: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/status`,
+    reports: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/reports`,
+    messages: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/messages`,
+  },
+  departments: {
+    all: (cityId: string): string => `/city/${cityId}/departments`,
+  },
 } as const;

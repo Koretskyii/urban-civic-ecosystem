@@ -7,6 +7,18 @@ export {
 } from './useAuth';
 
 export { useCities, useCityById, useJoinCity } from './useCities';
+export {
+  useAssignCityRequestDepartment,
+  useCityDepartments,
+  useCityRequestDetail,
+  useCityRequestMessages,
+  useCityRequestsList,
+  useCreateCityRequest,
+  useCreateCityRequestMessage,
+  useCreateCityRequestReport,
+  useUpdateCityRequestStatus,
+} from './useCityRequests';
+export { useCityRequestRealtime } from './useCityRequestRealtime';
 
 export { useRBAC } from './useRBAC';
 export { usePermissions } from './usePermissions';
