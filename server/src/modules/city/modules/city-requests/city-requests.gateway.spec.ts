@@ -4,7 +4,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CityRequestsGateway } from './city-requests.gateway';
 import { CityRequestsService } from './city-requests.service';
-import { CITY_REQUESTS_SOCKET_EVENTS } from './city-requests.events';
+import {
+  CITY_REQUESTS_MUTATION_EVENTS,
+  CITY_REQUESTS_SOCKET_EVENTS,
+} from './city-requests.events';
 
 describe('CityRequestsGateway', () => {
   let gateway: CityRequestsGateway;
@@ -76,6 +79,76 @@ describe('CityRequestsGateway', () => {
     expect(client.disconnect).not.toHaveBeenCalled();
   });
 
+  it('handleConnection should authenticate with token from cookie', async () => {
+    mockConfigService.get.mockReturnValue('secret');
+    mockJwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-2',
+      email: 'cookie@example.com',
+    });
+
+    const client = {
+      handshake: {
+        auth: {},
+        headers: {
+          cookie: 'foo=bar; access_token=jwt-cookie-token',
+        },
+      },
+      data: {},
+      disconnect: jest.fn(),
+    } as any;
+
+    await gateway.handleConnection(client);
+
+    expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('jwt-cookie-token', {
+      secret: 'secret',
+    });
+    expect(client.data.user).toEqual({
+      id: 'user-2',
+      email: 'cookie@example.com',
+    });
+  });
+
+  it('handleConnection should decode cookie token value', async () => {
+    mockConfigService.get.mockReturnValue('secret');
+    mockJwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-3',
+      email: 'encoded@example.com',
+    });
+
+    const client = {
+      handshake: {
+        auth: {},
+        headers: {
+          cookie: 'access_token=Bearer%20jwt-encoded-token',
+        },
+      },
+      data: {},
+      disconnect: jest.fn(),
+    } as any;
+
+    await gateway.handleConnection(client);
+
+    expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('jwt-encoded-token', {
+      secret: 'secret',
+    });
+  });
+
+  it('handleConnection should disconnect unauthenticated socket', async () => {
+    const client = {
+      handshake: {
+        auth: {},
+        headers: {},
+      },
+      data: {},
+      disconnect: jest.fn(),
+    } as any;
+
+    await gateway.handleConnection(client);
+
+    expect(client.disconnect).toHaveBeenCalledWith(true);
+    expect(mockJwtService.verifyAsync).not.toHaveBeenCalled();
+  });
+
   it('handleJoinRoom should join room after access check', async () => {
     mockCityRequestsService.assertRequestRoomAccess.mockResolvedValue({
       requestId: 'request-1',
@@ -115,12 +188,16 @@ describe('CityRequestsGateway', () => {
     );
   });
 
-  it('emitMessageCreated should emit to request room', () => {
+  it('emitMutationEvent should emit to request room', () => {
     const emit = jest.fn();
     const to = jest.fn().mockReturnValue({ emit });
     gateway.server = { to } as any;
 
-    gateway.emitMessageCreated('request-1', { hello: 'world' });
+    gateway.emitMutationEvent(
+      'request-1',
+      CITY_REQUESTS_MUTATION_EVENTS.MESSAGE_CREATED,
+      { hello: 'world' },
+    );
 
     expect(to).toHaveBeenCalledWith('city-request:request-1');
     expect(emit).toHaveBeenCalledWith(

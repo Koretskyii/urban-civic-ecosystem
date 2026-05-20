@@ -12,7 +12,10 @@ import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { CityRequestsService } from './city-requests.service';
 import type { JwtPayload } from '@/types/auth.types';
-import { CITY_REQUESTS_SOCKET_EVENTS } from './city-requests.events';
+import {
+  CITY_REQUESTS_SOCKET_EVENTS,
+  type CityRequestsMutationSocketEvent,
+} from './city-requests.events';
 import { CITY_REQUESTS_CONSTANTS } from './city-requests.constants';
 
 type SocketWithUser = Socket & {
@@ -26,7 +29,7 @@ type SocketWithUser = Socket & {
 
 @Injectable()
 @WebSocketGateway({
-  namespace: '/city-requests',
+  namespace: CITY_REQUESTS_CONSTANTS.SOCKET_NAMESPACE,
   cors: {
     origin: true,
     credentials: true,
@@ -44,36 +47,12 @@ export class CityRequestsGateway implements OnGatewayConnection {
     private readonly cityRequestsService: CityRequestsService,
   ) {}
 
-  emitMessageCreated(requestId: string, payload: unknown) {
-    this.emitToRequestRoom(
-      requestId,
-      CITY_REQUESTS_SOCKET_EVENTS.MESSAGE_CREATED,
-      payload,
-    );
-  }
-
-  emitReportCreated(requestId: string, payload: unknown) {
-    this.emitToRequestRoom(
-      requestId,
-      CITY_REQUESTS_SOCKET_EVENTS.REPORT_CREATED,
-      payload,
-    );
-  }
-
-  emitStatusUpdated(requestId: string, payload: unknown) {
-    this.emitToRequestRoom(
-      requestId,
-      CITY_REQUESTS_SOCKET_EVENTS.STATUS_UPDATED,
-      payload,
-    );
-  }
-
-  emitAssignmentUpdated(requestId: string, payload: unknown) {
-    this.emitToRequestRoom(
-      requestId,
-      CITY_REQUESTS_SOCKET_EVENTS.ASSIGNMENT_UPDATED,
-      payload,
-    );
+  emitMutationEvent(
+    requestId: string,
+    eventName: CityRequestsMutationSocketEvent,
+    payload: unknown,
+  ) {
+    this.emitToRequestRoom(requestId, eventName, payload);
   }
 
   async handleConnection(client: SocketWithUser) {
@@ -132,12 +111,12 @@ export class CityRequestsGateway implements OnGatewayConnection {
         ? client.handshake.auth.token
         : null;
     if (authToken) {
-      return authToken.replace(/^Bearer\s+/i, '').trim();
+      return this.normalizeToken(authToken);
     }
 
     const authHeader = client.handshake.headers.authorization;
     if (typeof authHeader === 'string' && authHeader.length > 0) {
-      return authHeader.replace(/^Bearer\s+/i, '').trim();
+      return this.normalizeToken(authHeader);
     }
 
     const cookieHeader = client.handshake.headers.cookie;
@@ -151,7 +130,15 @@ export class CityRequestsGateway implements OnGatewayConnection {
       .find((cookiePart) => cookiePart.startsWith('access_token='))
       ?.split('=')[1];
 
-    return cookieToken ?? null;
+    if (!cookieToken) {
+      return null;
+    }
+
+    try {
+      return this.normalizeToken(decodeURIComponent(cookieToken));
+    } catch {
+      return this.normalizeToken(cookieToken);
+    }
   }
 
   private getRequestRoomName(requestId: string) {
@@ -164,5 +151,9 @@ export class CityRequestsGateway implements OnGatewayConnection {
     payload: unknown,
   ) {
     this.server.to(this.getRequestRoomName(requestId)).emit(eventName, payload);
+  }
+
+  private normalizeToken(rawToken: string) {
+    return rawToken.replace(/^Bearer\s+/i, '').trim();
   }
 }
