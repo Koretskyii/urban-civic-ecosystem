@@ -25,6 +25,7 @@ import {
   EDITABLE_STATUS_OPTIONS,
   REPORT_TYPE_OPTIONS,
 } from './problem-workspace.constants';
+import { ProblemLocationPicker } from './ProblemLocationPicker';
 
 interface RequestDetailPanelProps {
   cityId: string;
@@ -115,6 +116,14 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
           <Typography color="text.secondary">
             {detail.description || t('cityProblem.noDescription')}
           </Typography>
+
+          <ProblemLocationPicker
+            lat={String(detail.locationLat ?? '')}
+            lng={String(detail.locationLng ?? '')}
+            readOnly
+            titleKey="cityProblem.map.previewTitle"
+            hintKey="cityProblem.map.previewHint"
+          />
 
           <Divider />
 

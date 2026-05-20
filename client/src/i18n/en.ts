@@ -93,12 +93,20 @@ export const en = {
       listTitle: 'All city requests',
       controlsTitle: 'Municipality controls',
     },
+    map: {
+      title: 'Problem location',
+      hint: 'Click on the map to place a marker and fill coordinates automatically.',
+      previewTitle: 'Location preview',
+      previewHint: 'Marker preview for the selected request.',
+    },
     timelineTitle: 'Request timeline',
     timelineEmpty: 'No reports yet.',
     timelineNoDescription: 'No report description provided.',
     errors: {
       required: 'Title and coordinates are required.',
       coordinatesInvalid: 'Coordinates must be valid numbers.',
+      coordinatesOutOfRange:
+        'Coordinates are out of range (lat: -90..90, lng: -180..180).',
       createFailed: 'Failed to create request.',
       messageFailed: 'Failed to send message.',
       departmentRequired: 'Department selection is required.',
