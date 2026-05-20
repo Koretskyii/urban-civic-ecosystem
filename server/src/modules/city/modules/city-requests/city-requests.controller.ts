@@ -28,6 +28,8 @@ import {
   GetCityRequestsQueryDto,
   UpdateCityRequestStatusDto,
 } from './dto';
+import { CityRequestsGateway } from './city-requests.gateway';
+import type { CityRequestRealtimeEnvelope } from './city-requests.events';
 
 @Controller('city/:cityId')
 @UseGuards(JWTGuard)
@@ -39,7 +41,10 @@ import {
   }),
 )
 export class CityRequestsController {
-  constructor(private readonly cityRequestsService: CityRequestsService) {}
+  constructor(
+    private readonly cityRequestsService: CityRequestsService,
+    private readonly cityRequestsGateway: CityRequestsGateway,
+  ) {}
 
   @Post('requests')
   @UseGuards(PermissionsGuard)
@@ -81,12 +86,19 @@ export class CityRequestsController {
     @Req() req: RequestWithUser,
     @Body() dto: AssignCityRequestDto,
   ) {
-    return this.cityRequestsService.assignDepartment(
+    const assignment = await this.cityRequestsService.assignDepartment(
       cityId,
       requestId,
       req.user.id,
       dto,
     );
+
+    this.cityRequestsGateway.emitAssignmentUpdated(
+      requestId,
+      this.buildRealtimeEnvelope(requestId, assignment),
+    );
+
+    return assignment;
   }
 
   @Patch('requests/:requestId/status')
@@ -98,7 +110,19 @@ export class CityRequestsController {
     @Req() req: RequestWithUser,
     @Body() dto: UpdateCityRequestStatusDto,
   ) {
-    return this.cityRequestsService.updateStatus(cityId, requestId, req.user.id, dto);
+    const updatedRequest = await this.cityRequestsService.updateStatus(
+      cityId,
+      requestId,
+      req.user.id,
+      dto,
+    );
+
+    this.cityRequestsGateway.emitStatusUpdated(
+      requestId,
+      this.buildRealtimeEnvelope(requestId, updatedRequest),
+    );
+
+    return updatedRequest;
   }
 
   @Post('requests/:requestId/reports')
@@ -112,13 +136,20 @@ export class CityRequestsController {
     @Body() dto: CreateReportDto,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    return this.cityRequestsService.createReport(
+    const report = await this.cityRequestsService.createReport(
       cityId,
       requestId,
       req.user.id,
       dto,
       files,
     );
+
+    this.cityRequestsGateway.emitReportCreated(
+      requestId,
+      this.buildRealtimeEnvelope(requestId, report),
+    );
+
+    return report;
   }
 
   @Post('requests/:requestId/messages')
@@ -130,12 +161,19 @@ export class CityRequestsController {
     @Req() req: RequestWithUser,
     @Body() dto: CreateMessageDto,
   ) {
-    return this.cityRequestsService.createMessage(
+    const message = await this.cityRequestsService.createMessage(
       cityId,
       requestId,
       req.user.id,
       dto,
     );
+
+    this.cityRequestsGateway.emitMessageCreated(
+      requestId,
+      this.buildRealtimeEnvelope(requestId, message),
+    );
+
+    return message;
   }
 
   @Get('requests/:requestId/messages')
@@ -150,5 +188,14 @@ export class CityRequestsController {
   @Get('departments')
   async getDepartments(@Param('cityId') cityId: string, @Req() req: RequestWithUser) {
     return this.cityRequestsService.getDepartments(cityId, req.user.id);
+  }
+
+  private buildRealtimeEnvelope(requestId: string, payload: unknown) {
+    // REST endpoints are source of truth; websocket events carry lightweight change notifications.
+    return {
+      requestId,
+      emittedAt: new Date().toISOString(),
+      payload,
+    } satisfies CityRequestRealtimeEnvelope;
   }
 }

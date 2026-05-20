@@ -418,6 +418,27 @@ export class CityRequestsService {
     });
   }
 
+  async assertRequestRoomAccess(requestId: string, userId: string) {
+    const request = await this.prisma.cityRequest.findFirst({
+      where: { id: requestId },
+      select: {
+        cityId: true,
+        userId: true,
+      },
+    });
+
+    if (!request) {
+      throw new NotFoundException('City request not found');
+    }
+
+    await this.ensureCanAccessRequest(request.cityId, userId, request.userId);
+
+    return {
+      cityId: request.cityId,
+      requestId,
+    };
+  }
+
   private async ensureCityMembership(cityId: string, userId: string) {
     const membership = await this.prisma.userCity.findUnique({
       where: {
