@@ -1,7 +1,13 @@
-import { getTranslations } from 'next-intl/server';
+import ProblemWorkspace from './_components/ProblemWorkspace';
 
-export default async function CityProblemPage() {
-  const t = await getTranslations();
+interface CityProblemPageProps {
+  params: Promise<{ id: string }>;
+}
 
-  return <h2>{t('cityPages.problemComingSoon')}</h2>;
+export default async function CityProblemPage({
+  params,
+}: CityProblemPageProps) {
+  const { id: cityId } = await params;
+
+  return <ProblemWorkspace cityId={cityId} />;
 }
