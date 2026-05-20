@@ -11,6 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
+import { ProblemLocationPicker } from './ProblemLocationPicker';
 
 interface CitizenCreateRequestFormProps {
   title: string;
@@ -18,6 +19,7 @@ interface CitizenCreateRequestFormProps {
   lat: string;
   lng: string;
   formError: string;
+  hasCoordinateError: boolean;
   isSubmitting: boolean;
   isError: boolean;
   onTitleChange: (value: string) => void;
@@ -35,6 +37,7 @@ export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
     lat,
     lng,
     formError,
+    hasCoordinateError,
     isSubmitting,
     isError,
     onTitleChange,
@@ -75,15 +78,25 @@ export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
               label={t('cityProblem.fields.lat')}
               value={lat}
               onChange={(event) => onLatChange(event.target.value)}
+              error={hasCoordinateError}
+              inputProps={{ inputMode: 'decimal' }}
               required
             />
             <TextField
               label={t('cityProblem.fields.lng')}
               value={lng}
               onChange={(event) => onLngChange(event.target.value)}
+              error={hasCoordinateError}
+              inputProps={{ inputMode: 'decimal' }}
               required
             />
           </Stack>
+          <ProblemLocationPicker
+            lat={lat}
+            lng={lng}
+            onLatChange={onLatChange}
+            onLngChange={onLngChange}
+          />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             {isSubmitting
               ? t('cityProblem.actions.creating')

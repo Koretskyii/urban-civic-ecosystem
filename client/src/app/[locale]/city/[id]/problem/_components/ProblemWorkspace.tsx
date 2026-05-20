@@ -17,6 +17,7 @@ import {
   useUpdateCityRequestStatus,
 } from '@/hooks';
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
+import { validateCoordinates } from '@/features/city-requests';
 import type { CityRequestStatus, ReportType } from '@/types';
 import { CitizenCreateRequestForm } from './CitizenCreateRequestForm';
 import { MunicipalityQueueHeader } from './MunicipalityQueueHeader';
@@ -28,6 +29,12 @@ interface ProblemWorkspaceProps {
   cityId: string;
 }
 
+type CreateRequestErrorKey =
+  | ''
+  | 'required'
+  | 'coordinatesInvalid'
+  | 'coordinatesOutOfRange';
+
 export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const t = useTranslations();
 
@@ -37,7 +44,8 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [message, setMessage] = useState('');
-  const [formError, setFormError] = useState<string>('');
+  const [createRequestError, setCreateRequestError] =
+    useState<CreateRequestErrorKey>('');
   const [viewMode, setViewMode] = useState<'citizen' | 'municipality'>(
     'citizen',
   );
@@ -98,30 +106,42 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const assignDepartmentMutation = useAssignCityRequestDepartment();
   const updateStatusMutation = useUpdateCityRequestStatus();
   const createReportMutation = useCreateCityRequestReport();
+  const formError = createRequestError
+    ? t(`cityProblem.errors.${createRequestError}`)
+    : '';
+  const hasCoordinateError =
+    createRequestError === 'coordinatesInvalid' ||
+    createRequestError === 'coordinatesOutOfRange';
 
   const onCreateRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setFormError('');
+    setCreateRequestError('');
 
     if (!title.trim() || !lat.trim() || !lng.trim()) {
-      setFormError(t('cityProblem.errors.required'));
+      setCreateRequestError('required');
       return;
     }
 
-    const parsedLat = Number(lat);
-    const parsedLng = Number(lng);
-    if (!Number.isFinite(parsedLat) || !Number.isFinite(parsedLng)) {
-      setFormError(t('cityProblem.errors.coordinatesInvalid'));
+    const coordinateValidation = validateCoordinates(lat.trim(), lng.trim());
+    if (!coordinateValidation.ok) {
+      setCreateRequestError(
+        coordinateValidation.reason === 'invalid_number'
+          ? 'coordinatesInvalid'
+          : 'coordinatesOutOfRange',
+      );
       return;
     }
+
+    setLat(coordinateValidation.normalizedLat);
+    setLng(coordinateValidation.normalizedLng);
 
     await createRequestMutation.mutateAsync({
       cityId,
       payload: {
         title: title.trim(),
         description: description.trim() || undefined,
-        locationLat: parsedLat,
-        locationLng: parsedLng,
+        locationLat: coordinateValidation.lat,
+        locationLng: coordinateValidation.lng,
       },
     });
 
@@ -129,6 +149,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     setDescription('');
     setLat('');
     setLng('');
+    setCreateRequestError('');
   };
 
   const onSendMessage = async (event: FormEvent<HTMLFormElement>) => {
@@ -230,12 +251,25 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           lat={lat}
           lng={lng}
           formError={formError}
+          hasCoordinateError={hasCoordinateError}
           isSubmitting={createRequestMutation.isPending}
           isError={createRequestMutation.isError}
-          onTitleChange={setTitle}
-          onDescriptionChange={setDescription}
-          onLatChange={setLat}
-          onLngChange={setLng}
+          onTitleChange={(value) => {
+            setTitle(value);
+            setCreateRequestError('');
+          }}
+          onDescriptionChange={(value) => {
+            setDescription(value);
+            setCreateRequestError('');
+          }}
+          onLatChange={(value) => {
+            setLat(value);
+            setCreateRequestError('');
+          }}
+          onLngChange={(value) => {
+            setLng(value);
+            setCreateRequestError('');
+          }}
           onSubmit={onCreateRequest}
         />
       ) : (
