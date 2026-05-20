@@ -30,8 +30,9 @@ import {
 } from './dto';
 import { CityRequestsGateway } from './city-requests.gateway';
 import {
-  CITY_REQUESTS_SOCKET_EVENTS,
+  CITY_REQUESTS_MUTATION_EVENTS,
   type CityRequestRealtimeEnvelope,
+  type CityRequestsMutationEvent,
 } from './city-requests.events';
 
 @Controller('city/:cityId')
@@ -193,29 +194,14 @@ export class CityRequestsController {
   // Centralized mapping keeps realtime contract consistent across all REST emit points.
   private emitRealtimeEvent(
     requestId: string,
-    event: keyof Pick<
-      typeof CITY_REQUESTS_SOCKET_EVENTS,
-      | 'ASSIGNMENT_UPDATED'
-      | 'STATUS_UPDATED'
-      | 'REPORT_CREATED'
-      | 'MESSAGE_CREATED'
-    >,
+    event: CityRequestsMutationEvent,
     payload: unknown,
   ) {
     const envelope = this.buildRealtimeEnvelope(requestId, payload);
-
-    if (event === 'ASSIGNMENT_UPDATED') {
-      this.cityRequestsGateway.emitAssignmentUpdated(requestId, envelope);
-      return;
-    }
-    if (event === 'STATUS_UPDATED') {
-      this.cityRequestsGateway.emitStatusUpdated(requestId, envelope);
-      return;
-    }
-    if (event === 'REPORT_CREATED') {
-      this.cityRequestsGateway.emitReportCreated(requestId, envelope);
-      return;
-    }
-    this.cityRequestsGateway.emitMessageCreated(requestId, envelope);
+    this.cityRequestsGateway.emitMutationEvent(
+      requestId,
+      CITY_REQUESTS_MUTATION_EVENTS[event],
+      envelope,
+    );
   }
 }
