@@ -13,6 +13,7 @@ import { Server, Socket } from 'socket.io';
 import { CityRequestsService } from './city-requests.service';
 import type { JwtPayload } from '@/types/auth.types';
 import { CITY_REQUESTS_SOCKET_EVENTS } from './city-requests.events';
+import { CITY_REQUESTS_CONSTANTS } from './city-requests.constants';
 
 type SocketWithUser = Socket & {
   data: {
@@ -44,27 +45,35 @@ export class CityRequestsGateway implements OnGatewayConnection {
   ) {}
 
   emitMessageCreated(requestId: string, payload: unknown) {
-    this.server
-      .to(this.getRequestRoomName(requestId))
-      .emit(CITY_REQUESTS_SOCKET_EVENTS.MESSAGE_CREATED, payload);
+    this.emitToRequestRoom(
+      requestId,
+      CITY_REQUESTS_SOCKET_EVENTS.MESSAGE_CREATED,
+      payload,
+    );
   }
 
   emitReportCreated(requestId: string, payload: unknown) {
-    this.server
-      .to(this.getRequestRoomName(requestId))
-      .emit(CITY_REQUESTS_SOCKET_EVENTS.REPORT_CREATED, payload);
+    this.emitToRequestRoom(
+      requestId,
+      CITY_REQUESTS_SOCKET_EVENTS.REPORT_CREATED,
+      payload,
+    );
   }
 
   emitStatusUpdated(requestId: string, payload: unknown) {
-    this.server
-      .to(this.getRequestRoomName(requestId))
-      .emit(CITY_REQUESTS_SOCKET_EVENTS.STATUS_UPDATED, payload);
+    this.emitToRequestRoom(
+      requestId,
+      CITY_REQUESTS_SOCKET_EVENTS.STATUS_UPDATED,
+      payload,
+    );
   }
 
   emitAssignmentUpdated(requestId: string, payload: unknown) {
-    this.server
-      .to(this.getRequestRoomName(requestId))
-      .emit(CITY_REQUESTS_SOCKET_EVENTS.ASSIGNMENT_UPDATED, payload);
+    this.emitToRequestRoom(
+      requestId,
+      CITY_REQUESTS_SOCKET_EVENTS.ASSIGNMENT_UPDATED,
+      payload,
+    );
   }
 
   async handleConnection(client: SocketWithUser) {
@@ -146,6 +155,14 @@ export class CityRequestsGateway implements OnGatewayConnection {
   }
 
   private getRequestRoomName(requestId: string) {
-    return `city-request:${requestId}`;
+    return `${CITY_REQUESTS_CONSTANTS.ROOM_PREFIX}:${requestId}`;
+  }
+
+  private emitToRequestRoom(
+    requestId: string,
+    eventName: string,
+    payload: unknown,
+  ) {
+    this.server.to(this.getRequestRoomName(requestId)).emit(eventName, payload);
   }
 }

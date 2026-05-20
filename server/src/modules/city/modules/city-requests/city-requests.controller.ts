@@ -29,7 +29,10 @@ import {
   UpdateCityRequestStatusDto,
 } from './dto';
 import { CityRequestsGateway } from './city-requests.gateway';
-import type { CityRequestRealtimeEnvelope } from './city-requests.events';
+import {
+  CITY_REQUESTS_SOCKET_EVENTS,
+  type CityRequestRealtimeEnvelope,
+} from './city-requests.events';
 
 @Controller('city/:cityId')
 @UseGuards(JWTGuard)
@@ -93,10 +96,7 @@ export class CityRequestsController {
       dto,
     );
 
-    this.cityRequestsGateway.emitAssignmentUpdated(
-      requestId,
-      this.buildRealtimeEnvelope(requestId, assignment),
-    );
+    this.emitRealtimeEvent(requestId, 'ASSIGNMENT_UPDATED', assignment);
 
     return assignment;
   }
@@ -117,10 +117,7 @@ export class CityRequestsController {
       dto,
     );
 
-    this.cityRequestsGateway.emitStatusUpdated(
-      requestId,
-      this.buildRealtimeEnvelope(requestId, updatedRequest),
-    );
+    this.emitRealtimeEvent(requestId, 'STATUS_UPDATED', updatedRequest);
 
     return updatedRequest;
   }
@@ -144,10 +141,7 @@ export class CityRequestsController {
       files,
     );
 
-    this.cityRequestsGateway.emitReportCreated(
-      requestId,
-      this.buildRealtimeEnvelope(requestId, report),
-    );
+    this.emitRealtimeEvent(requestId, 'REPORT_CREATED', report);
 
     return report;
   }
@@ -168,10 +162,7 @@ export class CityRequestsController {
       dto,
     );
 
-    this.cityRequestsGateway.emitMessageCreated(
-      requestId,
-      this.buildRealtimeEnvelope(requestId, message),
-    );
+    this.emitRealtimeEvent(requestId, 'MESSAGE_CREATED', message);
 
     return message;
   }
@@ -197,5 +188,34 @@ export class CityRequestsController {
       emittedAt: new Date().toISOString(),
       payload,
     } satisfies CityRequestRealtimeEnvelope;
+  }
+
+  // Centralized mapping keeps realtime contract consistent across all REST emit points.
+  private emitRealtimeEvent(
+    requestId: string,
+    event: keyof Pick<
+      typeof CITY_REQUESTS_SOCKET_EVENTS,
+      | 'ASSIGNMENT_UPDATED'
+      | 'STATUS_UPDATED'
+      | 'REPORT_CREATED'
+      | 'MESSAGE_CREATED'
+    >,
+    payload: unknown,
+  ) {
+    const envelope = this.buildRealtimeEnvelope(requestId, payload);
+
+    if (event === 'ASSIGNMENT_UPDATED') {
+      this.cityRequestsGateway.emitAssignmentUpdated(requestId, envelope);
+      return;
+    }
+    if (event === 'STATUS_UPDATED') {
+      this.cityRequestsGateway.emitStatusUpdated(requestId, envelope);
+      return;
+    }
+    if (event === 'REPORT_CREATED') {
+      this.cityRequestsGateway.emitReportCreated(requestId, envelope);
+      return;
+    }
+    this.cityRequestsGateway.emitMessageCreated(requestId, envelope);
   }
 }

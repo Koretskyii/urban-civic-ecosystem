@@ -18,6 +18,10 @@ import {
   GetCityRequestsQueryDto,
   UpdateCityRequestStatusDto,
 } from './dto';
+import {
+  CITY_REQUESTS_CONSTANTS,
+  CITY_REQUESTS_ERRORS,
+} from './city-requests.constants';
 
 @Injectable()
 export class CityRequestsService {
@@ -55,7 +59,7 @@ export class CityRequestsService {
         data: {
           cityId,
           cityRequestId: cityRequest.id,
-          contextType: 'cityRequest',
+          contextType: CITY_REQUESTS_CONSTANTS.CONTEXT_TYPE,
         },
       });
 
@@ -71,9 +75,9 @@ export class CityRequestsService {
             fileName: attachment.fileName,
             mimeType: attachment.mimeType,
             url: attachment.url,
-            type: 'REQUEST_ATTACHMENT',
+            type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REQUEST,
             entityId: cityRequest.id,
-            entityType: 'CITY_REQUEST',
+            entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.CITY_REQUEST,
             cityRequestId: cityRequest.id,
           })),
         });
@@ -176,7 +180,7 @@ export class CityRequestsService {
     });
 
     if (!request) {
-      throw new NotFoundException('City request not found');
+      throw new NotFoundException(CITY_REQUESTS_ERRORS.REQUEST_NOT_FOUND);
     }
 
     await this.ensureCanAccessRequest(cityId, userId, request.userId);
@@ -200,11 +204,11 @@ export class CityRequestsService {
     ]);
 
     if (!request) {
-      throw new NotFoundException('City request not found');
+      throw new NotFoundException(CITY_REQUESTS_ERRORS.REQUEST_NOT_FOUND);
     }
 
     if (!department) {
-      throw new BadRequestException('Department is not available');
+      throw new BadRequestException(CITY_REQUESTS_ERRORS.DEPARTMENT_UNAVAILABLE);
     }
 
     return this.prisma.cityRequest.update({
@@ -230,20 +234,14 @@ export class CityRequestsService {
   ) {
     await this.ensureManagePermission(cityId, userId);
 
-    const request = await this.prisma.cityRequest.findFirst({
-      where: { id: requestId, cityId },
-    });
-
-    if (!request) {
-      throw new NotFoundException('City request not found');
-    }
+    await this.getCityRequestOrThrow(cityId, requestId);
 
     if (
       dto.status === RequestStatus.RESOLVED ||
       dto.status === RequestStatus.REJECTED
     ) {
       throw new BadRequestException(
-        'Use reports endpoint for RESOLVED/REJECTED with required report content',
+        CITY_REQUESTS_ERRORS.RESOLVE_REJECT_USE_REPORT,
       );
     }
 
@@ -265,20 +263,14 @@ export class CityRequestsService {
   ) {
     await this.ensureManagePermission(cityId, userId);
 
-    const request = await this.prisma.cityRequest.findFirst({
-      where: { id: requestId, cityId },
-    });
-
-    if (!request) {
-      throw new NotFoundException('City request not found');
-    }
+    await this.getCityRequestOrThrow(cityId, requestId);
 
     if (
       (dto.type === ReportType.RESOLUTION || dto.type === ReportType.REJECTION) &&
       !dto.description?.trim()
     ) {
       throw new BadRequestException(
-        'Resolution and rejection reports require description',
+        CITY_REQUESTS_ERRORS.RESOLUTION_REJECTION_REQUIRES_DESCRIPTION,
       );
     }
 
@@ -306,9 +298,9 @@ export class CityRequestsService {
             fileName: attachment.fileName,
             mimeType: attachment.mimeType,
             url: attachment.url,
-            type: 'REPORT_ATTACHMENT',
+            type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REPORT,
             entityId: report.id,
-            entityType: 'REPORT',
+            entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.REPORT,
             reportId: report.id,
           })),
         });
@@ -355,7 +347,7 @@ export class CityRequestsService {
     });
 
     if (!request || !request.chat) {
-      throw new NotFoundException('City request chat not found');
+      throw new NotFoundException(CITY_REQUESTS_ERRORS.CHAT_NOT_FOUND);
     }
 
     await this.ensureCanAccessRequest(cityId, userId, request.userId);
@@ -384,7 +376,7 @@ export class CityRequestsService {
     });
 
     if (!request || !request.chat) {
-      throw new NotFoundException('City request chat not found');
+      throw new NotFoundException(CITY_REQUESTS_ERRORS.CHAT_NOT_FOUND);
     }
 
     await this.ensureCanAccessRequest(cityId, userId, request.userId);
@@ -428,7 +420,7 @@ export class CityRequestsService {
     });
 
     if (!request) {
-      throw new NotFoundException('City request not found');
+      throw new NotFoundException(CITY_REQUESTS_ERRORS.REQUEST_NOT_FOUND);
     }
 
     await this.ensureCanAccessRequest(request.cityId, userId, request.userId);
@@ -450,7 +442,7 @@ export class CityRequestsService {
     });
 
     if (!membership) {
-      throw new ForbiddenException('User is not a city member');
+      throw new ForbiddenException(CITY_REQUESTS_ERRORS.USER_NOT_CITY_MEMBER);
     }
   }
 
@@ -464,7 +456,7 @@ export class CityRequestsService {
     );
 
     if (!hasPermission) {
-      throw new ForbiddenException('Insufficient permissions to manage city requests');
+      throw new ForbiddenException(CITY_REQUESTS_ERRORS.INSUFFICIENT_MANAGE_PERMISSIONS);
     }
   }
 
@@ -530,5 +522,17 @@ export class CityRequestsService {
         };
       }),
     );
+  }
+
+  private async getCityRequestOrThrow(cityId: string, requestId: string) {
+    const request = await this.prisma.cityRequest.findFirst({
+      where: { id: requestId, cityId },
+    });
+
+    if (!request) {
+      throw new NotFoundException(CITY_REQUESTS_ERRORS.REQUEST_NOT_FOUND);
+    }
+
+    return request;
   }
 }
