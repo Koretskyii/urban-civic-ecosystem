@@ -294,7 +294,12 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           isLoading={requestsQuery.isLoading}
           viewMode={viewMode}
           activeRequestId={activeRequestId}
-          onSelect={setSelectedRequestId}
+          onSelect={(requestId) => {
+            setSelectedRequestId(requestId);
+            setSelectedDepartmentId('');
+            setNextStatus('IN_PROGRESS');
+            setMunicipalityError('');
+          }}
         />
 
         <RequestDetailPanel

@@ -1,10 +1,12 @@
 'use client';
 
 import {
+  Chip,
   List,
   ListItemButton,
   ListItemText,
   Paper,
+  Stack,
   Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -41,10 +43,37 @@ export function RequestListPanel(props: RequestListPanelProps) {
               key={request.id}
               selected={request.id === activeRequestId}
               onClick={() => onSelect(request.id)}
+              sx={{ alignItems: 'flex-start' }}
             >
               <ListItemText
                 primary={request.title}
-                secondary={`${request.user.name} - ${request.status} - p${request.priority}`}
+                secondary={
+                  <Stack spacing={0.75} sx={{ mt: 0.5 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      {request.user.name}
+                    </Typography>
+                    <Stack direction="row" spacing={0.75} flexWrap="wrap">
+                      <Chip
+                        size="small"
+                        color="primary"
+                        label={request.status}
+                      />
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label={`P${request.priority}`}
+                      />
+                      {request.assignedDepartment?.name ? (
+                        <Chip
+                          size="small"
+                          variant="outlined"
+                          color="secondary"
+                          label={request.assignedDepartment.name}
+                        />
+                      ) : null}
+                    </Stack>
+                  </Stack>
+                }
               />
             </ListItemButton>
           ))}
