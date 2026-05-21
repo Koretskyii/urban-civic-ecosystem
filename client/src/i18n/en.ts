@@ -92,6 +92,8 @@ export const en = {
       queueHint: 'Use this queue to process requests and coordinate services.',
       listTitle: 'All city requests',
       controlsTitle: 'Municipality controls',
+      reportTextRequiredHint:
+        'Resolution and rejection reports must include report text.',
     },
     map: {
       title: 'Problem location',
@@ -102,6 +104,8 @@ export const en = {
     timelineTitle: 'Request timeline',
     timelineEmpty: 'No reports yet.',
     timelineNoDescription: 'No report description provided.',
+    attachmentsTitle: 'Request attachments',
+    attachmentsEmpty: 'No attachments uploaded.',
     errors: {
       required: 'Title and coordinates are required.',
       coordinatesInvalid: 'Coordinates must be valid numbers.',

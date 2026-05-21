@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import type {
+  Attachment,
   CityRequestDetail,
   CityRequestMessage,
   CityRequestStatus,
@@ -58,6 +59,32 @@ interface RequestDetailPanelProps {
   municipalityError: string;
 }
 
+function AttachmentLinks({
+  attachments,
+  variant,
+}: {
+  attachments: Attachment[];
+  variant: 'text' | 'outlined';
+}) {
+  return (
+    <Stack direction="row" spacing={1} flexWrap="wrap">
+      {attachments.map((attachment) => (
+        <Button
+          key={attachment.id}
+          href={attachment.url}
+          target="_blank"
+          rel="noreferrer"
+          size="small"
+          variant={variant}
+          sx={variant === 'text' ? { p: 0, minWidth: 0 } : undefined}
+        >
+          {attachment.fileName || attachment.url}
+        </Button>
+      ))}
+    </Stack>
+  );
+}
+
 export function RequestDetailPanel(props: RequestDetailPanelProps) {
   const t = useTranslations();
   const {
@@ -89,6 +116,18 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
     isCreatingReport,
     municipalityError,
   } = props;
+  const isFinalStatus = nextStatus === 'RESOLVED' || nextStatus === 'REJECTED';
+  const isReportTextRequired =
+    reportType === 'RESOLUTION' || reportType === 'REJECTION';
+  const isReportTextEmpty = reportText.trim().length === 0;
+  const isResolvedOrRejected =
+    detail?.status === 'RESOLVED' || detail?.status === 'REJECTED';
+  const assignDisabled =
+    isAssigning || !selectedDepartmentId || isResolvedOrRejected;
+  const statusUpdateDisabled =
+    isUpdatingStatus || isFinalStatus || isResolvedOrRejected;
+  const createReportDisabled =
+    isCreatingReport || (isReportTextRequired && isReportTextEmpty);
 
   return (
     <Paper sx={{ p: 2, flex: 2, minHeight: 420 }}>
@@ -147,12 +186,36 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                       {report.description ||
                         t('cityProblem.timelineNoDescription')}
                     </Typography>
+                    {report.attachments.length > 0 ? (
+                      <Box sx={{ mt: 0.75 }}>
+                        <AttachmentLinks
+                          attachments={report.attachments}
+                          variant="text"
+                        />
+                      </Box>
+                    ) : null}
                     <Typography variant="caption" color="text.secondary">
                       {report.author.name}
                     </Typography>
                   </Box>
                 ))}
               </Stack>
+            )}
+          </Paper>
+
+          <Paper variant="outlined" sx={{ p: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1 }}>
+              {t('cityProblem.attachmentsTitle')}
+            </Typography>
+            {detail.attachments.length === 0 ? (
+              <Typography color="text.secondary">
+                {t('cityProblem.attachmentsEmpty')}
+              </Typography>
+            ) : (
+              <AttachmentLinks
+                attachments={detail.attachments}
+                variant="outlined"
+              />
             )}
           </Paper>
 
@@ -188,7 +251,7 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                   <Button
                     variant="outlined"
                     onClick={onAssignDepartment}
-                    disabled={isAssigning}
+                    disabled={assignDisabled}
                   >
                     {t('cityProblem.actions.assign')}
                   </Button>
@@ -215,11 +278,16 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                   <Button
                     variant="outlined"
                     onClick={onUpdateStatus}
-                    disabled={isUpdatingStatus}
+                    disabled={statusUpdateDisabled}
                   >
                     {t('cityProblem.actions.updateStatus')}
                   </Button>
                 </Stack>
+                {isFinalStatus ? (
+                  <Alert severity="info">
+                    {t('cityProblem.errors.useReportForFinalStatus')}
+                  </Alert>
+                ) : null}
 
                 <Box component="form" onSubmit={onCreateReport}>
                   <Stack spacing={1}>
@@ -242,6 +310,13 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                       minRows={3}
                       label={t('cityProblem.fields.reportText')}
                       value={reportText}
+                      required={isReportTextRequired}
+                      error={isReportTextRequired && isReportTextEmpty}
+                      helperText={
+                        isReportTextRequired
+                          ? t('cityProblem.municipality.reportTextRequiredHint')
+                          : undefined
+                      }
                       onChange={(event) =>
                         onReportTextChange(event.target.value)
                       }
@@ -249,7 +324,7 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={isCreatingReport}
+                      disabled={createReportDisabled}
                     >
                       {t('cityProblem.actions.createReport')}
                     </Button>

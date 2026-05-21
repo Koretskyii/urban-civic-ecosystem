@@ -93,6 +93,8 @@ export const uk = {
         'Використовуйте цю чергу для опрацювання звернень і координації служб.',
       listTitle: 'Усі міські звернення',
       controlsTitle: 'Інструменти муніципалітету',
+      reportTextRequiredHint:
+        'Для звітів RESOLUTION/REJECTION потрібно заповнити текст звіту.',
     },
     map: {
       title: 'Локація проблеми',
@@ -103,6 +105,8 @@ export const uk = {
     timelineTitle: 'Таймлайн звернення',
     timelineEmpty: 'Звітів поки немає.',
     timelineNoDescription: 'Опис звіту відсутній.',
+    attachmentsTitle: 'Вкладення звернення',
+    attachmentsEmpty: 'Вкладення відсутні.',
     errors: {
       required: 'Заголовок і координати є обовʼязковими.',
       coordinatesInvalid: 'Координати мають бути коректними числами.',
