@@ -19,6 +19,11 @@ export const API_ROUTES = {
     verifyDomain: '/city/domain/verify',
     initializeCity: '/city/initialize',
   },
+  cityMembers: {
+    all: (cityId: string): string => `/city/${cityId}/members`,
+    role: (cityId: string, userId: string): string =>
+      `/city/${cityId}/members/${userId}/role`,
+  },
   alerts: {
     all: (cityId: string): string => `/city/${cityId}/alerts`,
   },

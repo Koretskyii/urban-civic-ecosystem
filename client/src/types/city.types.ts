@@ -63,3 +63,11 @@ export interface DomainVerificationData {
   domain: string;
   token: string;
 }
+
+export interface CityMember {
+  userId: string;
+  name: string;
+  email: string;
+  joinedAt: string;
+  role: 'admin' | 'citizen' | 'organizer' | 'municipality';
+}

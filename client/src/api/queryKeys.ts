@@ -31,6 +31,11 @@ export const queryKeys = {
       ['city-requests', cityId, 'messages', requestId] as const,
   },
 
+  cityMembers: {
+    all: (cityId: string) => ['city-members', cityId] as const,
+    list: (cityId: string) => ['city-members', cityId, 'list'] as const,
+  },
+
   projects: {
     all: (cityId: string) => ['projects', cityId] as const,
     detail: (id: string) => ['projects', 'detail', id] as const,

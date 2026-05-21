@@ -7,6 +7,7 @@ export {
 } from './useAuth';
 
 export { useCities, useCityById, useJoinCity } from './useCities';
+export { useCityMembers, useUpdateCityMemberRole } from './useCityMembers';
 export {
   useAssignCityRequestDepartment,
   useCityDepartments,
