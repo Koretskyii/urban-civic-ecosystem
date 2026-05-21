@@ -8,6 +8,7 @@ import { NewsModule } from './modules/news/news.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CommunityModule } from './modules/community/community.module';
 import { CityRequestsModule } from './modules/city-requests/city-requests.module';
+import { CityMembersModule } from './modules/city-members/city-members.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CityRequestsModule } from './modules/city-requests/city-requests.module
     PostsModule,
     CommunityModule,
     CityRequestsModule,
+    CityMembersModule,
   ],
   controllers: [CityController],
   providers: [CityService],
