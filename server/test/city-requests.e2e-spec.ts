@@ -147,6 +147,10 @@ describe('CityRequests flow (e2e)', () => {
     if (app) {
       await app.close();
     }
+
+    if (prisma) {
+      await prisma.$disconnect();
+    }
   });
 
   it('create -> assign -> report -> chat -> resolve', async () => {
