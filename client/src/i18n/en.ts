@@ -128,8 +128,28 @@ export const en = {
       alerts: 'Announcements',
       posts: 'Posts',
       community: 'Community',
+      members: 'Members',
       projects: 'Projects',
       problem: 'Report a problem',
+    },
+  },
+  cityLayout: {
+    myRole: 'My role',
+  },
+  cityMembers: {
+    title: 'City members and roles',
+    empty: 'No city members found.',
+    loadError: 'Failed to load city members.',
+    updateErrorFallback: 'Failed to update member role.',
+    roleLabel: 'Role',
+    save: 'Save role',
+    saving: 'Saving...',
+    joinedAt: 'Joined at',
+    roles: {
+      admin: 'Admin',
+      municipality: 'Municipality',
+      organizer: 'Organizer',
+      citizen: 'Citizen',
     },
   },
   cityHome: {

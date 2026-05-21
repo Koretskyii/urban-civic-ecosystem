@@ -130,8 +130,28 @@ export const uk = {
       alerts: 'Оголошення',
       posts: 'Пости',
       community: "Ком'юніті",
+      members: 'Учасники',
       projects: 'Проєкти',
       problem: 'Реєстрація проблеми',
+    },
+  },
+  cityLayout: {
+    myRole: 'Моя роль',
+  },
+  cityMembers: {
+    title: 'Учасники міста та ролі',
+    empty: 'Учасників міста не знайдено.',
+    loadError: 'Не вдалося завантажити учасників міста.',
+    updateErrorFallback: 'Не вдалося оновити роль учасника.',
+    roleLabel: 'Роль',
+    save: 'Зберегти роль',
+    saving: 'Збереження...',
+    joinedAt: 'Приєднався',
+    roles: {
+      admin: 'Адмін',
+      municipality: 'Муніципалітет',
+      organizer: 'Організатор',
+      citizen: 'Мешканець',
     },
   },
   cityHome: {
