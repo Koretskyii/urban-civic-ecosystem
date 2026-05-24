@@ -8,6 +8,7 @@ import {
   usePermission,
   useCityRequestDetail,
   useCityRequestMessages,
+  useCityById,
   useCityRequestRealtime,
   useCityRequestsList,
   useCityDepartments,
@@ -18,7 +19,11 @@ import {
   useUpdateCityRequestStatus,
 } from '@/hooks';
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
-import { validateCoordinates } from '@/features/city-requests';
+import {
+  DEFAULT_CITY_MAP_CENTER,
+  normalizeCoordinate,
+  validateCoordinates,
+} from '@/features/city-requests';
 import type { CityRequestStatus, ReportType } from '@/types';
 import { CitizenCreateRequestForm } from './CitizenCreateRequestForm';
 import { MunicipalityQueueHeader } from './MunicipalityQueueHeader';
@@ -36,6 +41,26 @@ type CreateRequestErrorKey =
   | 'required'
   | 'coordinatesInvalid'
   | 'coordinatesOutOfRange';
+
+const isUsableCityCenter = (lat: unknown, lng: unknown): boolean => {
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    return false;
+  }
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return false;
+  }
+
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return false;
+  }
+
+  if (lat === 0 || lng === 0) {
+    return false;
+  }
+
+  return true;
+};
 
 export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const t = useTranslations();
@@ -93,6 +118,32 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   }, [requestsQuery.data, viewMode, filterPriority]);
 
   const activeRequestId = selectedRequestId || requests[0]?.id || '';
+  const cityQuery = useCityById(cityId);
+  const cityDefaultCenter = useMemo(() => {
+    const centerLat = cityQuery.data?.centerLat;
+    const centerLng = cityQuery.data?.centerLng;
+
+    if (
+      typeof centerLat === 'number' &&
+      typeof centerLng === 'number' &&
+      isUsableCityCenter(centerLat, centerLng)
+    ) {
+      return { lat: centerLat, lng: centerLng };
+    }
+
+    return undefined;
+  }, [cityQuery.data]);
+  const effectiveDefaultCenter = cityDefaultCenter ?? DEFAULT_CITY_MAP_CENTER;
+  const fallbackLat = useMemo(
+    () => normalizeCoordinate(effectiveDefaultCenter.lat),
+    [effectiveDefaultCenter.lat],
+  );
+  const fallbackLng = useMemo(
+    () => normalizeCoordinate(effectiveDefaultCenter.lng),
+    [effectiveDefaultCenter.lng],
+  );
+  const resolvedLat = lat.trim() ? lat : fallbackLat;
+  const resolvedLng = lng.trim() ? lng : fallbackLng;
 
   const detailQuery = useCityRequestDetail(cityId, activeRequestId);
   const messagesQuery = useCityRequestMessages(cityId, activeRequestId);
@@ -119,6 +170,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   useEffect(() => {
     if (
       isForbiddenError(requestsQuery.error) ||
+      isForbiddenError(cityQuery.error) ||
       isForbiddenError(detailQuery.error) ||
       isForbiddenError(messagesQuery.error) ||
       isForbiddenError(departmentsQuery.error)
@@ -127,6 +179,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     }
   }, [
     requestsQuery.error,
+    cityQuery.error,
     detailQuery.error,
     messagesQuery.error,
     departmentsQuery.error,
@@ -138,12 +191,15 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     setCreateRequestError('');
 
     try {
-      if (!title.trim() || !lat.trim() || !lng.trim()) {
+      if (!title.trim() || !resolvedLat.trim() || !resolvedLng.trim()) {
         setCreateRequestError('required');
         return;
       }
 
-      const coordinateValidation = validateCoordinates(lat.trim(), lng.trim());
+      const coordinateValidation = validateCoordinates(
+        resolvedLat.trim(),
+        resolvedLng.trim(),
+      );
       if (!coordinateValidation.ok) {
         setCreateRequestError(
           coordinateValidation.reason === 'invalid_number'
@@ -305,7 +361,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     setNextStatus('IN_PROGRESS');
     setMunicipalityError('');
   }, []);
-
   return (
     <Stack spacing={3}>
       <Typography variant="h2">{t('cityProblem.title')}</Typography>
@@ -321,8 +376,9 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
         <CitizenCreateRequestForm
           title={title}
           description={description}
-          lat={lat}
-          lng={lng}
+          lat={resolvedLat}
+          lng={resolvedLng}
+          defaultCenter={effectiveDefaultCenter}
           formError={formError}
           hasCoordinateError={hasCoordinateError}
           isSubmitting={createRequestMutation.isPending}

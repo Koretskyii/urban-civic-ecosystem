@@ -26,7 +26,7 @@ import {
   EDITABLE_STATUS_OPTIONS,
   REPORT_TYPE_OPTIONS,
 } from './problem-workspace.constants';
-import { ProblemLocationPicker } from './ProblemLocationPicker';
+import { ProblemLocationPicker } from './Map/ProblemLocationPicker';
 
 interface RequestDetailPanelProps {
   cityId: string;

@@ -11,13 +11,14 @@ import {
   Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { ProblemLocationPicker } from './ProblemLocationPicker';
+import { ProblemLocationPicker } from './Map/ProblemLocationPicker';
 
 interface CitizenCreateRequestFormProps {
   title: string;
   description: string;
   lat: string;
   lng: string;
+  defaultCenter?: { lat: number; lng: number };
   formError: string;
   hasCoordinateError: boolean;
   isSubmitting: boolean;
@@ -36,6 +37,7 @@ export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
     description,
     lat,
     lng,
+    defaultCenter,
     formError,
     hasCoordinateError,
     isSubmitting,
@@ -94,6 +96,7 @@ export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
           <ProblemLocationPicker
             lat={lat}
             lng={lng}
+            defaultCenter={defaultCenter}
             onLatChange={onLatChange}
             onLngChange={onLngChange}
           />
