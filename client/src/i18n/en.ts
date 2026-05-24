@@ -23,6 +23,7 @@ export const en = {
     timeSeparator: 'at',
     unknownUser: 'Unknown user',
     guest: 'Guest',
+    loadMore: 'Load more',
   },
   citySearch: {
     title: 'Select your city from the list',
@@ -262,7 +263,8 @@ export const en = {
     regionRequired: 'Region is required',
     regionMin: 'Region must be at least 3 characters long',
     regionMax: 'Region cannot exceed 50 characters',
-    regionPattern: 'Region can only contain letters, spaces, and hyphens',
+    regionPattern:
+      'Region can only contain letters, spaces, hyphens, and apostrophes',
     regionPlaceholder: 'Example: Kyiv region',
     representativeTitle: 'Representative verification',
     dnsToggleLabel: 'Verify via DNS TXT (optional)',

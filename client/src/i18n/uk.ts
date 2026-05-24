@@ -23,6 +23,7 @@ export const uk = {
     timeSeparator: 'о',
     unknownUser: 'Невідомий користувач',
     guest: 'Гість',
+    loadMore: 'Показати ще',
   },
   citySearch: {
     title: 'Оберіть своє місто з переліку',
@@ -264,7 +265,8 @@ export const uk = {
     regionRequired: "Область є обов'язковою",
     regionMin: 'Область має містити принаймні 3 символи',
     regionMax: 'Область не може перевищувати 50 символів',
-    regionPattern: 'Область може містити лише літери, пробіли та дефіси',
+    regionPattern:
+      'Область може містити лише літери, пробіли, дефіси та апострофи',
     regionPlaceholder: 'Наприклад: Київська область',
     representativeTitle: 'Верифікація представника',
     dnsToggleLabel: 'Перевірка через DNS TXT (Опціонально)',

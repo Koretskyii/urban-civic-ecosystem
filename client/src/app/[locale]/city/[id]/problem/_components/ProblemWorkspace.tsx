@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useMemo, useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import {
@@ -233,6 +233,13 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     setReportText('');
   };
 
+  const onSelectRequest = useCallback((requestId: string) => {
+    setSelectedRequestId(requestId);
+    setSelectedDepartmentId('');
+    setNextStatus('IN_PROGRESS');
+    setMunicipalityError('');
+  }, []);
+
   return (
     <Stack spacing={3}>
       <Typography variant="h2">{t('cityProblem.title')}</Typography>
@@ -290,16 +297,12 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
         alignItems="stretch"
       >
         <RequestListPanel
+          key={`${viewMode}-${filterStatus}-${filterDepartmentId}-${filterPriority}`}
           requests={requests}
           isLoading={requestsQuery.isLoading}
           viewMode={viewMode}
           activeRequestId={activeRequestId}
-          onSelect={(requestId) => {
-            setSelectedRequestId(requestId);
-            setSelectedDepartmentId('');
-            setNextStatus('IN_PROGRESS');
-            setMunicipalityError('');
-          }}
+          onSelect={onSelectRequest}
         />
 
         <RequestDetailPanel

@@ -30,3 +30,4 @@ export {
   useCanManage,
 } from './usePermission';
 export { useProtectedRoute } from './useProtectedRoute';
+export { useDebouncedValue } from './useDebouncedValue';
