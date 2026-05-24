@@ -3,6 +3,8 @@ export interface City {
   name: string;
   region: string;
   domain: string;
+  centerLat?: number | null;
+  centerLng?: number | null;
 }
 
 export interface Alert {

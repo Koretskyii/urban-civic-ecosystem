@@ -25,6 +25,9 @@ import { useTranslations } from 'next-intl';
 type CityOption = {
   label: string;
   region: string;
+  lat?: number;
+  lng?: number;
+  geonameId?: number;
 };
 
 interface DomainToken {
@@ -158,6 +161,14 @@ export function CityInitForm() {
 
     if (values.domain) {
       formData.append('domain', String(values.domain));
+    }
+
+    if (typeof values.name?.lat === 'number') {
+      formData.append('centerLat', String(values.name.lat));
+    }
+
+    if (typeof values.name?.lng === 'number') {
+      formData.append('centerLng', String(values.name.lng));
     }
 
     if (user?.id) {
