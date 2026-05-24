@@ -38,9 +38,11 @@ enum ReactionType {
 //////////////////// CITY (TENANT) ////////////////////
 
 model City {
-  id     String @id @default(cuid())
-  name   String
-  region String
+  id        String  @id @default(cuid())
+  name      String
+  region    String
+  centerLat Float?
+  centerLng Float?
 
   users                UserCity[]
   roles                Role[]
