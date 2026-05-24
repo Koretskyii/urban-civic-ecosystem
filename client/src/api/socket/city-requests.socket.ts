@@ -39,10 +39,6 @@ export function getCityRequestsSocket() {
     },
   );
 
-  cityRequestsSocket.on('connect_error', (error) => {
-    console.error('City requests socket connect error:', error.message);
-  });
-
   return cityRequestsSocket;
 }
 

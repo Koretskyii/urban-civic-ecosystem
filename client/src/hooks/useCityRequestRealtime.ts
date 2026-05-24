@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from '@/i18n/navigation';
 import {
   connectCityRequestsSocket,
   joinCityRequestRoom,
@@ -13,6 +14,7 @@ import {
   invalidateCityRequestRealtimeEventQueries,
   invalidateCityRequestQueries,
 } from '@/features/city-requests';
+import { isForbiddenError } from '@/features/city-requests/helpers/errors.helpers';
 import type { CityRequestRealtimeEnvelope } from '@/types';
 
 type UseCityRequestRealtimeParams = {
@@ -27,6 +29,7 @@ export function useCityRequestRealtime({
   enabled = true,
 }: UseCityRequestRealtimeParams) {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   useEffect(() => {
     if (!enabled || !cityId || !requestId) {
@@ -41,6 +44,25 @@ export function useCityRequestRealtime({
       invalidateCityRequestQueries(queryClient, cityId, requestId);
     };
     socket.on('connect', handleReconnect);
+
+    const handleConnectError = (error: unknown) => {
+      if (isForbiddenError(error)) {
+        router.replace('/forbidden');
+        return;
+      }
+
+      if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        if (
+          message.includes('forbidden') ||
+          message.includes('unauthorized') ||
+          message.includes('auth')
+        ) {
+          router.replace('/forbidden');
+        }
+      }
+    };
+    socket.on('connect_error', handleConnectError);
 
     const isRealtimeEnvelope = (
       event: unknown,
@@ -83,6 +105,7 @@ export function useCityRequestRealtime({
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
       socket.off('connect', handleReconnect);
+      socket.off('connect_error', handleConnectError);
     };
-  }, [enabled, cityId, requestId, queryClient]);
+  }, [enabled, cityId, requestId, queryClient, router]);
 }

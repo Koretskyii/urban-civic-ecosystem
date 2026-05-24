@@ -1,8 +1,9 @@
 'use client';
 
-import { FormEvent, useCallback, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import {
   usePermission,
   useCityRequestDetail,
@@ -24,6 +25,7 @@ import { MunicipalityQueueHeader } from './MunicipalityQueueHeader';
 import { ProblemModeSwitcher } from './ProblemModeSwitcher';
 import { RequestDetailPanel } from './RequestDetailPanel';
 import { RequestListPanel } from './RequestListPanel';
+import { isForbiddenError } from '@/features/city-requests/helpers/errors.helpers';
 
 interface ProblemWorkspaceProps {
   cityId: string;
@@ -37,6 +39,7 @@ type CreateRequestErrorKey =
 
 export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const t = useTranslations();
+  const router = useRouter();
 
   const [selectedRequestId, setSelectedRequestId] = useState<string>('');
   const [title, setTitle] = useState('');
@@ -113,43 +116,68 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     createRequestError === 'coordinatesInvalid' ||
     createRequestError === 'coordinatesOutOfRange';
 
+  useEffect(() => {
+    if (
+      isForbiddenError(requestsQuery.error) ||
+      isForbiddenError(detailQuery.error) ||
+      isForbiddenError(messagesQuery.error) ||
+      isForbiddenError(departmentsQuery.error)
+    ) {
+      router.replace('/forbidden');
+    }
+  }, [
+    requestsQuery.error,
+    detailQuery.error,
+    messagesQuery.error,
+    departmentsQuery.error,
+    router,
+  ]);
+
   const onCreateRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setCreateRequestError('');
 
-    if (!title.trim() || !lat.trim() || !lng.trim()) {
-      setCreateRequestError('required');
+    try {
+      if (!title.trim() || !lat.trim() || !lng.trim()) {
+        setCreateRequestError('required');
+        return;
+      }
+
+      const coordinateValidation = validateCoordinates(lat.trim(), lng.trim());
+      if (!coordinateValidation.ok) {
+        setCreateRequestError(
+          coordinateValidation.reason === 'invalid_number'
+            ? 'coordinatesInvalid'
+            : 'coordinatesOutOfRange',
+        );
+        return;
+      }
+
+      setLat(coordinateValidation.normalizedLat);
+      setLng(coordinateValidation.normalizedLng);
+
+      await createRequestMutation.mutateAsync({
+        cityId,
+        payload: {
+          title: title.trim(),
+          description: description.trim() || undefined,
+          locationLat: coordinateValidation.lat,
+          locationLng: coordinateValidation.lng,
+        },
+      });
+
+      setTitle('');
+      setDescription('');
+      setLat('');
+      setLng('');
+      setCreateRequestError('');
+    } catch (error) {
+      if (isForbiddenError(error)) {
+        router.replace('/forbidden');
+        return;
+      }
       return;
     }
-
-    const coordinateValidation = validateCoordinates(lat.trim(), lng.trim());
-    if (!coordinateValidation.ok) {
-      setCreateRequestError(
-        coordinateValidation.reason === 'invalid_number'
-          ? 'coordinatesInvalid'
-          : 'coordinatesOutOfRange',
-      );
-      return;
-    }
-
-    setLat(coordinateValidation.normalizedLat);
-    setLng(coordinateValidation.normalizedLng);
-
-    await createRequestMutation.mutateAsync({
-      cityId,
-      payload: {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        locationLat: coordinateValidation.lat,
-        locationLng: coordinateValidation.lng,
-      },
-    });
-
-    setTitle('');
-    setDescription('');
-    setLat('');
-    setLng('');
-    setCreateRequestError('');
   };
 
   const onSendMessage = async (event: FormEvent<HTMLFormElement>) => {
@@ -159,13 +187,21 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
       return;
     }
 
-    await createMessageMutation.mutateAsync({
-      cityId,
-      requestId: activeRequestId,
-      content: message.trim(),
-    });
+    try {
+      await createMessageMutation.mutateAsync({
+        cityId,
+        requestId: activeRequestId,
+        content: message.trim(),
+      });
 
-    setMessage('');
+      setMessage('');
+    } catch (error) {
+      if (isForbiddenError(error)) {
+        router.replace('/forbidden');
+        return;
+      }
+      return;
+    }
   };
 
   const onAssignDepartment = async () => {
@@ -175,11 +211,21 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     }
 
     setMunicipalityError('');
-    await assignDepartmentMutation.mutateAsync({
-      cityId,
-      requestId: activeRequestId,
-      departmentId: selectedDepartmentId,
-    });
+
+    try {
+      await assignDepartmentMutation.mutateAsync({
+        cityId,
+        requestId: activeRequestId,
+        departmentId: selectedDepartmentId,
+      });
+    } catch (error) {
+      if (isForbiddenError(error)) {
+        router.replace('/forbidden');
+        return;
+      }
+      setMunicipalityError(t('cityProblem.loadError'));
+      return;
+    }
   };
 
   const onUpdateStatus = async () => {
@@ -193,11 +239,21 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     }
 
     setMunicipalityError('');
-    await updateStatusMutation.mutateAsync({
-      cityId,
-      requestId: activeRequestId,
-      status: nextStatus,
-    });
+
+    try {
+      await updateStatusMutation.mutateAsync({
+        cityId,
+        requestId: activeRequestId,
+        status: nextStatus,
+      });
+    } catch (error) {
+      if (isForbiddenError(error)) {
+        router.replace('/forbidden');
+        return;
+      }
+      setMunicipalityError(t('cityProblem.loadError'));
+      return;
+    }
   };
 
   const onCreateReport = async (event: FormEvent<HTMLFormElement>) => {
@@ -215,22 +271,32 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     }
 
     setMunicipalityError('');
-    await createReportMutation.mutateAsync({
-      cityId,
-      requestId: activeRequestId,
-      payload: {
-        type: reportType,
-        status:
-          reportType === 'RESOLUTION'
-            ? 'RESOLVED'
-            : reportType === 'REJECTION'
-              ? 'REJECTED'
-              : undefined,
-        description: reportText.trim() || undefined,
-      },
-    });
 
-    setReportText('');
+    try {
+      await createReportMutation.mutateAsync({
+        cityId,
+        requestId: activeRequestId,
+        payload: {
+          type: reportType,
+          status:
+            reportType === 'RESOLUTION'
+              ? 'RESOLVED'
+              : reportType === 'REJECTION'
+                ? 'REJECTED'
+                : undefined,
+          description: reportText.trim() || undefined,
+        },
+      });
+
+      setReportText('');
+    } catch (error) {
+      if (isForbiddenError(error)) {
+        router.replace('/forbidden');
+        return;
+      }
+      setMunicipalityError(t('cityProblem.loadError'));
+      return;
+    }
   };
 
   const onSelectRequest = useCallback((requestId: string) => {
