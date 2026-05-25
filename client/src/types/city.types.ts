@@ -23,6 +23,24 @@ export interface News {
   title: string;
   content: string;
   createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  publishedAt?: string | null;
+}
+
+export interface NewsListQuery {
+  includeDeleted?: boolean;
+  search?: string;
+}
+
+export interface CreateNewsPayload {
+  title: string;
+  content: string;
+}
+
+export interface UpdateNewsPayload {
+  title?: string;
+  content?: string;
 }
 
 export interface Post {

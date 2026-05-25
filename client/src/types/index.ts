@@ -7,6 +7,9 @@ export type {
 
 export type {
   City,
+  CreateNewsPayload,
+  NewsListQuery,
+  UpdateNewsPayload,
   CityMember,
   Alert,
   News,

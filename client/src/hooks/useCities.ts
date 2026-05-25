@@ -1,7 +1,34 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cityApi } from '@/api/endpoints/city.api';
 import { queryKeys } from '@/api/queryKeys';
-import { City } from '@/types';
+import {
+  City,
+  NewsListQuery,
+  CreateNewsPayload,
+  UpdateNewsPayload,
+} from '@/types';
+
+const invalidateNewsQueries = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+  cityId: string,
+  newsId?: string,
+) => {
+  const tasks: Array<Promise<unknown>> = [
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.news.all(cityId),
+    }),
+  ];
+
+  if (newsId) {
+    tasks.push(
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.news.detail(cityId, newsId),
+      }),
+    );
+  }
+
+  await Promise.all(tasks);
+};
 
 export function useCities() {
   return useQuery({
@@ -35,11 +62,68 @@ export function useCityAlerts(cityId: string) {
   });
 }
 
-export function useCityNews(cityId: string) {
+export function useCityNews(cityId: string, query?: NewsListQuery) {
   return useQuery({
-    queryKey: queryKeys.news.all(cityId),
-    queryFn: () => cityApi.getCityNews(cityId),
+    queryKey: queryKeys.news.list(cityId, query),
+    queryFn: () => cityApi.getCityNews(cityId, query),
     enabled: !!cityId,
+    placeholderData: (previousData) => previousData,
+  });
+}
+
+export function useCreateNews() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      cityId,
+      payload,
+    }: {
+      cityId: string;
+      payload: CreateNewsPayload;
+    }) => cityApi.createCityNews(cityId, payload),
+    onSuccess: async (_data, variables) => {
+      await invalidateNewsQueries(queryClient, variables.cityId);
+    },
+  });
+}
+
+export function useUpdateNews() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      cityId,
+      newsId,
+      payload,
+    }: {
+      cityId: string;
+      newsId: string;
+      payload: UpdateNewsPayload;
+    }) => cityApi.updateCityNews(cityId, newsId, payload),
+    onSuccess: async (_data, variables) => {
+      await invalidateNewsQueries(
+        queryClient,
+        variables.cityId,
+        variables.newsId,
+      );
+    },
+  });
+}
+
+export function useDeleteNews() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ cityId, newsId }: { cityId: string; newsId: string }) =>
+      cityApi.deleteCityNews(cityId, newsId),
+    onSuccess: async (_data, variables) => {
+      await invalidateNewsQueries(
+        queryClient,
+        variables.cityId,
+        variables.newsId,
+      );
+    },
   });
 }
 

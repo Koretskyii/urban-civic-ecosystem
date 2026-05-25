@@ -6,7 +6,15 @@ export {
   useChangePassword,
 } from './useAuth';
 
-export { useCities, useCityById, useJoinCity } from './useCities';
+export {
+  useCities,
+  useCityById,
+  useJoinCity,
+  useCityNews,
+  useCreateNews,
+  useUpdateNews,
+  useDeleteNews,
+} from './useCities';
 export { useCityMembers, useUpdateCityMemberRole } from './useCityMembers';
 export {
   useAssignCityRequestDepartment,

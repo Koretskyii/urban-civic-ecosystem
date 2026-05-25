@@ -29,6 +29,8 @@ export const API_ROUTES = {
   },
   news: {
     all: (cityId: string): string => `/city/${cityId}/news`,
+    detail: (cityId: string, newsId: string): string =>
+      `/city/${cityId}/news/${newsId}`,
   },
   posts: {
     all: (cityId: string): string => `/city/${cityId}/posts`,
