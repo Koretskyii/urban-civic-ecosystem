@@ -208,7 +208,9 @@ export class CityRequestsService {
     }
 
     if (!department) {
-      throw new BadRequestException(CITY_REQUESTS_ERRORS.DEPARTMENT_UNAVAILABLE);
+      throw new BadRequestException(
+        CITY_REQUESTS_ERRORS.DEPARTMENT_UNAVAILABLE,
+      );
     }
 
     return this.prisma.cityRequest.update({
@@ -266,7 +268,8 @@ export class CityRequestsService {
     await this.getCityRequestOrThrow(cityId, requestId);
 
     if (
-      (dto.type === ReportType.RESOLUTION || dto.type === ReportType.REJECTION) &&
+      (dto.type === ReportType.RESOLUTION ||
+        dto.type === ReportType.REJECTION) &&
       !dto.description?.trim()
     ) {
       throw new BadRequestException(
@@ -456,7 +459,9 @@ export class CityRequestsService {
     );
 
     if (!hasPermission) {
-      throw new ForbiddenException(CITY_REQUESTS_ERRORS.INSUFFICIENT_MANAGE_PERMISSIONS);
+      throw new ForbiddenException(
+        CITY_REQUESTS_ERRORS.INSUFFICIENT_MANAGE_PERMISSIONS,
+      );
     }
   }
 
@@ -481,13 +486,14 @@ export class CityRequestsService {
   ) {
     return Promise.all(
       files.map(async (file) => {
-        const uploaded = await this.r2StorageService.uploadCityRequestAttachment({
-          cityId,
-          requestId,
-          fileName: file.originalname,
-          mimeType: file.mimetype,
-          buffer: file.buffer,
-        });
+        const uploaded =
+          await this.r2StorageService.uploadCityRequestAttachment({
+            cityId,
+            requestId,
+            fileName: file.originalname,
+            mimeType: file.mimetype,
+            buffer: file.buffer,
+          });
 
         return {
           fileName: file.originalname,
@@ -506,14 +512,15 @@ export class CityRequestsService {
   ) {
     return Promise.all(
       files.map(async (file) => {
-        const uploaded = await this.r2StorageService.uploadCityRequestAttachment({
-          cityId,
-          requestId,
-          reportId,
-          fileName: file.originalname,
-          mimeType: file.mimetype,
-          buffer: file.buffer,
-        });
+        const uploaded =
+          await this.r2StorageService.uploadCityRequestAttachment({
+            cityId,
+            requestId,
+            reportId,
+            fileName: file.originalname,
+            mimeType: file.mimetype,
+            buffer: file.buffer,
+          });
 
         return {
           fileName: file.originalname,

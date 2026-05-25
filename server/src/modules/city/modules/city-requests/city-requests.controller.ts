@@ -60,7 +60,12 @@ export class CityRequestsController {
     @Body() dto: CreateCityRequestDto,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    return this.cityRequestsService.createRequest(cityId, req.user.id, dto, files);
+    return this.cityRequestsService.createRequest(
+      cityId,
+      req.user.id,
+      dto,
+      files,
+    );
   }
 
   @Get('requests')
@@ -78,7 +83,11 @@ export class CityRequestsController {
     @Param('requestId') requestId: string,
     @Req() req: RequestWithUser,
   ) {
-    return this.cityRequestsService.getRequestDetail(cityId, requestId, req.user.id);
+    return this.cityRequestsService.getRequestDetail(
+      cityId,
+      requestId,
+      req.user.id,
+    );
   }
 
   @Patch('requests/:requestId/assign')
@@ -178,7 +187,10 @@ export class CityRequestsController {
   }
 
   @Get('departments')
-  async getDepartments(@Param('cityId') cityId: string, @Req() req: RequestWithUser) {
+  async getDepartments(
+    @Param('cityId') cityId: string,
+    @Req() req: RequestWithUser,
+  ) {
     return this.cityRequestsService.getDepartments(cityId, req.user.id);
   }
 

@@ -14,7 +14,8 @@ export const CITY_REQUESTS_MUTATION_EVENTS = {
   ASSIGNMENT_UPDATED: CITY_REQUESTS_SOCKET_EVENTS.ASSIGNMENT_UPDATED,
 } as const;
 
-export type CityRequestsMutationEvent = keyof typeof CITY_REQUESTS_MUTATION_EVENTS;
+export type CityRequestsMutationEvent =
+  keyof typeof CITY_REQUESTS_MUTATION_EVENTS;
 export type CityRequestsMutationSocketEvent =
   (typeof CITY_REQUESTS_MUTATION_EVENTS)[CityRequestsMutationEvent];
 

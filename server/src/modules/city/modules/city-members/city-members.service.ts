@@ -154,7 +154,9 @@ export class CityMembersService {
           );
         }
 
-        throw new BadRequestException(CITY_MEMBERS_ERRORS.LAST_ADMIN_PROTECTION);
+        throw new BadRequestException(
+          CITY_MEMBERS_ERRORS.LAST_ADMIN_PROTECTION,
+        );
       }
     }
 

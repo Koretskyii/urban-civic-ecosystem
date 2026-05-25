@@ -73,7 +73,9 @@ describe('CityMembersService', () => {
   });
 
   it('updateMemberRole should replace city roles with one selected role', async () => {
-    mockPrismaService.userCity.findUnique.mockResolvedValue({ userId: 'user-2' });
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'user-2',
+    });
     mockPrismaService.role.findMany.mockResolvedValue([
       { id: 'role-admin', name: ROLES.ADMIN },
       { id: 'role-citizen', name: ROLES.CITIZEN },
@@ -116,7 +118,9 @@ describe('CityMembersService', () => {
   });
 
   it('updateMemberRole should reject role change for last admin', async () => {
-    mockPrismaService.userCity.findUnique.mockResolvedValue({ userId: 'user-1' });
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'user-1',
+    });
     mockPrismaService.role.findMany.mockResolvedValue([
       { id: 'role-admin', name: ROLES.ADMIN },
       { id: 'role-citizen', name: ROLES.CITIZEN },
@@ -137,7 +141,9 @@ describe('CityMembersService', () => {
   });
 
   it('updateMemberRole should reject self-demotion for last admin', async () => {
-    mockPrismaService.userCity.findUnique.mockResolvedValue({ userId: 'admin-1' });
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'admin-1',
+    });
     mockPrismaService.role.findMany.mockResolvedValue([
       { id: 'role-admin', name: ROLES.ADMIN },
       { id: 'role-citizen', name: ROLES.CITIZEN },
@@ -158,7 +164,9 @@ describe('CityMembersService', () => {
   });
 
   it('updateMemberRole should be no-op when member already has the same single role', async () => {
-    mockPrismaService.userCity.findUnique.mockResolvedValue({ userId: 'user-2' });
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'user-2',
+    });
     mockPrismaService.role.findMany.mockResolvedValue([
       { id: 'role-admin', name: ROLES.ADMIN },
       { id: 'role-citizen', name: ROLES.CITIZEN },
