@@ -35,6 +35,17 @@ enum ReactionType {
   ANGRY
 }
 
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum InAppNotificationType {
+  NEWS_CREATED
+}
+
 //////////////////// CITY (TENANT) ////////////////////
 
 model City {
@@ -56,6 +67,7 @@ model City {
   surveys              Survey[]
   crowdfundingProjects CrowdfundingProject[]
   news                 GeneralNews[]         @relation("news")
+  notifications        InAppNotification[]
 
   cityDomain CityDomain?
 
@@ -99,6 +111,7 @@ model User {
   projectParticipants  ProjectParticipant[]
   communityMemberships CommunityMember[]
   publishedNews        GeneralNews[]
+  notifications        InAppNotification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -501,4 +514,47 @@ model GeneralNews {
   publisher User @relation(fields: [publisherId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([cityId, deletedAt, createdAt(sort: Desc)])
+}
+
+//////////////////// OUTBOX ////////////////////
+
+model DomainEventOutbox {
+  id            String      @id @default(cuid())
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  attempts      Int         @default(0)
+  availableAt   DateTime    @default(now())
+  lastError     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([status, availableAt, createdAt])
+  @@index([aggregateType, aggregateId])
+}
+
+model InAppNotification {
+  id        String                 @id @default(cuid())
+  userId    String
+  cityId    String
+  type      InAppNotificationType
+  title     String
+  body      String?
+  link      String?
+  payload   Json?
+  isRead    Boolean                @default(false)
+  readAt    DateTime?
+  createdAt DateTime               @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([cityId, createdAt(sort: Desc)])
 }
