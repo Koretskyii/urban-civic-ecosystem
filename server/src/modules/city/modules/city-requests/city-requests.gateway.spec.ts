@@ -3,11 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CityRequestsGateway } from './city-requests.gateway';
+import type { SocketWithUser } from './city-requests.gateway';
 import { CityRequestsService } from './city-requests.service';
 import {
   CITY_REQUESTS_MUTATION_EVENTS,
   CITY_REQUESTS_SOCKET_EVENTS,
 } from './city-requests.events';
+import type { Server } from 'socket.io';
 
 describe('CityRequestsGateway', () => {
   let gateway: CityRequestsGateway;
@@ -23,6 +25,25 @@ describe('CityRequestsGateway', () => {
   const mockCityRequestsService = {
     assertRequestRoomAccess: jest.fn(),
   };
+
+  const createSocketClient = (
+    overrides: Partial<SocketWithUser> = {},
+  ): SocketWithUser => {
+    const base = {
+      handshake: {
+        auth: {},
+        headers: {},
+      },
+      data: {},
+      disconnect: jest.fn(),
+      join: jest.fn(),
+    };
+
+    return { ...base, ...overrides } as unknown as SocketWithUser;
+  };
+
+  const getSocketUser = (client: SocketWithUser) =>
+    (client.data as { user?: { id: string; email?: string } }).user;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,25 +79,25 @@ describe('CityRequestsGateway', () => {
       email: 'user@example.com',
     });
 
-    const client = {
+    const disconnectFn = jest.fn();
+    const client = createSocketClient({
       handshake: {
         auth: { token: 'Bearer jwt-token' },
         headers: {},
-      },
-      data: {},
-      disconnect: jest.fn(),
-    } as any;
+      } as SocketWithUser['handshake'],
+      disconnect: disconnectFn as SocketWithUser['disconnect'],
+    });
 
     await gateway.handleConnection(client);
 
     expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('jwt-token', {
       secret: 'secret',
     });
-    expect(client.data.user).toEqual({
+    expect(getSocketUser(client)).toEqual({
       id: 'user-1',
       email: 'user@example.com',
     });
-    expect(client.disconnect).not.toHaveBeenCalled();
+    expect(disconnectFn).not.toHaveBeenCalled();
   });
 
   it('handleConnection should authenticate with token from cookie', async () => {
@@ -86,23 +107,24 @@ describe('CityRequestsGateway', () => {
       email: 'cookie@example.com',
     });
 
-    const client = {
+    const client = createSocketClient({
       handshake: {
         auth: {},
         headers: {
           cookie: 'foo=bar; access_token=jwt-cookie-token',
         },
-      },
-      data: {},
-      disconnect: jest.fn(),
-    } as any;
+      } as SocketWithUser['handshake'],
+    });
 
     await gateway.handleConnection(client);
 
-    expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('jwt-cookie-token', {
-      secret: 'secret',
-    });
-    expect(client.data.user).toEqual({
+    expect(mockJwtService.verifyAsync).toHaveBeenCalledWith(
+      'jwt-cookie-token',
+      {
+        secret: 'secret',
+      },
+    );
+    expect(getSocketUser(client)).toEqual({
       id: 'user-2',
       email: 'cookie@example.com',
     });
@@ -115,37 +137,34 @@ describe('CityRequestsGateway', () => {
       email: 'encoded@example.com',
     });
 
-    const client = {
+    const client = createSocketClient({
       handshake: {
         auth: {},
         headers: {
           cookie: 'access_token=Bearer%20jwt-encoded-token',
         },
-      },
-      data: {},
-      disconnect: jest.fn(),
-    } as any;
+      } as SocketWithUser['handshake'],
+    });
 
     await gateway.handleConnection(client);
 
-    expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('jwt-encoded-token', {
-      secret: 'secret',
-    });
+    expect(mockJwtService.verifyAsync).toHaveBeenCalledWith(
+      'jwt-encoded-token',
+      {
+        secret: 'secret',
+      },
+    );
   });
 
   it('handleConnection should disconnect unauthenticated socket', async () => {
-    const client = {
-      handshake: {
-        auth: {},
-        headers: {},
-      },
-      data: {},
-      disconnect: jest.fn(),
-    } as any;
+    const disconnectFn = jest.fn();
+    const client = createSocketClient({
+      disconnect: disconnectFn as SocketWithUser['disconnect'],
+    });
 
     await gateway.handleConnection(client);
 
-    expect(client.disconnect).toHaveBeenCalledWith(true);
+    expect(disconnectFn).toHaveBeenCalledWith(true);
     expect(mockJwtService.verifyAsync).not.toHaveBeenCalled();
   });
 
@@ -155,20 +174,20 @@ describe('CityRequestsGateway', () => {
       cityId: 'city-1',
     });
 
-    const client = {
+    const joinFn = jest.fn();
+    const client = createSocketClient({
       data: { user: { id: 'user-1' } },
-      join: jest.fn(),
-    } as any;
+      join: joinFn as SocketWithUser['join'],
+    });
 
     const result = await gateway.handleJoinRoom(client, {
       requestId: 'request-1',
     });
 
-    expect(mockCityRequestsService.assertRequestRoomAccess).toHaveBeenCalledWith(
-      'request-1',
-      'user-1',
-    );
-    expect(client.join).toHaveBeenCalledWith('city-request:request-1');
+    expect(
+      mockCityRequestsService.assertRequestRoomAccess,
+    ).toHaveBeenCalledWith('request-1', 'user-1');
+    expect(joinFn).toHaveBeenCalledWith('city-request:request-1');
     expect(result).toEqual({
       event: CITY_REQUESTS_SOCKET_EVENTS.ROOM_JOINED,
       data: {
@@ -178,20 +197,20 @@ describe('CityRequestsGateway', () => {
   });
 
   it('handleJoinRoom should throw if requestId is missing', async () => {
-    const client = {
+    const client = createSocketClient({
       data: { user: { id: 'user-1' } },
       join: jest.fn(),
-    } as any;
+    });
 
-    await expect(gateway.handleJoinRoom(client, {} as any)).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(
+      gateway.handleJoinRoom(client, {} as { requestId: string }),
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('emitMutationEvent should emit to request room', () => {
     const emit = jest.fn();
     const to = jest.fn().mockReturnValue({ emit });
-    gateway.server = { to } as any;
+    gateway.server = { to } as unknown as Server;
 
     gateway.emitMutationEvent(
       'request-1',

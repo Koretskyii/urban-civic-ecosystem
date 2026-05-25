@@ -18,12 +18,19 @@ import {
 } from './city-requests.events';
 import { CITY_REQUESTS_CONSTANTS } from './city-requests.constants';
 
-type SocketWithUser = Socket & {
+export type SocketWithUser = Socket & {
   data: {
     user?: {
       id: string;
       email?: string;
     };
+  };
+};
+
+type SocketUserData = {
+  user?: {
+    id: string;
+    email?: string;
   };
 };
 
@@ -71,7 +78,8 @@ export class CityRequestsGateway implements OnGatewayConnection {
         secret,
       });
 
-      client.data.user = {
+      const socketData = client.data as unknown as SocketUserData;
+      socketData.user = {
         id: payload.sub,
         email: payload.email,
       };
@@ -86,13 +94,16 @@ export class CityRequestsGateway implements OnGatewayConnection {
     @ConnectedSocket() client: SocketWithUser,
     @MessageBody() body: { requestId: string },
   ) {
-    const userId = client.data.user?.id;
+    const userId = this.getSocketUserId(client);
 
     if (!userId || !body?.requestId) {
       throw new ForbiddenException('Invalid socket user or requestId');
     }
 
-    await this.cityRequestsService.assertRequestRoomAccess(body.requestId, userId);
+    await this.cityRequestsService.assertRequestRoomAccess(
+      body.requestId,
+      userId,
+    );
 
     const roomName = this.getRequestRoomName(body.requestId);
     await client.join(roomName);
@@ -106,10 +117,7 @@ export class CityRequestsGateway implements OnGatewayConnection {
   }
 
   private extractToken(client: Socket): string | null {
-    const authToken =
-      typeof client.handshake.auth?.token === 'string'
-        ? client.handshake.auth.token
-        : null;
+    const authToken = this.extractAuthToken(client.handshake.auth);
     if (authToken) {
       return this.normalizeToken(authToken);
     }
@@ -155,5 +163,28 @@ export class CityRequestsGateway implements OnGatewayConnection {
 
   private normalizeToken(rawToken: string) {
     return rawToken.replace(/^Bearer\s+/i, '').trim();
+  }
+
+  private getSocketUserId(client: SocketWithUser): string | null {
+    const socketData = client.data as unknown as SocketUserData;
+    const user = socketData.user;
+    if (!user || typeof user.id !== 'string' || user.id.length === 0) {
+      return null;
+    }
+
+    return user.id;
+  }
+
+  private extractAuthToken(auth: unknown): string | null {
+    if (
+      typeof auth === 'object' &&
+      auth !== null &&
+      'token' in auth &&
+      typeof (auth as { token?: unknown }).token === 'string'
+    ) {
+      return (auth as { token: string }).token;
+    }
+
+    return null;
   }
 }

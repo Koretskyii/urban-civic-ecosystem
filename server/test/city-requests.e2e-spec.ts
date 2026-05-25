@@ -1,9 +1,40 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import type { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { ROLES } from '../src/modules/rbac/constants/roles.const';
+
+type AuthPayload = {
+  accessToken: string;
+  user: { id: string };
+};
+
+type CreatedRequestPayload = { id: string };
+type AssignmentPayload = { assignedDepartmentId: string; status: string };
+type ReportPayload = { type: string; status?: string };
+type MessagePayload = { content: string };
+type DetailPayload = {
+  status: string;
+  resolvedAt: string | null;
+  reports: Array<{ type: string }>;
+};
+
+const asAuthPayload = (response: Response): AuthPayload =>
+  response.body as AuthPayload;
+const asCreatedRequestPayload = (response: Response): CreatedRequestPayload =>
+  response.body as CreatedRequestPayload;
+const asAssignmentPayload = (response: Response): AssignmentPayload =>
+  response.body as AssignmentPayload;
+const asReportPayload = (response: Response): ReportPayload =>
+  response.body as ReportPayload;
+const asMessagePayload = (response: Response): MessagePayload =>
+  response.body as MessagePayload;
+const asMessagesPayload = (response: Response): MessagePayload[] =>
+  response.body as MessagePayload[];
+const asDetailPayload = (response: Response): DetailPayload =>
+  response.body as DetailPayload;
 
 describe('CityRequests flow (e2e)', () => {
   jest.setTimeout(30000);
@@ -59,7 +90,7 @@ describe('CityRequests flow (e2e)', () => {
     });
     departmentId = department.id;
 
-    const server = app.getHttpServer();
+    const server = app.getHttpServer() as Parameters<typeof request>[0];
 
     const citizenRegister = await request(server)
       .post('/auth/register')
@@ -70,8 +101,9 @@ describe('CityRequests flow (e2e)', () => {
       })
       .expect(201);
 
-    citizenToken = citizenRegister.body.accessToken as string;
-    citizenUserId = citizenRegister.body.user.id as string;
+    const citizenAuth = asAuthPayload(citizenRegister);
+    citizenToken = citizenAuth.accessToken;
+    citizenUserId = citizenAuth.user.id;
 
     const municipalityRegister = await request(server)
       .post('/auth/register')
@@ -82,8 +114,9 @@ describe('CityRequests flow (e2e)', () => {
       })
       .expect(201);
 
-    municipalityToken = municipalityRegister.body.accessToken as string;
-    municipalityUserId = municipalityRegister.body.user.id as string;
+    const municipalityAuth = asAuthPayload(municipalityRegister);
+    municipalityToken = municipalityAuth.accessToken;
+    municipalityUserId = municipalityAuth.user.id;
 
     await prisma.userCity.createMany({
       data: [
@@ -154,7 +187,7 @@ describe('CityRequests flow (e2e)', () => {
   });
 
   it('create -> assign -> report -> chat -> resolve', async () => {
-    const server = app.getHttpServer();
+    const server = app.getHttpServer() as Parameters<typeof request>[0];
 
     const createdRequest = await request(server)
       .post(`/city/${cityId}/requests`)
@@ -165,7 +198,8 @@ describe('CityRequests flow (e2e)', () => {
       .field('locationLng', '30.5234')
       .expect(201);
 
-    requestId = createdRequest.body.id as string;
+    const createdRequestPayload = asCreatedRequestPayload(createdRequest);
+    requestId = createdRequestPayload.id;
     expect(requestId).toBeTruthy();
 
     const assignment = await request(server)
@@ -174,8 +208,9 @@ describe('CityRequests flow (e2e)', () => {
       .send({ departmentId })
       .expect(200);
 
-    expect(assignment.body.assignedDepartmentId).toBe(departmentId);
-    expect(assignment.body.status).toBe('IN_PROGRESS');
+    const assignmentPayload = asAssignmentPayload(assignment);
+    expect(assignmentPayload.assignedDepartmentId).toBe(departmentId);
+    expect(assignmentPayload.status).toBe('IN_PROGRESS');
 
     const progressReport = await request(server)
       .post(`/city/${cityId}/requests/${requestId}/reports`)
@@ -184,7 +219,8 @@ describe('CityRequests flow (e2e)', () => {
       .field('description', 'Crew has been dispatched.')
       .expect(201);
 
-    expect(progressReport.body.type).toBe('PROGRESS');
+    const progressReportPayload = asReportPayload(progressReport);
+    expect(progressReportPayload.type).toBe('PROGRESS');
 
     const message = await request(server)
       .post(`/city/${cityId}/requests/${requestId}/messages`)
@@ -192,7 +228,8 @@ describe('CityRequests flow (e2e)', () => {
       .send({ content: 'Any ETA for resolution?' })
       .expect(201);
 
-    expect(message.body.content).toBe('Any ETA for resolution?');
+    const messagePayload = asMessagePayload(message);
+    expect(messagePayload.content).toBe('Any ETA for resolution?');
 
     const resolutionReport = await request(server)
       .post(`/city/${cityId}/requests/${requestId}/reports`)
@@ -202,19 +239,20 @@ describe('CityRequests flow (e2e)', () => {
       .field('description', 'Traffic light fixed and tested.')
       .expect(201);
 
-    expect(resolutionReport.body.type).toBe('RESOLUTION');
-    expect(resolutionReport.body.status).toBe('RESOLVED');
+    const resolutionReportPayload = asReportPayload(resolutionReport);
+    expect(resolutionReportPayload.type).toBe('RESOLUTION');
+    expect(resolutionReportPayload.status).toBe('RESOLVED');
 
     const messages = await request(server)
       .get(`/city/${cityId}/requests/${requestId}/messages`)
       .set('Authorization', `Bearer ${citizenToken}`)
       .expect(200);
 
-    expect(Array.isArray(messages.body)).toBe(true);
+    const messagesPayload = asMessagesPayload(messages);
+    expect(Array.isArray(messagesPayload)).toBe(true);
     expect(
-      messages.body.some(
-        (chatMessage: { content: string }) =>
-          chatMessage.content === 'Any ETA for resolution?',
+      messagesPayload.some(
+        (chatMessage) => chatMessage.content === 'Any ETA for resolution?',
       ),
     ).toBe(true);
 
@@ -223,18 +261,15 @@ describe('CityRequests flow (e2e)', () => {
       .set('Authorization', `Bearer ${citizenToken}`)
       .expect(200);
 
-    expect(detail.body.status).toBe('RESOLVED');
-    expect(detail.body.resolvedAt).toBeTruthy();
-    expect(Array.isArray(detail.body.reports)).toBe(true);
+    const detailPayload = asDetailPayload(detail);
+    expect(detailPayload.status).toBe('RESOLVED');
+    expect(detailPayload.resolvedAt).toBeTruthy();
+    expect(Array.isArray(detailPayload.reports)).toBe(true);
     expect(
-      detail.body.reports.some(
-        (report: { type: string }) => report.type === 'PROGRESS',
-      ),
+      detailPayload.reports.some((report) => report.type === 'PROGRESS'),
     ).toBe(true);
     expect(
-      detail.body.reports.some(
-        (report: { type: string }) => report.type === 'RESOLUTION',
-      ),
+      detailPayload.reports.some((report) => report.type === 'RESOLUTION'),
     ).toBe(true);
   });
 });

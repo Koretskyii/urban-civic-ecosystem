@@ -106,23 +106,21 @@ describe('CityRequestsService', () => {
       files,
     );
 
-    expect(txMock.cityRequest.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          cityId: 'city-1',
-          userId: 'user-1',
-          title: 'Broken streetlight',
-        }),
-      }),
-    );
-    expect(txMock.chat.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          cityRequestId: 'request-1',
-          contextType: 'cityRequest',
-        }),
-      }),
-    );
+    const createRequestCalls = txMock.cityRequest.create.mock
+      .calls as unknown[][];
+    const createRequestCall = createRequestCalls[0]?.[0] as {
+      data: { cityId: string; userId: string; title: string };
+    };
+    expect(createRequestCall.data.cityId).toBe('city-1');
+    expect(createRequestCall.data.userId).toBe('user-1');
+    expect(createRequestCall.data.title).toBe('Broken streetlight');
+
+    const createChatCalls = txMock.chat.create.mock.calls as unknown[][];
+    const createChatCall = createChatCalls[0]?.[0] as {
+      data: { cityRequestId: string; contextType: string };
+    };
+    expect(createChatCall.data.cityRequestId).toBe('request-1');
+    expect(createChatCall.data.contextType).toBe('cityRequest');
     expect(txMock.attachment.createMany).toHaveBeenCalled();
   });
 
@@ -148,14 +146,13 @@ describe('CityRequestsService', () => {
       departmentId: 'dep-1',
     });
 
-    expect(mockPrismaService.cityRequest.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          assignedDepartmentId: 'dep-1',
-          status: RequestStatus.IN_PROGRESS,
-        }),
-      }),
-    );
+    const assignCalls = mockPrismaService.cityRequest.update.mock
+      .calls as unknown[][];
+    const assignCall = assignCalls[0]?.[0] as {
+      data: { assignedDepartmentId: string; status: RequestStatus };
+    };
+    expect(assignCall.data.assignedDepartmentId).toBe('dep-1');
+    expect(assignCall.data.status).toBe(RequestStatus.IN_PROGRESS);
   });
 
   it('createReport should persist resolution report, upload attachment and update request status', async () => {
@@ -212,24 +209,21 @@ describe('CityRequestsService', () => {
       files,
     );
 
-    expect(txMock.report.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          type: ReportType.RESOLUTION,
-          status: RequestStatus.RESOLVED,
-          authorId: 'manager-1',
-        }),
-      }),
-    );
+    const createReportCalls = txMock.report.create.mock.calls as unknown[][];
+    const createReportCall = createReportCalls[0]?.[0] as {
+      data: { type: ReportType; status: RequestStatus; authorId: string };
+    };
+    expect(createReportCall.data.type).toBe(ReportType.RESOLUTION);
+    expect(createReportCall.data.status).toBe(RequestStatus.RESOLVED);
+    expect(createReportCall.data.authorId).toBe('manager-1');
 
-    expect(txMock.cityRequest.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          status: RequestStatus.RESOLVED,
-          resolvedAt: expect.any(Date),
-        }),
-      }),
-    );
+    const updateRequestCalls = txMock.cityRequest.update.mock
+      .calls as unknown[][];
+    const updateRequestCall = updateRequestCalls[0]?.[0] as {
+      data: { status: RequestStatus; resolvedAt: Date | null };
+    };
+    expect(updateRequestCall.data.status).toBe(RequestStatus.RESOLVED);
+    expect(updateRequestCall.data.resolvedAt).toBeInstanceOf(Date);
   });
 
   it('getRequestDetail should forbid citizen access to another citizen request', async () => {

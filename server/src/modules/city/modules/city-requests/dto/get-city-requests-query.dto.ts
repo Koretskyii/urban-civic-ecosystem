@@ -17,7 +17,9 @@ export class GetCityRequestsQueryDto {
   status?: RequestStatus;
 
   @IsOptional()
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   departmentId?: string;
 }
