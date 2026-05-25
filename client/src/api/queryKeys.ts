@@ -21,7 +21,19 @@ export const queryKeys = {
 
   cityRequests: {
     all: (cityId: string) => ['city-requests', cityId] as const,
-    detail: (id: string) => ['city-requests', 'detail', id] as const,
+    list: (cityId: string, scope: string = 'all') =>
+      ['city-requests', cityId, 'list', scope] as const,
+    detail: (cityId: string, requestId: string) =>
+      ['city-requests', cityId, 'detail', requestId] as const,
+    departments: (cityId: string) =>
+      ['city-requests', cityId, 'departments'] as const,
+    messages: (cityId: string, requestId: string) =>
+      ['city-requests', cityId, 'messages', requestId] as const,
+  },
+
+  cityMembers: {
+    all: (cityId: string) => ['city-members', cityId] as const,
+    list: (cityId: string) => ['city-members', cityId, 'list'] as const,
   },
 
   projects: {

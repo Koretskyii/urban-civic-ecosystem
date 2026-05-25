@@ -7,6 +7,7 @@ export type {
 
 export type {
   City,
+  CityMember,
   Alert,
   News,
   Post,
@@ -19,3 +20,18 @@ export type {
   RoleKey,
   GetPermissionsResponse,
 } from './rbac.types';
+
+export type {
+  Attachment,
+  CityRequestDetail,
+  CityRequestListItem,
+  CityRequestMessage,
+  CityRequestRealtimeEnvelope,
+  CityRequestRealtimeEvent,
+  CityRequestReport,
+  CityRequestScope,
+  CityRequestStatus,
+  Department,
+  GetCityRequestsQuery,
+  ReportType,
+} from './city-request.types';

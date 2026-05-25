@@ -16,6 +16,12 @@ enum RequestStatus {
   REJECTED
 }
 
+enum ReportType {
+  PROGRESS
+  RESOLUTION
+  REJECTION
+}
+
 enum ProjectStatus {
   ACTIVE
   COMPLETED
@@ -32,13 +38,16 @@ enum ReactionType {
 //////////////////// CITY (TENANT) ////////////////////
 
 model City {
-  id     String @id @default(cuid())
-  name   String
-  region String
+  id        String  @id @default(cuid())
+  name      String
+  region    String
+  centerLat Float?
+  centerLng Float?
 
   users                UserCity[]
   roles                Role[]
   cityRequests         CityRequest[]
+  departments          Department[]
   chats                Chat[]
   alerts               Alert[]
   alertSubscriptions   AlertSubscription[]   @relation("alertSubscriptions")
@@ -78,6 +87,7 @@ model User {
   memberships          UserCity[]
   userRoles            UserRole[]
   cityRequests         CityRequest[]
+  reports              Report[]
   messages             Message[]
   alertSubscriptions   AlertSubscription[]
   posts                Post[]
@@ -152,18 +162,24 @@ model RolePermission {
 //////////////////// CITY REQUESTS ////////////////////
 
 model CityRequest {
-  id          String        @id @default(cuid())
-  cityId      String
-  userId      String
-  title       String
-  description String?
-  status      RequestStatus @default(OPEN)
-  location    String?
-  priority    Int           @default(0)
-  category    String?
+  id                   String        @id @default(cuid())
+  cityId               String
+  userId               String
+  title                String
+  description          String?
+  status               RequestStatus @default(OPEN)
+  location             String?
+  locationLat          Float?
+  locationLng          Float?
+  address              String?
+  priority             Int           @default(0)
+  category             String?
+  assignedDepartmentId String?
+  resolvedAt           DateTime?
 
-  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city               City        @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedDepartment Department? @relation(fields: [assignedDepartmentId], references: [id], onDelete: SetNull)
 
   chat        Chat?
   reports     Report[]
@@ -171,14 +187,39 @@ model CityRequest {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([cityId, status])
+  @@index([cityId, assignedDepartmentId])
+}
+
+model Department {
+  id          String  @id @default(cuid())
+  cityId      String
+  name        String
+  type        String
+  description String?
+  isActive    Boolean @default(true)
+
+  city         City          @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  cityRequests CityRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cityId, name])
+  @@index([cityId, isActive])
 }
 
 model Report {
-  id          String  @id @default(cuid())
+  id          String         @id @default(cuid())
   description String?
+  authorId    String
+  type        ReportType
+  status      RequestStatus?
 
   cityRequestId String
   cityRequest   CityRequest @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
+  author        User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   attachments Attachment[]
 

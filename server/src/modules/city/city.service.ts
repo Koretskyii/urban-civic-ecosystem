@@ -11,10 +11,13 @@ import {
   CITY_SUCCESS_MESSAGES,
 } from '../rbac/constants/city.const';
 import { ALERT_TYPES } from '@/shared/constants/alerts.const';
+import { DEFAULT_CITY_DEPARTMENTS } from '@/shared/constants/departments.const';
 
 interface CityTransactionData {
   name: string;
   region: string;
+  centerLat?: number;
+  centerLng?: number;
   cityDomain?: {
     create: {
       domainName: string;
@@ -95,6 +98,8 @@ export class CityService {
         id: true,
         name: true,
         region: true,
+        centerLat: true,
+        centerLng: true,
         cityDomain: {
           select: {
             domainName: true,
@@ -114,6 +119,8 @@ export class CityService {
         id: true,
         name: true,
         region: true,
+        centerLat: true,
+        centerLng: true,
         cityDomain: {
           select: { domainName: true },
         },
@@ -212,7 +219,7 @@ export class CityService {
     data: CityInitData,
     document: Express.Multer.File,
   ) {
-    const { name, region, domain, userId } = data;
+    const { name, region, domain, userId, centerLat, centerLng } = data;
 
     if (!name || !region) {
       throw new BadRequestException(CITY_ERRORS.NAME_AND_REGION_REQUIRED);
@@ -252,6 +259,14 @@ export class CityService {
         name,
         region,
       };
+
+      if (typeof centerLat === 'number') {
+        cityData.centerLat = centerLat;
+      }
+
+      if (typeof centerLng === 'number') {
+        cityData.centerLng = centerLng;
+      }
 
       if (domain && userId) {
         cityData.cityDomain = {
@@ -354,6 +369,19 @@ export class CityService {
     tx: Prisma.TransactionClient,
     params: PrepareNewCityParams,
   ) {
+    const txWithDepartmentDelegate = tx as Prisma.TransactionClient & {
+      department: {
+        createMany: (args: {
+          data: Array<{
+            cityId: string;
+            name: string;
+            type: string;
+            description?: string;
+          }>;
+          skipDuplicates: boolean;
+        }) => Promise<unknown>;
+      };
+    };
     const { userId, cityId, cityName } = params;
     const community = await tx.community.create({
       data: {
@@ -438,6 +466,14 @@ export class CityService {
         content: `Так будуть виглядати загальні новини міста ${cityName}.`,
         publisherId: userId,
       },
+    });
+
+    await txWithDepartmentDelegate.department.createMany({
+      data: DEFAULT_CITY_DEPARTMENTS.map((department) => ({
+        cityId,
+        ...department,
+      })),
+      skipDuplicates: true,
     });
   }
 }

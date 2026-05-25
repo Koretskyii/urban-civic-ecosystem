@@ -19,6 +19,20 @@ import { CITY_ERRORS } from '../rbac/constants/city.const';
 import { JWTGuard } from '../auth/guards/jwt.guard';
 import type { User } from '@/types/auth.types';
 
+const toOptionalNumber = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value.trim());
+    return Number.isFinite(parsed) ? parsed : Number.NaN;
+  }
+  return Number.NaN;
+};
+
 @Controller('city')
 export class CityController {
   constructor(private readonly cityService: CityService) {}
@@ -94,6 +108,30 @@ export class CityController {
     if (!document) {
       throw new BadRequestException(CITY_ERRORS.DOCUMENT_REQUIRED);
     }
-    return this.cityService.initializeCityEnvironment(data, document);
+
+    const centerLat = toOptionalNumber(data.centerLat);
+    const centerLng = toOptionalNumber(data.centerLng);
+
+    if (centerLat !== undefined && Number.isNaN(centerLat)) {
+      throw new BadRequestException('Invalid centerLat');
+    }
+    if (centerLng !== undefined && Number.isNaN(centerLng)) {
+      throw new BadRequestException('Invalid centerLng');
+    }
+    if (centerLat !== undefined && (centerLat < -90 || centerLat > 90)) {
+      throw new BadRequestException('centerLat must be between -90 and 90');
+    }
+    if (centerLng !== undefined && (centerLng < -180 || centerLng > 180)) {
+      throw new BadRequestException('centerLng must be between -180 and 180');
+    }
+
+    return this.cityService.initializeCityEnvironment(
+      {
+        ...data,
+        centerLat,
+        centerLng,
+      },
+      document,
+    );
   }
 }

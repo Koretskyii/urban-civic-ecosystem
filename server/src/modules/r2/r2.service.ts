@@ -14,6 +14,15 @@ interface UploadVerificationDocumentParams {
   buffer: Buffer;
 }
 
+interface UploadCityRequestAttachmentParams {
+  cityId: string;
+  requestId: string;
+  reportId?: string;
+  fileName: string;
+  mimeType?: string;
+  buffer: Buffer;
+}
+
 @Injectable()
 export class R2StorageService {
   private readonly s3Client: S3Client;
@@ -51,6 +60,30 @@ export class R2StorageService {
   ): Promise<UploadResult> {
     const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const key = `city-init/${params.cityId}/${Date.now()}-${safeName}`;
+
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: params.buffer,
+        ContentType: params.mimeType || 'application/octet-stream',
+      }),
+    );
+
+    return {
+      key,
+      url: `${this.publicBaseUrl}/${key}`,
+    };
+  }
+
+  async uploadCityRequestAttachment(
+    params: UploadCityRequestAttachmentParams,
+  ): Promise<UploadResult> {
+    const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const scope = params.reportId
+      ? `reports/${params.reportId}`
+      : `requests/${params.requestId}`;
+    const key = `city-requests/${params.cityId}/${scope}/${Date.now()}-${safeName}`;
 
     await this.s3Client.send(
       new PutObjectCommand({

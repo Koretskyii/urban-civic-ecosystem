@@ -7,9 +7,27 @@ import {
   ROLE_PERMISSIONS,
 } from '@/modules/rbac/constants/rolePermissions.const';
 import { ALERT_TYPES } from '@/shared/constants/alerts.const';
+import { DEFAULT_CITY_DEPARTMENTS } from '@/shared/constants/departments.const';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
+const prismaWithDepartmentDelegate = prisma as PrismaClient & {
+  department: {
+    createMany: (args: {
+      data: Array<{
+        cityId: string;
+        name: string;
+        type: string;
+        description?: string;
+      }>;
+      skipDuplicates: boolean;
+    }) => Promise<unknown>;
+    updateMany: (args: {
+      where: { cityId: string; type: { in: string[] } };
+      data: { isActive: boolean };
+    }) => Promise<unknown>;
+  };
+};
 
 const ROLE_NAMES = Object.values(ROLES);
 const ALERT_TYPE_NAMES = Object.values(ALERT_TYPES);
@@ -244,12 +262,52 @@ async function seedDefaultAlertTypes() {
   console.log(`OK ${ALERT_TYPE_NAMES.length} default alert types synced.`);
 }
 
+async function seedDefaultDepartmentsForAllCities() {
+  const cities = await prisma.city.findMany({
+    select: { id: true, name: true },
+  });
+
+  if (cities.length === 0) {
+    console.log('No cities found - skipping department seeding.');
+    return;
+  }
+
+  console.log(`Seeding default departments for ${cities.length} cities...`);
+
+  for (const city of cities) {
+    await prismaWithDepartmentDelegate.department.createMany({
+      data: DEFAULT_CITY_DEPARTMENTS.map((department) => ({
+        cityId: city.id,
+        ...department,
+      })),
+      skipDuplicates: true,
+    });
+
+    await prismaWithDepartmentDelegate.department.updateMany({
+      where: {
+        cityId: city.id,
+        type: {
+          in: DEFAULT_CITY_DEPARTMENTS.map((department) => department.type),
+        },
+      },
+      data: {
+        isActive: true,
+      },
+    });
+
+    console.log(
+      `  OK [${city.name}] ${DEFAULT_CITY_DEPARTMENTS.length} departments synced`,
+    );
+  }
+}
+
 async function main() {
   validateRbacConfig();
   await seedPermissions();
   await seedRolePermissions();
   await seedRolesForAllCities();
   await seedDefaultAlertTypes();
+  await seedDefaultDepartmentsForAllCities();
 }
 
 main()

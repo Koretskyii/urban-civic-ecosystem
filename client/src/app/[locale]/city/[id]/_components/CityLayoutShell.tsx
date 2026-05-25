@@ -22,10 +22,13 @@ import ReportProblemRoundedIcon from '@mui/icons-material/ReportProblemRounded';
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
 import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
+import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import { useCityById } from '@/hooks';
+import { useCityById, useCityMembers, usePermission } from '@/hooks';
+import { useAuthStore } from '@/store';
 import { useTranslations } from 'next-intl';
+import { PERMISSION_GROUPS } from '@/constants/rbac.const';
 
 interface CityLayoutShellProps {
   cityId: string;
@@ -45,6 +48,11 @@ const NAV_ITEMS = [
   },
   { key: 'posts', icon: <ArticleRoundedIcon />, path: '/posts' },
   { key: 'community', icon: <GroupsRoundedIcon />, path: '/community' },
+  {
+    key: 'members',
+    icon: <AdminPanelSettingsRoundedIcon />,
+    path: '/members',
+  },
   { key: 'projects', icon: <AccountTreeRoundedIcon />, path: '/projects' },
   {
     key: 'problem',
@@ -57,13 +65,26 @@ const NAV_ITEMS = [
 export default function CityLayoutShell(props: CityLayoutShellProps) {
   const { cityId, children } = props;
   const t = useTranslations();
+  const { can: canManageRoles } = usePermission(PERMISSION_GROUPS.ROLE.MANAGE, {
+    cityId,
+  });
   const { data: city, isLoading } = useCityById(cityId);
+  const currentUserId = useAuthStore((state) => state.user?.id);
+  const { data: members } = useCityMembers(cityId, {
+    enabled: canManageRoles,
+  });
   const pathname = usePathname();
   const router = useRouter();
   const baseRoute = `/city/${cityId}`;
   const [collapsed, setCollapsed] = useState(false);
 
   const width = collapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
+  const myCityRole = members?.find(
+    (member) => member.userId === currentUserId,
+  )?.role;
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => item.key !== 'members' || canManageRoles,
+  );
 
   return (
     <Box sx={{ display: 'flex', flexGrow: 1, height: '100%' }}>
@@ -145,6 +166,19 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
                 }}
               />
             )}
+            {myCityRole ? (
+              <Chip
+                label={`${t('cityLayout.myRole')}: ${t(`cityMembers.roles.${myCityRole}`)}`}
+                size="small"
+                sx={{
+                  mt: 1,
+                  bgcolor: 'secondary.main',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  height: 22,
+                }}
+              />
+            ) : null}
           </Box>
         )}
 
@@ -152,7 +186,15 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
         {collapsed && (
           <Box sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
             <Tooltip
-              title={isLoading ? '...' : (city?.name ?? '')}
+              title={
+                isLoading
+                  ? '...'
+                  : `${city?.name ?? ''}${
+                      myCityRole
+                        ? ` • ${t('cityLayout.myRole')}: ${t(`cityMembers.roles.${myCityRole}`)}`
+                        : ''
+                    }`
+              }
               placement="right"
             >
               <LocationCityRoundedIcon
@@ -166,7 +208,7 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
 
         {/* Navigation */}
         <List sx={{ px: collapsed ? 0.5 : 1.5, pt: 2, flex: 1 }}>
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const label = t(`cityNav.items.${item.key}`);
             const fullPath = `${baseRoute}${item.path}`;
             const isActive =

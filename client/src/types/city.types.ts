@@ -3,6 +3,8 @@ export interface City {
   name: string;
   region: string;
   domain: string;
+  centerLat?: number | null;
+  centerLng?: number | null;
 }
 
 export interface Alert {
@@ -62,4 +64,12 @@ export interface Community {
 export interface DomainVerificationData {
   domain: string;
   token: string;
+}
+
+export interface CityMember {
+  userId: string;
+  name: string;
+  email: string;
+  joinedAt: string;
+  role: 'admin' | 'citizen' | 'organizer' | 'municipality';
 }

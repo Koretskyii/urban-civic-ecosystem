@@ -19,6 +19,11 @@ export const API_ROUTES = {
     verifyDomain: '/city/domain/verify',
     initializeCity: '/city/initialize',
   },
+  cityMembers: {
+    all: (cityId: string): string => `/city/${cityId}/members`,
+    role: (cityId: string, userId: string): string =>
+      `/city/${cityId}/members/${userId}/role`,
+  },
   alerts: {
     all: (cityId: string): string => `/city/${cityId}/alerts`,
   },
@@ -30,5 +35,21 @@ export const API_ROUTES = {
   },
   community: {
     detail: (cityId: string): string => `/city/${cityId}/community`,
+  },
+  cityRequests: {
+    all: (cityId: string): string => `/city/${cityId}/requests`,
+    detail: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}`,
+    assign: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/assign`,
+    status: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/status`,
+    reports: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/reports`,
+    messages: (cityId: string, requestId: string): string =>
+      `/city/${cityId}/requests/${requestId}/messages`,
+  },
+  departments: {
+    all: (cityId: string): string => `/city/${cityId}/departments`,
   },
 } as const;

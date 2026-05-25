@@ -19,20 +19,26 @@ import { useForm, Controller } from 'react-hook-form';
 import { cityApi } from '@/api/endpoints';
 import { VerifyDomainModal } from './VerifyDomainModal';
 import { useAuthStore } from '@/store';
+import { useDebouncedValue } from '@/hooks';
 import { useTranslations } from 'next-intl';
 
 type CityOption = {
   label: string;
   region: string;
+  lat?: number;
+  lng?: number;
+  geonameId?: number;
 };
-
-interface GeoName {
-  name: string;
-  adminName1?: string;
-}
 
 interface DomainToken {
   token: string;
+}
+
+interface CityInitFormValues {
+  name: CityOption | null;
+  region: string;
+  domain?: string;
+  document?: FileList;
 }
 
 export function CityInitForm() {
@@ -44,7 +50,7 @@ export function CityInitForm() {
     getValues,
     setValue,
     formState: { errors },
-  } = useForm({ shouldUnregister: true });
+  } = useForm<CityInitFormValues>({ shouldUnregister: true });
   const [useDnsVerification, setUseDnsVerification] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
@@ -52,55 +58,66 @@ export function CityInitForm() {
 
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [citySearchQuery, setCitySearchQuery] = useState('');
+  const [isCityLoading, setIsCityLoading] = useState(false);
+  const [citySearchError, setCitySearchError] = useState('');
+  const debouncedCitySearchQuery = useDebouncedValue(citySearchQuery, 600);
 
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (citySearchQuery.length < 2) {
+    if (debouncedCitySearchQuery.length < 2) {
       setCityOptions([]);
+      setCitySearchError('');
+      setIsCityLoading(false);
       return;
     }
 
-    const delayDebounceFn = setTimeout(async () => {
-      try {
-        const username = process.env.NEXT_PUBLIC_GEONAMES_USERNAME;
+    const abortController = new AbortController();
 
-        if (!username) {
-          console.error(t('cityInit.geonamesMissing'));
+    const fetchCities = async () => {
+      try {
+        setIsCityLoading(true);
+        setCitySearchError('');
+        const res = await fetch(
+          `/api/geonames/cities?q=${encodeURIComponent(debouncedCitySearchQuery)}`,
+          { signal: abortController.signal },
+        );
+        const data = (await res.json()) as {
+          message?: string;
+          options?: CityOption[];
+        };
+
+        if (!res.ok) {
+          setCityOptions([]);
+          setCitySearchError(data.message || t('cityInit.geonamesLoadError'));
           return;
         }
-        const res = await fetch(
-          `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(citySearchQuery)}&country=UA&featureClass=P&maxRows=10&username=${username}&lang=uk`,
-        );
-        const data = await res.json();
 
-        if (data.geonames) {
-          const formattedOptions = data.geonames.map((item: GeoName) => ({
-            label: item.name,
-            region: item.adminName1 || t('cityInit.unknownRegion'),
-          }));
-
-          const uniqueOptions = Array.from(
-            new Set(
-              formattedOptions.map((a: CityOption) => a.label + a.region),
-            ),
-          )
-            .map((id) =>
-              formattedOptions.find(
-                (a: CityOption) => a.label + a.region === id,
-              ),
-            )
-            .filter((item): item is CityOption => item !== undefined);
-
-          setCityOptions(uniqueOptions || []);
+        const options = data.options || [];
+        setCityOptions(options);
+        if (options.length === 0) {
+          setCitySearchError(t('citySearch.noOptions'));
         }
       } catch (err) {
+        if (abortController.signal.aborted) {
+          return;
+        }
         console.error(t('cityInit.geonamesLoadError'), err);
+        setCityOptions([]);
+        setCitySearchError(t('cityInit.geonamesLoadError'));
+      } finally {
+        if (!abortController.signal.aborted) {
+          setIsCityLoading(false);
+        }
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [citySearchQuery, t]);
+    void fetchCities();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [debouncedCitySearchQuery, t]);
 
   const onDomainVerify = async () => {
     const domainName = getValues('domain');
@@ -128,20 +145,30 @@ export function CityInitForm() {
 
   const initializeCityEnvironment = async () => {
     const values = getValues();
-    const files = values.document as FileList | undefined;
+    const files = values.document;
     const document = files?.[0];
+    const cityName =
+      typeof values.name === 'string' ? values.name : values.name?.label || '';
 
     if (!document) {
       return;
     }
 
     const formData = new FormData();
-    formData.append('name', String(values.name || ''));
+    formData.append('name', cityName);
     formData.append('region', String(values.region || ''));
     formData.append('document', document);
 
     if (values.domain) {
       formData.append('domain', String(values.domain));
+    }
+
+    if (typeof values.name?.lat === 'number') {
+      formData.append('centerLat', String(values.name.lat));
+    }
+
+    if (typeof values.name?.lng === 'number') {
+      formData.append('centerLng', String(values.name.lng));
     }
 
     if (user?.id) {
@@ -169,26 +196,36 @@ export function CityInitForm() {
             defaultValue={null}
             rules={{ required: t('cityInit.selectCityError') }}
             render={({ field: { value, onChange, ...field } }) => (
-              <Autocomplete
+              <Autocomplete<CityOption, false, false, false>
                 {...field}
                 value={value || null}
+                inputValue={citySearchQuery}
                 options={cityOptions}
+                isOptionEqualToValue={(option, selected) =>
+                  option.label === selected.label &&
+                  option.region === selected.region
+                }
+                openOnFocus
+                loading={isCityLoading}
+                noOptionsText={
+                  citySearchQuery.length < 2
+                    ? t('cityInit.searchPlaceholder')
+                    : citySearchError || t('citySearch.noOptions')
+                }
+                filterOptions={(options) => options}
                 getOptionLabel={(option: string | CityOption) =>
                   typeof option === 'string'
                     ? option
                     : `${option.label} (${option.region})`
                 }
-                onInputChange={(_, newInputValue) =>
-                  setCitySearchQuery(newInputValue)
-                }
-                onChange={(_, newValue: string | CityOption | null) => {
-                  if (typeof newValue === 'string') {
-                    onChange(newValue);
-                    setValue('region', '');
-                  } else {
-                    onChange(newValue?.label || '');
-                    setValue('region', newValue?.region || '');
+                onInputChange={(_, newInputValue, reason) => {
+                  if (reason === 'input' || reason === 'clear') {
+                    setCitySearchQuery(newInputValue);
                   }
+                }}
+                onChange={(_, newValue: CityOption | null) => {
+                  onChange(newValue);
+                  setValue('region', newValue?.region || '');
                 }}
                 renderInput={(params) => (
                   <TextField
@@ -223,9 +260,10 @@ export function CityInitForm() {
                 value: 50,
                 message: t('cityInit.regionMax'),
               },
-              pattern: {
-                value: /^[а-яА-ЯёЁїЇєЄ\s\-]+$/,
-                message: t('cityInit.regionPattern'),
+              setValueAs: (value: string) => value.trim().replace(/\s+/g, ' '),
+              validate: {
+                validRegionText: (value: string) =>
+                  /^[\p{L}\s'’-]+$/u.test(value) || t('cityInit.regionPattern'),
               },
             })}
             placeholder={t('cityInit.regionPlaceholder')}

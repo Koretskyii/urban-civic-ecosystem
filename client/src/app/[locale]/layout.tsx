@@ -1,4 +1,5 @@
 import '../globals.css';
+import 'leaflet/dist/leaflet.css';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { getMessages, getTranslations } from 'next-intl/server';
