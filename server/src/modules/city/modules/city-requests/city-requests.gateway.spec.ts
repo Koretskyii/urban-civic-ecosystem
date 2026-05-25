@@ -84,7 +84,7 @@ describe('CityRequestsGateway', () => {
       handshake: {
         auth: { token: 'Bearer jwt-token' },
         headers: {},
-      } as SocketWithUser['handshake'],
+      } as unknown as SocketWithUser['handshake'],
       disconnect: disconnectFn as SocketWithUser['disconnect'],
     });
 
@@ -113,7 +113,7 @@ describe('CityRequestsGateway', () => {
         headers: {
           cookie: 'foo=bar; access_token=jwt-cookie-token',
         },
-      } as SocketWithUser['handshake'],
+      } as unknown as SocketWithUser['handshake'],
     });
 
     await gateway.handleConnection(client);
@@ -143,7 +143,7 @@ describe('CityRequestsGateway', () => {
         headers: {
           cookie: 'access_token=Bearer%20jwt-encoded-token',
         },
-      } as SocketWithUser['handshake'],
+      } as unknown as SocketWithUser['handshake'],
     });
 
     await gateway.handleConnection(client);
