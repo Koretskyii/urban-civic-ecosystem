@@ -13,10 +13,6 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function deleteCookie(name: string) {
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=lax`;
-}
-
 export default function GoogleCallbackPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -26,23 +22,16 @@ export default function GoogleCallbackPage() {
   useEffect(() => {
     async function handleGoogleAuth() {
       try {
-        // 1. Read access token from cookie (set by server during redirect)
         const accessToken = getCookie('access_token');
         if (!accessToken) {
           setError(ERROR_MESSAGES.AUTH.MISSING_TOKEN);
           return;
         }
 
-        // 2. Delete cookie immediately — token now lives only in memory
-        deleteCookie('access_token');
-
-        // 3. Store token so apiClient includes auth header
         useAuthStore.setState({ token: accessToken });
 
-        // 4. Fetch user profile
         const user = await authApi.getProfile();
 
-        // 5. Store in auth state (same as local login)
         setUser(user, accessToken);
         router.replace('/user/profile');
       } catch {
