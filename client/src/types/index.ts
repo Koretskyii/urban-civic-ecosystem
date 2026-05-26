@@ -7,6 +7,10 @@ export type {
 
 export type {
   City,
+  AlertType,
+  AlertListQuery,
+  CreateAlertPayload,
+  UpdateAlertPayload,
   CreateNewsPayload,
   NewsListQuery,
   UpdateNewsPayload,

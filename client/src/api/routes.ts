@@ -26,6 +26,9 @@ export const API_ROUTES = {
   },
   alerts: {
     all: (cityId: string): string => `/city/${cityId}/alerts`,
+    detail: (cityId: string, alertId: string): string =>
+      `/city/${cityId}/alerts/${alertId}`,
+    types: (cityId: string): string => `/city/${cityId}/alerts/types`,
   },
   news: {
     all: (cityId: string): string => `/city/${cityId}/news`,

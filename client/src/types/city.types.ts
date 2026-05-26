@@ -9,12 +9,41 @@ export interface City {
 
 export interface Alert {
   id: string;
+  cityId: string;
+  alertTypeId: string;
+  publisherId?: string | null;
   title: string;
   content: string;
+  timestamp: string;
   alertType: {
+    id: string;
     name: string;
   };
   createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+export interface AlertType {
+  id: string;
+  name: string;
+}
+
+export interface AlertListQuery {
+  includeDeleted?: boolean;
+  search?: string;
+}
+
+export interface CreateAlertPayload {
+  alertTypeId: string;
+  title: string;
+  content: string;
+}
+
+export interface UpdateAlertPayload {
+  alertTypeId?: string;
+  title?: string;
+  content?: string;
 }
 
 export interface News {

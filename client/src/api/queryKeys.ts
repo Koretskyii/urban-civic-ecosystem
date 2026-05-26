@@ -77,6 +77,20 @@ export const queryKeys = {
 
   alerts: {
     all: (cityId: string) => ['alerts', cityId] as const,
+    list: (
+      cityId: string,
+      filters?: { includeDeleted?: boolean; search?: string },
+    ) =>
+      [
+        'alerts',
+        cityId,
+        'list',
+        filters?.includeDeleted ?? false,
+        filters?.search ?? '',
+      ] as const,
+    detail: (cityId: string, alertId: string) =>
+      ['alerts', cityId, 'detail', alertId] as const,
+    types: (cityId: string) => ['alerts', cityId, 'types'] as const,
   },
 
   posts: {

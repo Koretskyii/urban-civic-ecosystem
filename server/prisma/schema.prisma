@@ -102,6 +102,7 @@ model User {
   reports              Report[]
   messages             Message[]
   alertSubscriptions   AlertSubscription[]
+  publishedAlerts      Alert[]                 @relation("alertPublisher")
   posts                Post[]
   comments             Comment[]
   reactions            Reaction[]
@@ -292,15 +293,22 @@ model Message {
 model Alert {
   id          String   @id @default(cuid())
   cityId      String
+  publisherId String?
   alertTypeId String
   title       String
   content     String
   timestamp   DateTime @default(now())
 
-  city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
+  city       City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  publisher  User?     @relation("alertPublisher", fields: [publisherId], references: [id], onDelete: Cascade)
+  alertType  AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([cityId, deletedAt, createdAt(sort: Desc)])
+  @@index([cityId, alertTypeId, createdAt(sort: Desc)])
 }
 
 model AlertType {
