@@ -7,6 +7,7 @@ export type {
 
 export type {
   City,
+  AlertSeverity,
   AlertType,
   AlertListQuery,
   CreateAlertPayload,

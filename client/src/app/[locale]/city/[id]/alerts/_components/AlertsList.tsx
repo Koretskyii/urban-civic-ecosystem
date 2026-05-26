@@ -40,6 +40,18 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { FormEvent, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import type { AlertSeverity } from '@/types';
+import {
+  ALERT_DEFAULT_SEVERITY,
+  ALERT_SEVERITY_FILTER_ALL,
+  ALERT_SEVERITY_OPTIONS,
+  ALERT_TYPE_TRANSLATION_KEYS,
+} from '../alerts.constants';
+import {
+  sortAlertsByPriority,
+  toDateTimeLocalInputValue,
+} from '../alerts.utils';
+import AlertExpiryQuickActions from './AlertExpiryQuickActions';
 
 interface AlertsListProps {
   cityId: string;
@@ -51,13 +63,26 @@ export default function AlertsList(props: AlertsListProps) {
 
   const [search, setSearch] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [onlyActive, setOnlyActive] = useState(true);
+  const [previewAsCitizen, setPreviewAsCitizen] = useState(false);
+  const [severityFilter, setSeverityFilter] = useState<
+    typeof ALERT_SEVERITY_FILTER_ALL | AlertSeverity
+  >(ALERT_SEVERITY_FILTER_ALL);
 
   const [newAlertTypeId, setNewAlertTypeId] = useState('');
+  const [newSeverity, setNewSeverity] = useState<AlertSeverity>(
+    ALERT_DEFAULT_SEVERITY,
+  );
+  const [newExpiresAt, setNewExpiresAt] = useState('');
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
 
   const [editingAlertId, setEditingAlertId] = useState<string | null>(null);
   const [editingAlertTypeId, setEditingAlertTypeId] = useState('');
+  const [editingSeverity, setEditingSeverity] = useState<AlertSeverity>(
+    ALERT_DEFAULT_SEVERITY,
+  );
+  const [editingExpiresAt, setEditingExpiresAt] = useState('');
   const [editingTitle, setEditingTitle] = useState('');
   const [editingContent, setEditingContent] = useState('');
 
@@ -89,13 +114,26 @@ export default function AlertsList(props: AlertsListProps) {
       cityId,
     },
   );
+  const isCitizenView = canManageAlert && previewAsCitizen;
+  const effectiveCanManageAlert = canManageAlert && !isCitizenView;
 
   const listQuery = useMemo(
     () => ({
       search: debouncedSearch.trim() || undefined,
-      includeDeleted: canManageAlert ? includeDeleted : false,
+      includeDeleted: effectiveCanManageAlert ? includeDeleted : false,
+      onlyActive: effectiveCanManageAlert ? onlyActive : true,
+      severity:
+        severityFilter === ALERT_SEVERITY_FILTER_ALL
+          ? undefined
+          : severityFilter,
     }),
-    [debouncedSearch, canManageAlert, includeDeleted],
+    [
+      debouncedSearch,
+      effectiveCanManageAlert,
+      includeDeleted,
+      onlyActive,
+      severityFilter,
+    ],
   );
 
   const { data: alerts, isLoading, error } = useCityAlerts(cityId, listQuery);
@@ -106,19 +144,25 @@ export default function AlertsList(props: AlertsListProps) {
   const updateAlertMutation = useUpdateAlert();
   const deleteAlertMutation = useDeleteAlert();
 
-  const canManageView = canCreateAlert || canUpdateAlert || canDeleteAlert;
+  const canManageView =
+    (canCreateAlert || canUpdateAlert || canDeleteAlert) && !isCitizenView;
 
   const visibleAlerts = useMemo(() => {
     if (!alerts) {
       return [];
     }
 
-    if (canManageAlert) {
-      return alerts;
-    }
+    const filtered = effectiveCanManageAlert
+      ? alerts
+      : alerts.filter((item) => !item.deletedAt);
 
-    return alerts.filter((item) => !item.deletedAt);
-  }, [alerts, canManageAlert]);
+    return sortAlertsByPriority(filtered);
+  }, [alerts, effectiveCanManageAlert]);
+
+  const translateAlertTypeName = (name: string) => {
+    const translationKey = ALERT_TYPE_TRANSLATION_KEYS[name];
+    return translationKey ? t(translationKey) : name;
+  };
 
   const onCreateAlert = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -137,12 +181,16 @@ export default function AlertsList(props: AlertsListProps) {
         cityId,
         payload: {
           alertTypeId: newAlertTypeId,
+          severity: newSeverity,
+          expiresAt: newExpiresAt || undefined,
           title,
           content,
         },
       });
 
       setNewAlertTypeId('');
+      setNewSeverity(ALERT_DEFAULT_SEVERITY);
+      setNewExpiresAt('');
       setNewTitle('');
       setNewContent('');
     } catch {
@@ -153,11 +201,15 @@ export default function AlertsList(props: AlertsListProps) {
   const startEdit = (item: {
     id: string;
     alertTypeId: string;
+    severity: AlertSeverity;
+    expiresAt?: string | null;
     title: string;
     content: string;
   }) => {
     setEditingAlertId(item.id);
     setEditingAlertTypeId(item.alertTypeId);
+    setEditingSeverity(item.severity);
+    setEditingExpiresAt(toDateTimeLocalInputValue(item.expiresAt));
     setEditingTitle(item.title);
     setEditingContent(item.content);
     setFormError('');
@@ -182,6 +234,8 @@ export default function AlertsList(props: AlertsListProps) {
         alertId: editingAlertId,
         payload: {
           alertTypeId: editingAlertTypeId,
+          severity: editingSeverity,
+          expiresAt: editingExpiresAt || null,
           title,
           content,
         },
@@ -189,6 +243,8 @@ export default function AlertsList(props: AlertsListProps) {
 
       setEditingAlertId(null);
       setEditingAlertTypeId('');
+      setEditingSeverity(ALERT_DEFAULT_SEVERITY);
+      setEditingExpiresAt('');
       setEditingTitle('');
       setEditingContent('');
     } catch {
@@ -237,7 +293,7 @@ export default function AlertsList(props: AlertsListProps) {
         <Typography variant="h3">{t('alerts.title')}</Typography>
       </Box>
 
-      {canManageView ? (
+      {canManageView || canManageAlert ? (
         <Box sx={{ mb: 3 }}>
           {formError ? <Alert severity="error">{formError}</Alert> : null}
           {createAlertMutation.isError ? (
@@ -285,7 +341,7 @@ export default function AlertsList(props: AlertsListProps) {
                 >
                   {(alertTypes ?? []).map((type) => (
                     <MenuItem key={type.id} value={type.id}>
-                      {type.name}
+                      {translateAlertTypeName(type.name)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -296,6 +352,41 @@ export default function AlertsList(props: AlertsListProps) {
                 value={newTitle}
                 onChange={(event) => setNewTitle(event.target.value)}
                 required
+              />
+
+              <FormControl fullWidth required>
+                <InputLabel id="alert-severity-label">
+                  {t('alerts.fields.severity')}
+                </InputLabel>
+                <Select
+                  labelId="alert-severity-label"
+                  value={newSeverity}
+                  label={t('alerts.fields.severity')}
+                  onChange={(event: SelectChangeEvent) =>
+                    setNewSeverity(event.target.value as AlertSeverity)
+                  }
+                >
+                  {ALERT_SEVERITY_OPTIONS.map((severity) => (
+                    <MenuItem key={severity} value={severity}>
+                      {t(`alerts.severity.${severity}`)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <TextField
+                label={t('alerts.fields.expiresAt')}
+                type="datetime-local"
+                value={newExpiresAt}
+                onChange={(event) => setNewExpiresAt(event.target.value)}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+
+              <AlertExpiryQuickActions
+                value={newExpiresAt}
+                onChange={setNewExpiresAt}
+                t={t}
               />
 
               <TextField
@@ -330,6 +421,20 @@ export default function AlertsList(props: AlertsListProps) {
               alignItems: { xs: 'stretch', md: 'center' },
             }}
           >
+            {canManageAlert ? (
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isCitizenView}
+                    onChange={(event) =>
+                      setPreviewAsCitizen(event.target.checked)
+                    }
+                  />
+                }
+                label={t('alerts.previewAsCitizen')}
+              />
+            ) : null}
+
             <TextField
               label={t('alerts.searchLabel')}
               value={search}
@@ -350,18 +455,56 @@ export default function AlertsList(props: AlertsListProps) {
               sx={{ flex: 1 }}
             />
 
-            {canManageAlert ? (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={includeDeleted}
-                    onChange={(event) =>
-                      setIncludeDeleted(event.target.checked)
-                    }
-                  />
+            <FormControl sx={{ minWidth: 180 }}>
+              <InputLabel id="severity-filter-label">
+                {t('alerts.fields.severity')}
+              </InputLabel>
+              <Select
+                labelId="severity-filter-label"
+                value={severityFilter}
+                label={t('alerts.fields.severity')}
+                onChange={(event: SelectChangeEvent) =>
+                  setSeverityFilter(
+                    event.target.value as
+                      | typeof ALERT_SEVERITY_FILTER_ALL
+                      | AlertSeverity,
+                  )
                 }
-                label={t('alerts.includeDeleted')}
-              />
+              >
+                <MenuItem value={ALERT_SEVERITY_FILTER_ALL}>
+                  {t('alerts.filters.allSeverity')}
+                </MenuItem>
+                {ALERT_SEVERITY_OPTIONS.map((severity) => (
+                  <MenuItem key={severity} value={severity}>
+                    {t(`alerts.severity.${severity}`)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {effectiveCanManageAlert ? (
+              <>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={includeDeleted}
+                      onChange={(event) =>
+                        setIncludeDeleted(event.target.checked)
+                      }
+                    />
+                  }
+                  label={t('alerts.includeDeleted')}
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={onlyActive}
+                      onChange={(event) => setOnlyActive(event.target.checked)}
+                    />
+                  }
+                  label={t('alerts.onlyActive')}
+                />
+              </>
             ) : null}
           </Box>
         </Box>
@@ -426,7 +569,15 @@ export default function AlertsList(props: AlertsListProps) {
                     </Box>
 
                     <Typography variant="body2" color="text.secondary">
-                      {alert.alertType.name}
+                      {translateAlertTypeName(alert.alertType.name)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t(`alerts.severity.${alert.severity}`)} ·{' '}
+                      {`${t('alerts.expiresAtLabel')}: ${
+                        alert.expiresAt
+                          ? new Date(alert.expiresAt).toLocaleString('uk-UA')
+                          : t('alerts.noExpiry')
+                      }`}
                     </Typography>
 
                     <Typography variant="body1">{alert.content}</Typography>
@@ -447,6 +598,8 @@ export default function AlertsList(props: AlertsListProps) {
                               startEdit({
                                 id: alert.id,
                                 alertTypeId: alert.alertTypeId,
+                                severity: alert.severity,
+                                expiresAt: alert.expiresAt,
                                 title: alert.title,
                                 content: alert.content,
                               })
@@ -499,7 +652,7 @@ export default function AlertsList(props: AlertsListProps) {
             >
               {(alertTypes ?? []).map((type) => (
                 <MenuItem key={type.id} value={type.id}>
-                  {type.name}
+                  {translateAlertTypeName(type.name)}
                 </MenuItem>
               ))}
             </Select>
@@ -510,6 +663,41 @@ export default function AlertsList(props: AlertsListProps) {
             value={editingTitle}
             onChange={(event) => setEditingTitle(event.target.value)}
             fullWidth
+          />
+
+          <FormControl fullWidth required>
+            <InputLabel id="edit-alert-severity-label">
+              {t('alerts.fields.severity')}
+            </InputLabel>
+            <Select
+              labelId="edit-alert-severity-label"
+              value={editingSeverity}
+              label={t('alerts.fields.severity')}
+              onChange={(event: SelectChangeEvent) =>
+                setEditingSeverity(event.target.value as AlertSeverity)
+              }
+            >
+              {ALERT_SEVERITY_OPTIONS.map((severity) => (
+                <MenuItem key={severity} value={severity}>
+                  {t(`alerts.severity.${severity}`)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            label={t('alerts.fields.expiresAt')}
+            type="datetime-local"
+            value={editingExpiresAt}
+            onChange={(event) => setEditingExpiresAt(event.target.value)}
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+          />
+
+          <AlertExpiryQuickActions
+            value={editingExpiresAt}
+            onChange={setEditingExpiresAt}
+            t={t}
           />
 
           <TextField

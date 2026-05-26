@@ -252,7 +252,11 @@ export const en = {
     searchLabel: 'Search',
     searchPlaceholder: 'Search by title or content',
     includeDeleted: 'Include deleted',
+    onlyActive: 'Only active',
+    previewAsCitizen: 'Preview as citizen',
     deletedLabel: 'Deleted',
+    noExpiry: 'No expiry',
+    expiresAtLabel: 'Active until',
     formValidation:
       'Type is required, and title/content must be at least 3 characters long.',
     createError: 'Failed to create alert.',
@@ -260,8 +264,29 @@ export const en = {
     deleteError: 'Failed to delete alert.',
     fields: {
       type: 'Type',
+      severity: 'Severity',
+      expiresAt: 'Active until',
       title: 'Title',
       content: 'Content',
+    },
+    filters: {
+      allSeverity: 'All severities',
+    },
+    severity: {
+      CRITICAL: 'Critical',
+      HIGH: 'High',
+      MEDIUM: 'Medium',
+      LOW: 'Low',
+    },
+    types: {
+      POWER_OUTAGE: 'Power outage',
+      WATER_SUPPLY: 'Water supply issue',
+      GAS_SUPPLY: 'Gas supply issue',
+      ROAD_ACCIDENT: 'Road accident',
+      EMERGENCY: 'Emergency',
+      WEATHER: 'Weather conditions',
+      TECHNICAL_WORKS: 'Technical works',
+      OTHER: 'Other',
     },
     actions: {
       create: 'Create',
@@ -271,6 +296,10 @@ export const en = {
       save: 'Save',
       saving: 'Saving...',
       cancel: 'Cancel',
+      plus7Days: '+7 days',
+      plus30Days: '+30 days',
+      noExpiry: 'No expiry',
+      clearExpiry: 'Clear',
     },
   },
   changePassword: {

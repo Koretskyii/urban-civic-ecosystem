@@ -8,6 +8,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { RbacService } from '@/modules/rbac/rbac.service';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { CreateAlertDto, GetAlertsQueryDto, UpdateAlertDto } from './dto';
+import type { Prisma } from '@/generated/prisma/client';
 
 @Injectable()
 export class AlertsService {
@@ -25,6 +26,8 @@ export class AlertsService {
         cityId,
         publisherId: userId,
         alertTypeId: dto.alertTypeId,
+        severity: dto.severity,
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
         title: dto.title.trim(),
         content: dto.content.trim(),
       },
@@ -32,45 +35,59 @@ export class AlertsService {
     });
   }
 
-  async getCityAlerts(cityId: string, userId: string, query: GetAlertsQueryDto) {
+  async getCityAlerts(
+    cityId: string,
+    userId: string,
+    query: GetAlertsQueryDto,
+  ) {
     await this.ensureCityMembership(cityId, userId);
 
     const canManageAlerts = await this.canManageAlerts(cityId, userId);
     const includeDeleted = query.includeDeleted === true;
+    const onlyActive = query.onlyActive !== false;
+    const now = new Date();
 
     if (includeDeleted && !canManageAlerts) {
       throw new ForbiddenException('You cannot request deleted alerts');
     }
 
     const trimmedSearch = query.search?.trim();
+    const andConditions: Prisma.AlertWhereInput[] = [];
+
+    if (onlyActive) {
+      andConditions.push({
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      });
+    }
+
+    if (trimmedSearch) {
+      andConditions.push({
+        OR: [
+          {
+            title: {
+              contains: trimmedSearch,
+              mode: 'insensitive',
+            },
+          },
+          {
+            content: {
+              contains: trimmedSearch,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      });
+    }
 
     return this.prisma.alert.findMany({
       where: {
         cityId,
         ...(includeDeleted ? {} : { deletedAt: null }),
-        ...(trimmedSearch
-          ? {
-              OR: [
-                {
-                  title: {
-                    contains: trimmedSearch,
-                    mode: 'insensitive',
-                  },
-                },
-                {
-                  content: {
-                    contains: trimmedSearch,
-                    mode: 'insensitive',
-                  },
-                },
-              ],
-            }
-          : {}),
+        ...(query.severity ? { severity: query.severity } : {}),
+        ...(andConditions.length > 0 ? { AND: andConditions } : {}),
       },
       select: this.alertSelect(),
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
     });
   }
 
@@ -91,12 +108,25 @@ export class AlertsService {
   async getCityAlertById(cityId: string, alertId: string, userId: string) {
     await this.ensureCityMembership(cityId, userId);
     const canManageAlerts = await this.canManageAlerts(cityId, userId);
+    const now = new Date();
 
     const alert = await this.prisma.alert.findFirst({
       where: {
         id: alertId,
         cityId,
-        ...(canManageAlerts ? {} : { deletedAt: null }),
+        ...(canManageAlerts
+          ? {}
+          : {
+              deletedAt: null,
+              OR: [
+                { expiresAt: null },
+                {
+                  expiresAt: {
+                    gt: now,
+                  },
+                },
+              ],
+            }),
       },
       select: this.alertSelect(),
     });
@@ -141,6 +171,8 @@ export class AlertsService {
 
     const updateData: {
       alertTypeId?: string;
+      severity?: UpdateAlertDto['severity'];
+      expiresAt?: Date | null;
       title?: string;
       content?: string;
     } = {};
@@ -153,6 +185,12 @@ export class AlertsService {
     }
     if (typeof dto.content === 'string') {
       updateData.content = dto.content.trim();
+    }
+    if (dto.severity !== undefined) {
+      updateData.severity = dto.severity;
+    }
+    if (dto.expiresAt !== undefined) {
+      updateData.expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
     }
 
     return this.prisma.alert.update({
@@ -207,6 +245,8 @@ export class AlertsService {
       cityId: true,
       publisherId: true,
       alertTypeId: true,
+      severity: true,
+      expiresAt: true,
       title: true,
       content: true,
       timestamp: true,

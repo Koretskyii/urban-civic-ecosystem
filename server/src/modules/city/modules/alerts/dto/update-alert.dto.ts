@@ -1,11 +1,14 @@
 import { Transform } from 'class-transformer';
 import {
+  IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { AlertSeverity } from '@/generated/prisma/enums';
 
 export class UpdateAlertDto {
   @IsOptional()
@@ -37,4 +40,27 @@ export class UpdateAlertDto {
   @MinLength(3)
   @MaxLength(10000)
   content?: string;
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === null || value === undefined || value === '') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      return value.trim().toUpperCase();
+    }
+    return value;
+  })
+  @IsEnum(AlertSeverity)
+  severity?: AlertSeverity;
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === '' || value === null) {
+      return null;
+    }
+    return value;
+  })
+  @IsDateString()
+  expiresAt?: string | null;
 }

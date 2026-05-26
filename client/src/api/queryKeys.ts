@@ -1,3 +1,5 @@
+import type { AlertSeverity } from '@/types';
+
 export const queryKeys = {
   auth: {
     register: () => ['auth', 'register'] as const,
@@ -79,13 +81,20 @@ export const queryKeys = {
     all: (cityId: string) => ['alerts', cityId] as const,
     list: (
       cityId: string,
-      filters?: { includeDeleted?: boolean; search?: string },
+      filters?: {
+        includeDeleted?: boolean;
+        search?: string;
+        severity?: AlertSeverity;
+        onlyActive?: boolean;
+      },
     ) =>
       [
         'alerts',
         cityId,
         'list',
         filters?.includeDeleted ?? false,
+        filters?.onlyActive ?? true,
+        filters?.severity ?? '',
         filters?.search ?? '',
       ] as const,
     detail: (cityId: string, alertId: string) =>

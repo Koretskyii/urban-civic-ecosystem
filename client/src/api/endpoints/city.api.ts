@@ -42,8 +42,14 @@ const buildAlertsQuery = (query?: AlertListQuery) => {
   if (query.includeDeleted !== undefined) {
     params.set('includeDeleted', String(query.includeDeleted));
   }
+  if (query.onlyActive !== undefined) {
+    params.set('onlyActive', String(query.onlyActive));
+  }
   if (query.search) {
     params.set('search', query.search);
+  }
+  if (query.severity) {
+    params.set('severity', query.severity);
   }
 
   const queryString = params.toString();

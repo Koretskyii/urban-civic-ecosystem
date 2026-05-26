@@ -75,7 +75,12 @@ export class AlertsController {
     @Req() req: RequestWithUser,
     @Body() dto: UpdateAlertDto,
   ) {
-    return this.alertsService.updateCityAlert(cityId, alertId, req.user.id, dto);
+    return this.alertsService.updateCityAlert(
+      cityId,
+      alertId,
+      req.user.id,
+      dto,
+    );
   }
 
   @Delete(':alertId')

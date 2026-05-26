@@ -46,6 +46,13 @@ enum InAppNotificationType {
   NEWS_CREATED
 }
 
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
 //////////////////// CITY (TENANT) ////////////////////
 
 model City {
@@ -295,6 +302,8 @@ model Alert {
   cityId      String
   publisherId String?
   alertTypeId String
+  severity    AlertSeverity @default(MEDIUM)
+  expiresAt   DateTime?
   title       String
   content     String
   timestamp   DateTime @default(now())
@@ -307,8 +316,9 @@ model Alert {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@index([cityId, deletedAt, createdAt(sort: Desc)])
+  @@index([cityId, deletedAt, severity, createdAt(sort: Desc)])
   @@index([cityId, alertTypeId, createdAt(sort: Desc)])
+  @@index([expiresAt])
 }
 
 model AlertType {

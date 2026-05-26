@@ -254,7 +254,11 @@ export const uk = {
     searchLabel: 'Пошук',
     searchPlaceholder: 'Пошук за заголовком або текстом',
     includeDeleted: 'Показувати видалені',
+    onlyActive: 'Лише актуальні',
+    previewAsCitizen: 'Показувати як citizen',
     deletedLabel: 'Видалено',
+    noExpiry: 'Безстроково',
+    expiresAtLabel: 'Актуально до',
     formValidation:
       'Тип є обовʼязковим, а заголовок і текст мають містити щонайменше 3 символи.',
     createError: 'Не вдалося створити оголошення.',
@@ -262,8 +266,29 @@ export const uk = {
     deleteError: 'Не вдалося видалити оголошення.',
     fields: {
       type: 'Тип',
+      severity: 'Важливість',
+      expiresAt: 'Актуально до',
       title: 'Заголовок',
       content: 'Текст',
+    },
+    filters: {
+      allSeverity: 'Усі рівні',
+    },
+    severity: {
+      CRITICAL: 'Критично',
+      HIGH: 'Висока',
+      MEDIUM: 'Середня',
+      LOW: 'Низька',
+    },
+    types: {
+      POWER_OUTAGE: 'Відключення електроенергії',
+      WATER_SUPPLY: 'Проблеми з водопостачанням',
+      GAS_SUPPLY: 'Проблеми з газопостачанням',
+      ROAD_ACCIDENT: 'ДТП / дорожній інцидент',
+      EMERGENCY: 'Надзвичайна ситуація',
+      WEATHER: 'Погодні умови',
+      TECHNICAL_WORKS: 'Технічні роботи',
+      OTHER: 'Інше',
     },
     actions: {
       create: 'Створити',
@@ -273,6 +298,10 @@ export const uk = {
       save: 'Зберегти',
       saving: 'Збереження...',
       cancel: 'Скасувати',
+      plus7Days: '+7 днів',
+      plus30Days: '+30 днів',
+      noExpiry: 'Безстроково',
+      clearExpiry: 'Очистити',
     },
   },
   changePassword: {
