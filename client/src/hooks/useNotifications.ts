@@ -68,15 +68,12 @@ export function useMarkAllNotificationsRead(cityId?: string) {
 
 export function useNotificationsRealtime(cityId?: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const token = useAuthStore((s) => s.token);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!isAuthenticated || !token) return;
+    if (!isAuthenticated) return;
 
-    const streamUrl = new URL('/notifications/stream', API_BASE_URL);
-    streamUrl.searchParams.set('token', token);
-    const source = new EventSource(streamUrl.toString(), {
+    const source = new EventSource(new URL('/notifications/stream', API_BASE_URL), {
       withCredentials: true,
     });
 
@@ -98,5 +95,5 @@ export function useNotificationsRealtime(cityId?: string) {
     return () => {
       source.close();
     };
-  }, [cityId, isAuthenticated, queryClient, token]);
+  }, [cityId, isAuthenticated, queryClient]);
 }
