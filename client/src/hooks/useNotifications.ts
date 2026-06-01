@@ -73,9 +73,12 @@ export function useNotificationsRealtime(cityId?: string) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const source = new EventSource(new URL('/notifications/stream', API_BASE_URL), {
-      withCredentials: true,
-    });
+    const source = new EventSource(
+      new URL('/notifications/stream', API_BASE_URL),
+      {
+        withCredentials: true,
+      },
+    );
 
     source.onmessage = () => {
       void queryClient.invalidateQueries({
