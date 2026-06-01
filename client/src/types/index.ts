@@ -30,6 +30,13 @@ export type {
 } from './rbac.types';
 
 export type {
+  InAppNotification,
+  InAppNotificationType,
+  NotificationsListResponse,
+  NotificationsUnreadCountResponse,
+} from './notifications.types';
+
+export type {
   Attachment,
   CityRequestDetail,
   CityRequestListItem,

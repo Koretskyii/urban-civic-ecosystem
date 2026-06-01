@@ -9,6 +9,8 @@ import { RbacService } from '@/modules/rbac/rbac.service';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { CreateAlertDto, GetAlertsQueryDto, UpdateAlertDto } from './dto';
 import type { Prisma } from '@/generated/prisma/client';
+import { buildAlertEventPayload } from '@/modules/notifications/domain/domain-event.factory';
+import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 
 @Injectable()
 export class AlertsService {
@@ -21,17 +23,38 @@ export class AlertsService {
     await this.ensureCityMembership(cityId, userId);
     await this.ensureAlertTypeExists(dto.alertTypeId);
 
-    return this.prisma.alert.create({
-      data: {
-        cityId,
-        publisherId: userId,
-        alertTypeId: dto.alertTypeId,
-        severity: dto.severity,
-        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
-        title: dto.title.trim(),
-        content: dto.content.trim(),
-      },
-      select: this.alertSelect(),
+    return this.prisma.$transaction(async (tx) => {
+      const alert = await tx.alert.create({
+        data: {
+          cityId,
+          publisherId: userId,
+          alertTypeId: dto.alertTypeId,
+          severity: dto.severity,
+          expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+          title: dto.title.trim(),
+          content: dto.content.trim(),
+        },
+        select: this.alertSelect(),
+      });
+
+      await tx.domainEventOutbox.create({
+        data: {
+          aggregateType: 'alert',
+          aggregateId: alert.id,
+          eventType: DOMAIN_EVENT_TYPES.ALERT_CREATED,
+          payload: buildAlertEventPayload({
+            cityId,
+            alertId: alert.id,
+            publisherId: userId,
+            title: alert.title,
+            alertTypeId: alert.alertTypeId,
+            severity: alert.severity,
+            expiresAt: alert.expiresAt,
+          }),
+        },
+      });
+
+      return alert;
     });
   }
 
@@ -193,10 +216,31 @@ export class AlertsService {
       updateData.expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
     }
 
-    return this.prisma.alert.update({
-      where: { id: alertId },
-      data: updateData,
-      select: this.alertSelect(),
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.alert.update({
+        where: { id: alertId },
+        data: updateData,
+        select: this.alertSelect(),
+      });
+
+      await tx.domainEventOutbox.create({
+        data: {
+          aggregateType: 'alert',
+          aggregateId: updated.id,
+          eventType: DOMAIN_EVENT_TYPES.ALERT_UPDATED,
+          payload: buildAlertEventPayload({
+            cityId,
+            alertId: updated.id,
+            publisherId: updated.publisherId,
+            title: updated.title,
+            alertTypeId: updated.alertTypeId,
+            severity: updated.severity,
+            expiresAt: updated.expiresAt,
+          }),
+        },
+      });
+
+      return updated;
     });
   }
 
@@ -226,11 +270,31 @@ export class AlertsService {
       };
     }
 
-    await this.prisma.alert.update({
-      where: { id: alertId },
-      data: {
-        deletedAt: new Date(),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      const deleted = await tx.alert.update({
+        where: { id: alertId },
+        data: {
+          deletedAt: new Date(),
+        },
+        select: this.alertSelect(),
+      });
+
+      await tx.domainEventOutbox.create({
+        data: {
+          aggregateType: 'alert',
+          aggregateId: deleted.id,
+          eventType: DOMAIN_EVENT_TYPES.ALERT_DELETED,
+          payload: buildAlertEventPayload({
+            cityId,
+            alertId: deleted.id,
+            publisherId: deleted.publisherId,
+            title: deleted.title,
+            alertTypeId: deleted.alertTypeId,
+            severity: deleted.severity,
+            expiresAt: deleted.expiresAt,
+          }),
+        },
+      });
     });
 
     return {

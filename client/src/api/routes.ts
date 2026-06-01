@@ -54,6 +54,13 @@ export const API_ROUTES = {
     messages: (cityId: string, requestId: string): string =>
       `/city/${cityId}/requests/${requestId}/messages`,
   },
+  notifications: {
+    list: '/notifications',
+    unreadCount: '/notifications/unread-count',
+    markRead: (id: string): string => `/notifications/${id}/read`,
+    markAllRead: '/notifications/read-all',
+    stream: '/notifications/stream',
+  },
   departments: {
     all: (cityId: string): string => `/city/${cityId}/departments`,
   },

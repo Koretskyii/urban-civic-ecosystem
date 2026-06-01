@@ -8,6 +8,8 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { CreateNewsDto, GetNewsQueryDto, UpdateNewsDto } from './dto';
 import { RbacService } from '@/modules/rbac/rbac.service';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
+import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
+import { buildNewsEventPayload } from '@/modules/notifications/domain/domain-event.factory';
 
 @Injectable()
 export class NewsService {
@@ -19,22 +21,39 @@ export class NewsService {
   async createCityNews(cityId: string, userId: string, dto: CreateNewsDto) {
     await this.ensureCityMembership(cityId, userId);
 
-    return this.prisma.generalNews.create({
-      data: {
-        cityId,
-        publisherId: userId,
-        title: dto.title.trim(),
-        content: dto.content.trim(),
-      },
-      select: {
-        id: true,
-        publisherId: true,
-        title: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        deletedAt: true,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const news = await tx.generalNews.create({
+        data: {
+          cityId,
+          publisherId: userId,
+          title: dto.title.trim(),
+          content: dto.content.trim(),
+        },
+        select: {
+          id: true,
+          publisherId: true,
+          title: true,
+          content: true,
+          createdAt: true,
+          updatedAt: true,
+          deletedAt: true,
+        },
+      });
+
+      await tx.domainEventOutbox.create({
+        data: {
+          aggregateType: 'news',
+          aggregateId: news.id,
+          eventType: DOMAIN_EVENT_TYPES.NEWS_CREATED,
+          payload: buildNewsEventPayload({
+            cityId,
+            newsId: news.id,
+            publisherId: userId,
+            title: news.title,
+          }),
+        },
+      });
+      return news;
     });
   }
 
@@ -150,18 +169,36 @@ export class NewsService {
       updateData.content = dto.content.trim();
     }
 
-    return this.prisma.generalNews.update({
-      where: { id: newsId },
-      data: updateData,
-      select: {
-        id: true,
-        publisherId: true,
-        title: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        deletedAt: true,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.generalNews.update({
+        where: { id: newsId },
+        data: updateData,
+        select: {
+          id: true,
+          publisherId: true,
+          title: true,
+          content: true,
+          createdAt: true,
+          updatedAt: true,
+          deletedAt: true,
+        },
+      });
+
+      await tx.domainEventOutbox.create({
+        data: {
+          aggregateType: 'news',
+          aggregateId: updated.id,
+          eventType: DOMAIN_EVENT_TYPES.NEWS_UPDATED,
+          payload: buildNewsEventPayload({
+            cityId,
+            newsId: updated.id,
+            publisherId: updated.publisherId,
+            title: updated.title,
+          }),
+        },
+      });
+
+      return updated;
     });
   }
 
@@ -191,11 +228,32 @@ export class NewsService {
       };
     }
 
-    await this.prisma.generalNews.update({
-      where: { id: newsId },
-      data: {
-        deletedAt: new Date(),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      const deleted = await tx.generalNews.update({
+        where: { id: newsId },
+        data: {
+          deletedAt: new Date(),
+        },
+        select: {
+          id: true,
+          publisherId: true,
+          title: true,
+        },
+      });
+
+      await tx.domainEventOutbox.create({
+        data: {
+          aggregateType: 'news',
+          aggregateId: deleted.id,
+          eventType: DOMAIN_EVENT_TYPES.NEWS_DELETED,
+          payload: buildNewsEventPayload({
+            cityId,
+            newsId: deleted.id,
+            publisherId: deleted.publisherId,
+            title: deleted.title,
+          }),
+        },
+      });
     });
 
     return {

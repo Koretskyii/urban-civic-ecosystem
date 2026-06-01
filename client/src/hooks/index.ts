@@ -33,6 +33,13 @@ export {
   useUpdateCityRequestStatus,
 } from './useCityRequests';
 export { useCityRequestRealtime } from './useCityRequestRealtime';
+export {
+  useNotificationsList,
+  useUnreadNotificationsCount,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  useNotificationsRealtime,
+} from './useNotifications';
 
 export { useRBAC } from './useRBAC';
 export { usePermissions } from './usePermissions';

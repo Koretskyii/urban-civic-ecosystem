@@ -110,4 +110,12 @@ export const queryKeys = {
     all: (cityId: string) => ['chats', cityId] as const,
     messages: (chatId: string) => ['chats', chatId, 'messages'] as const,
   },
+
+  notifications: {
+    all: ['notifications'] as const,
+    list: (cityId?: string, onlyUnread?: boolean) =>
+      ['notifications', 'list', cityId ?? 'all', onlyUnread ?? false] as const,
+    unreadCount: (cityId?: string) =>
+      ['notifications', 'unread-count', cityId ?? 'all'] as const,
+  },
 } as const;

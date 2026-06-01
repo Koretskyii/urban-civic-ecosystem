@@ -44,6 +44,11 @@ enum OutboxStatus {
 
 enum InAppNotificationType {
   NEWS_CREATED
+  NEWS_UPDATED
+  NEWS_DELETED
+  ALERT_CREATED
+  ALERT_UPDATED
+  ALERT_DELETED
 }
 
 enum AlertSeverity {
