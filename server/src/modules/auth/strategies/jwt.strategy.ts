@@ -19,6 +19,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
         (request: Request): string | null => {
+          // Limit query-token auth to SSE only to avoid leaking JWTs via URLs.
+          if (request.path !== '/notifications/stream') {
+            return null;
+          }
+
+          const tokenFromQuery = request.query?.token;
+          if (
+            typeof tokenFromQuery !== 'string' ||
+            tokenFromQuery.length === 0
+          ) {
+            return null;
+          }
+
+          return tokenFromQuery.startsWith('Bearer ')
+            ? tokenFromQuery.slice(7)
+            : tokenFromQuery;
+        },
+        (request: Request): string | null => {
           const cookieToken = request.cookies?.access_token as
             | string
             | undefined;

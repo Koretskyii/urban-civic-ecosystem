@@ -5,6 +5,7 @@ import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
+import HeaderNotifications from './HeaderNotifications';
 import { useAuthStore } from '@/store';
 
 const HeaderBox = styled(Box)({
@@ -17,8 +18,6 @@ const HeaderAppBar = styled(AppBar)({
 export default function Header() {
   const t = useTranslations();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-
-  console.log(isAuthenticated);
 
   return (
     <HeaderBox>
@@ -37,9 +36,12 @@ export default function Header() {
               {t('header.createCity')}
             </Button>
             {isAuthenticated ? (
-              <Button color="inherit" component={Link} href="/user/profile">
-                {t('header.profile')}
-              </Button>
+              <>
+                <HeaderNotifications />
+                <Button color="inherit" component={Link} href="/user/profile">
+                  {t('header.profile')}
+                </Button>
+              </>
             ) : (
               <Button color="inherit" component={Link} href="/user/auth">
                 {t('header.signIn')}

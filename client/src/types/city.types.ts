@@ -9,12 +9,51 @@ export interface City {
 
 export interface Alert {
   id: string;
+  cityId: string;
+  alertTypeId: string;
+  publisherId?: string | null;
+  severity: AlertSeverity;
+  expiresAt?: string | null;
   title: string;
   content: string;
+  timestamp: string;
   alertType: {
+    id: string;
     name: string;
   };
   createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+export interface AlertType {
+  id: string;
+  name: string;
+}
+
+export type AlertSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+export interface AlertListQuery {
+  includeDeleted?: boolean;
+  search?: string;
+  severity?: AlertSeverity;
+  onlyActive?: boolean;
+}
+
+export interface CreateAlertPayload {
+  alertTypeId: string;
+  severity: AlertSeverity;
+  expiresAt?: string;
+  title: string;
+  content: string;
+}
+
+export interface UpdateAlertPayload {
+  alertTypeId?: string;
+  severity?: AlertSeverity;
+  expiresAt?: string | null;
+  title?: string;
+  content?: string;
 }
 
 export interface News {
@@ -23,6 +62,24 @@ export interface News {
   title: string;
   content: string;
   createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  publishedAt?: string | null;
+}
+
+export interface NewsListQuery {
+  includeDeleted?: boolean;
+  search?: string;
+}
+
+export interface CreateNewsPayload {
+  title: string;
+  content: string;
+}
+
+export interface UpdateNewsPayload {
+  title?: string;
+  content?: string;
 }
 
 export interface Post {

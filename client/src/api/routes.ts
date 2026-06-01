@@ -26,9 +26,14 @@ export const API_ROUTES = {
   },
   alerts: {
     all: (cityId: string): string => `/city/${cityId}/alerts`,
+    detail: (cityId: string, alertId: string): string =>
+      `/city/${cityId}/alerts/${alertId}`,
+    types: (cityId: string): string => `/city/${cityId}/alerts/types`,
   },
   news: {
     all: (cityId: string): string => `/city/${cityId}/news`,
+    detail: (cityId: string, newsId: string): string =>
+      `/city/${cityId}/news/${newsId}`,
   },
   posts: {
     all: (cityId: string): string => `/city/${cityId}/posts`,
@@ -48,6 +53,13 @@ export const API_ROUTES = {
       `/city/${cityId}/requests/${requestId}/reports`,
     messages: (cityId: string, requestId: string): string =>
       `/city/${cityId}/requests/${requestId}/messages`,
+  },
+  notifications: {
+    list: '/notifications',
+    unreadCount: '/notifications/unread-count',
+    markRead: (id: string): string => `/notifications/${id}/read`,
+    markAllRead: '/notifications/read-all',
+    stream: '/notifications/stream',
   },
   departments: {
     all: (cityId: string): string => `/city/${cityId}/departments`,

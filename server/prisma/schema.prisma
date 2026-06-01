@@ -35,6 +35,29 @@ enum ReactionType {
   ANGRY
 }
 
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum InAppNotificationType {
+  NEWS_CREATED
+  NEWS_UPDATED
+  NEWS_DELETED
+  ALERT_CREATED
+  ALERT_UPDATED
+  ALERT_DELETED
+}
+
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
 //////////////////// CITY (TENANT) ////////////////////
 
 model City {
@@ -56,6 +79,7 @@ model City {
   surveys              Survey[]
   crowdfundingProjects CrowdfundingProject[]
   news                 GeneralNews[]         @relation("news")
+  notifications        InAppNotification[]
 
   cityDomain CityDomain?
 
@@ -90,6 +114,7 @@ model User {
   reports              Report[]
   messages             Message[]
   alertSubscriptions   AlertSubscription[]
+  publishedAlerts      Alert[]                 @relation("alertPublisher")
   posts                Post[]
   comments             Comment[]
   reactions            Reaction[]
@@ -99,6 +124,7 @@ model User {
   projectParticipants  ProjectParticipant[]
   communityMemberships CommunityMember[]
   publishedNews        GeneralNews[]
+  notifications        InAppNotification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -279,15 +305,25 @@ model Message {
 model Alert {
   id          String   @id @default(cuid())
   cityId      String
+  publisherId String?
   alertTypeId String
+  severity    AlertSeverity @default(MEDIUM)
+  expiresAt   DateTime?
   title       String
   content     String
   timestamp   DateTime @default(now())
 
-  city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
+  city       City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  publisher  User?     @relation("alertPublisher", fields: [publisherId], references: [id], onDelete: Cascade)
+  alertType  AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([cityId, deletedAt, severity, createdAt(sort: Desc)])
+  @@index([cityId, alertTypeId, createdAt(sort: Desc)])
+  @@index([expiresAt])
 }
 
 model AlertType {
@@ -501,4 +537,47 @@ model GeneralNews {
   publisher User @relation(fields: [publisherId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([cityId, deletedAt, createdAt(sort: Desc)])
+}
+
+//////////////////// OUTBOX ////////////////////
+
+model DomainEventOutbox {
+  id            String      @id @default(cuid())
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  attempts      Int         @default(0)
+  availableAt   DateTime    @default(now())
+  lastError     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([status, availableAt, createdAt])
+  @@index([aggregateType, aggregateId])
+}
+
+model InAppNotification {
+  id        String                 @id @default(cuid())
+  userId    String
+  cityId    String
+  type      InAppNotificationType
+  title     String
+  body      String?
+  link      String?
+  payload   Json?
+  isRead    Boolean                @default(false)
+  readAt    DateTime?
+  createdAt DateTime               @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([cityId, createdAt(sort: Desc)])
 }

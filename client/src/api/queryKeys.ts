@@ -1,3 +1,5 @@
+import type { AlertSeverity } from '@/types';
+
 export const queryKeys = {
   auth: {
     register: () => ['auth', 'register'] as const,
@@ -60,11 +62,44 @@ export const queryKeys = {
 
   news: {
     all: (cityId: string) => ['news', cityId] as const,
-    detail: (id: string) => ['news', 'detail', id] as const,
+    list: (
+      cityId: string,
+      filters?: { includeDeleted?: boolean; search?: string },
+    ) =>
+      [
+        'news',
+        cityId,
+        'list',
+        filters?.includeDeleted ?? false,
+        filters?.search ?? '',
+      ] as const,
+    detail: (cityId: string, newsId: string) =>
+      ['news', cityId, 'detail', newsId] as const,
   },
 
   alerts: {
     all: (cityId: string) => ['alerts', cityId] as const,
+    list: (
+      cityId: string,
+      filters?: {
+        includeDeleted?: boolean;
+        search?: string;
+        severity?: AlertSeverity;
+        onlyActive?: boolean;
+      },
+    ) =>
+      [
+        'alerts',
+        cityId,
+        'list',
+        filters?.includeDeleted ?? false,
+        filters?.onlyActive ?? true,
+        filters?.severity ?? '',
+        filters?.search ?? '',
+      ] as const,
+    detail: (cityId: string, alertId: string) =>
+      ['alerts', cityId, 'detail', alertId] as const,
+    types: (cityId: string) => ['alerts', cityId, 'types'] as const,
   },
 
   posts: {
@@ -74,5 +109,13 @@ export const queryKeys = {
   chats: {
     all: (cityId: string) => ['chats', cityId] as const,
     messages: (chatId: string) => ['chats', chatId, 'messages'] as const,
+  },
+
+  notifications: {
+    all: ['notifications'] as const,
+    list: (cityId?: string, onlyUnread?: boolean) =>
+      ['notifications', 'list', cityId ?? 'all', onlyUnread ?? false] as const,
+    unreadCount: (cityId?: string) =>
+      ['notifications', 'unread-count', cityId ?? 'all'] as const,
   },
 } as const;

@@ -6,7 +6,20 @@ export {
   useChangePassword,
 } from './useAuth';
 
-export { useCities, useCityById, useJoinCity } from './useCities';
+export {
+  useCities,
+  useCityById,
+  useJoinCity,
+  useCityAlerts,
+  useCityAlertTypes,
+  useCreateAlert,
+  useUpdateAlert,
+  useDeleteAlert,
+  useCityNews,
+  useCreateNews,
+  useUpdateNews,
+  useDeleteNews,
+} from './useCities';
 export { useCityMembers, useUpdateCityMemberRole } from './useCityMembers';
 export {
   useAssignCityRequestDepartment,
@@ -20,6 +33,13 @@ export {
   useUpdateCityRequestStatus,
 } from './useCityRequests';
 export { useCityRequestRealtime } from './useCityRequestRealtime';
+export {
+  useNotificationsList,
+  useUnreadNotificationsCount,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  useNotificationsRealtime,
+} from './useNotifications';
 
 export { useRBAC } from './useRBAC';
 export { usePermissions } from './usePermissions';

@@ -7,6 +7,14 @@ export type {
 
 export type {
   City,
+  AlertSeverity,
+  AlertType,
+  AlertListQuery,
+  CreateAlertPayload,
+  UpdateAlertPayload,
+  CreateNewsPayload,
+  NewsListQuery,
+  UpdateNewsPayload,
   CityMember,
   Alert,
   News,
@@ -20,6 +28,13 @@ export type {
   RoleKey,
   GetPermissionsResponse,
 } from './rbac.types';
+
+export type {
+  InAppNotification,
+  InAppNotificationType,
+  NotificationsListResponse,
+  NotificationsUnreadCountResponse,
+} from './notifications.types';
 
 export type {
   Attachment,
