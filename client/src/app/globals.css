@@ -1,7 +1,89 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000de;
+  --muted-foreground: #00000099;
+  --primary: #0c263d;
+  --primary-light: #1a3a57;
+  --primary-dark: #061829;
+  --secondary: #3f88c5;
+  --secondary-light: #6ba3d6;
+  --secondary-dark: #2d6a9f;
+  --danger: #d00000;
+  --danger-light: #e04040;
+  --danger-dark: #9b0000;
+  --warning: #ffba08;
+  --warning-dark: #cc9500;
+  --success: #316b50;
+  --success-light: #4a8a6c;
+  --radius: 8px;
+  --surface-1: #ffffff;
+  --surface-2: #f5f8fc;
+  --ring: rgba(63, 136, 197, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a,
+[role='button'],
+input[type='button'],
+input[type='submit'],
+input[type='reset'],
+select,
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  border-radius: 10px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(63, 136, 197, 0.08) 0%,
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(49, 107, 80, 0.08) 0%,
+      transparent 32%
+    ),
+    var(--background);
+  color: var(--foreground);
+  font-family: 'Didact Gothic', sans-serif;
+  line-height: 1.5;
 }
 
 main {

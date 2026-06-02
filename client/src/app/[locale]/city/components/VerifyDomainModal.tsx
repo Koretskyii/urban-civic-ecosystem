@@ -1,23 +1,10 @@
 'use client';
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  IconButton,
-  Alert,
-  CircularProgress,
-  Divider,
-} from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { cityApi } from '@/api/endpoints';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface VerifyDomainModalProps {
   open: boolean;
@@ -56,13 +43,11 @@ export function VerifyDomainModal({
   const handleVerify = async () => {
     setIsVerifying(true);
     setError(null);
-
     try {
       const response: VerifyDomainResponse = (await cityApi.verifyDomain({
         domain,
         token,
       })) as VerifyDomainResponse;
-      // Success - close the modal
       if (response?.data?.success) {
         onClose();
         setIsDomainVerified(true);
@@ -81,107 +66,90 @@ export function VerifyDomainModal({
     }
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Typography variant="h6">{t('verifyDomain.title')}</Typography>
-      </DialogTitle>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
+      <div className="w-full max-w-xl rounded-xl bg-white p-4 shadow-xl">
+        <h3 className="text-lg font-semibold">{t('verifyDomain.title')}</h3>
 
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
-          <TextField
-            label={t('verifyDomain.domainLabel')}
-            value={domain}
-            fullWidth
-            InputProps={{
-              readOnly: true,
-            }}
-            variant="outlined"
-          />
+        <div className="mt-3 space-y-3">
+          <label className="block">
+            <span className="mb-1 block text-sm text-[var(--muted-foreground)]">
+              {t('verifyDomain.domainLabel')}
+            </span>
+            <Input value={domain} readOnly />
+          </label>
 
-          <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <div>
+            <p className="mb-1 text-sm text-[var(--muted-foreground)]">
               {t('verifyDomain.tokenLabel')}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-              <TextField
+            </p>
+            <div className="flex gap-2">
+              <Textarea
                 value={token}
-                fullWidth
-                multiline
+                readOnly
                 rows={2}
-                InputProps={{
-                  readOnly: true,
-                  sx: {
-                    fontFamily: 'monospace',
-                    fontSize: '0.875rem',
-                  },
-                }}
-                variant="outlined"
+                className="min-h-0 font-mono"
               />
-              <IconButton
+              <Button
+                type="button"
                 onClick={handleCopyToken}
-                color={copySuccess ? 'success' : 'primary'}
-                sx={{ mt: 0.5 }}
+                variant={copySuccess ? 'default' : 'outline'}
+                className={copySuccess ? 'bg-[var(--success)]' : undefined}
               >
-                {copySuccess ? <CheckCircleIcon /> : <ContentCopyIcon />}
-              </IconButton>
-            </Box>
-          </Box>
+                {copySuccess ? '✓' : '⧉'}
+              </Button>
+            </div>
+          </div>
 
-          <Divider />
+          <div className="h-px bg-black/10" />
 
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+          <div>
+            <p className="mb-1 text-sm font-semibold">
               {t('verifyDomain.instructionsTitle')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" component="div">
-              <ol style={{ margin: 0, paddingLeft: '20px' }}>
-                <li>{t('verifyDomain.stepCopy')}</li>
-                <li>{t('verifyDomain.stepAddDns')}</li>
-                <li>
-                  {t('verifyDomain.recordNameLabel')}{' '}
-                  <code
-                    style={{
-                      background: '#f5f5f5',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    _urban-civic-verify
-                  </code>
-                </li>
-                <li>{t('verifyDomain.recordValueLabel')}</li>
-                <li>{t('verifyDomain.stepWait')}</li>
-                <li>{t('verifyDomain.stepVerify')}</li>
-              </ol>
-            </Typography>
-          </Box>
+            </p>
+            <ol className="list-decimal space-y-1 pl-5 text-sm text-[var(--muted-foreground)]">
+              <li>{t('verifyDomain.stepCopy')}</li>
+              <li>{t('verifyDomain.stepAddDns')}</li>
+              <li>
+                {t('verifyDomain.recordNameLabel')}{' '}
+                <code className="rounded bg-black/5 px-1 py-0.5">
+                  _urban-civic-verify
+                </code>
+              </li>
+              <li>{t('verifyDomain.recordValueLabel')}</li>
+              <li>{t('verifyDomain.stepWait')}</li>
+              <li>{t('verifyDomain.stepVerify')}</li>
+            </ol>
+          </div>
 
-          {error && (
-            <Alert severity="error" onClose={() => setError(null)}>
+          {error ? (
+            <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
               {error}
-            </Alert>
-          )}
-        </Box>
-        {isDomainVerified && (
-          <Box sx={{ color: 'success.main' }}>{t('verifyDomain.verified')}</Box>
-        )}
-      </DialogContent>
+            </p>
+          ) : null}
+          {isDomainVerified ? (
+            <p className="text-sm text-[var(--success)]">
+              {t('verifyDomain.verified')}
+            </p>
+          ) : null}
+        </div>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} disabled={isVerifying}>
-          {t('common.cancel')}
-        </Button>
-        <Button
-          onClick={handleVerify}
-          variant="contained"
-          color="primary"
-          disabled={isVerifying}
-          startIcon={isVerifying && <CircularProgress size={16} />}
-        >
-          {isVerifying ? t('common.verifying') : t('common.verify')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button
+            type="button"
+            onClick={handleClose}
+            disabled={isVerifying}
+            variant="ghost"
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button type="button" onClick={handleVerify} disabled={isVerifying}>
+            {isVerifying ? t('common.verifying') : t('common.verify')}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

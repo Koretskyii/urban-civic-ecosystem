@@ -1,18 +1,6 @@
 'use client';
 
 import { FormEvent } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  Divider,
-  MenuItem,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import type {
   Attachment,
@@ -27,6 +15,13 @@ import {
   REPORT_TYPE_OPTIONS,
 } from './problem-workspace.constants';
 import { ProblemLocationPicker } from './Map/ProblemLocationPicker';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface RequestDetailPanelProps {
   cityId: string;
@@ -61,27 +56,27 @@ interface RequestDetailPanelProps {
 
 function AttachmentLinks({
   attachments,
-  variant,
+  compact,
 }: {
   attachments: Attachment[];
-  variant: 'text' | 'outlined';
+  compact: boolean;
 }) {
   return (
-    <Stack direction="row" spacing={1} flexWrap="wrap">
+    <div className="flex flex-wrap gap-1">
       {attachments.map((attachment) => (
-        <Button
+        <a
           key={attachment.id}
           href={attachment.url}
           target="_blank"
           rel="noreferrer"
-          size="small"
-          variant={variant}
-          sx={variant === 'text' ? { p: 0, minWidth: 0 } : undefined}
+          className={`rounded-md border border-black/15 ${
+            compact ? 'px-1 py-0.5 text-xs' : 'px-2 py-1 text-sm'
+          }`}
         >
           {attachment.fileName || attachment.url}
-        </Button>
+        </a>
       ))}
-    </Stack>
+    </div>
   );
 }
 
@@ -116,6 +111,7 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
     isCreatingReport,
     municipalityError,
   } = props;
+
   const isFinalStatus = nextStatus === 'RESOLVED' || nextStatus === 'REJECTED';
   const isReportTextRequired =
     reportType === 'RESOLUTION' || reportType === 'REJECTION';
@@ -130,31 +126,28 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
     isCreatingReport || (isReportTextRequired && isReportTextEmpty);
 
   return (
-    <Paper sx={{ p: 2, flex: 2, minHeight: 420 }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        {t('cityProblem.detailTitle')}
-      </Typography>
-
+    <div className="min-h-[420px] flex-[2] rounded-lg border border-black/10 bg-white p-3">
+      <h3 className="mb-2 text-xl">{t('cityProblem.detailTitle')}</h3>
       {!activeRequestId ? (
-        <Typography>{t('cityProblem.selectPrompt')}</Typography>
+        <p className="text-sm">{t('cityProblem.selectPrompt')}</p>
       ) : isLoading ? (
-        <Typography>{t('cityProblem.loading')}</Typography>
+        <p className="text-sm">{t('cityProblem.loading')}</p>
       ) : detail ? (
-        <Stack spacing={2}>
-          <Typography variant="h5">{detail.title}</Typography>
-          <Stack direction="row" spacing={1}>
-            <Chip label={detail.status} color="primary" size="small" />
+        <div className="space-y-3">
+          <h4 className="text-lg font-semibold">{detail.title}</h4>
+          <div className="flex gap-1">
+            <span className="rounded-full bg-[var(--primary)] px-2 py-0.5 text-xs text-white">
+              {detail.status}
+            </span>
             {detail.assignedDepartment?.name ? (
-              <Chip
-                label={detail.assignedDepartment.name}
-                size="small"
-                color="secondary"
-              />
+              <span className="rounded-full bg-[var(--secondary)] px-2 py-0.5 text-xs text-white">
+                {detail.assignedDepartment.name}
+              </span>
             ) : null}
-          </Stack>
-          <Typography color="text.secondary">
+          </div>
+          <p className="text-sm text-[var(--muted-foreground)]">
             {detail.description || t('cityProblem.noDescription')}
-          </Typography>
+          </p>
 
           <ProblemLocationPicker
             lat={String(detail.locationLat ?? '')}
@@ -164,220 +157,222 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
             hintKey="cityProblem.map.previewHint"
           />
 
-          <Divider />
-
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>
+          <div className="h-px bg-black/10" />
+          <div className="rounded-lg border border-black/10 p-3">
+            <p className="mb-1 text-base font-semibold">
               {t('cityProblem.timelineTitle')}
-            </Typography>
+            </p>
             {detail.reports.length === 0 ? (
-              <Typography color="text.secondary">
+              <p className="text-sm text-[var(--muted-foreground)]">
                 {t('cityProblem.timelineEmpty')}
-              </Typography>
+              </p>
             ) : (
-              <Stack spacing={1}>
+              <div className="space-y-2">
                 {detail.reports.map((report) => (
-                  <Box key={report.id}>
-                    <Typography variant="subtitle2">
+                  <div key={report.id}>
+                    <p className="text-sm font-semibold">
                       {report.type}
                       {report.status ? ` - ${report.status}` : ''}
-                    </Typography>
-                    <Typography variant="body2">
+                    </p>
+                    <p className="text-sm">
                       {report.description ||
                         t('cityProblem.timelineNoDescription')}
-                    </Typography>
+                    </p>
                     {report.attachments.length > 0 ? (
-                      <Box sx={{ mt: 0.75 }}>
+                      <div className="mt-1">
                         <AttachmentLinks
                           attachments={report.attachments}
-                          variant="text"
+                          compact
                         />
-                      </Box>
+                      </div>
                     ) : null}
-                    <Typography variant="caption" color="text.secondary">
+                    <p className="text-xs text-[var(--muted-foreground)]">
                       {report.author.name}
-                    </Typography>
-                  </Box>
+                    </p>
+                  </div>
                 ))}
-              </Stack>
+              </div>
             )}
-          </Paper>
+          </div>
 
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>
+          <div className="rounded-lg border border-black/10 p-3">
+            <p className="mb-1 text-base font-semibold">
               {t('cityProblem.attachmentsTitle')}
-            </Typography>
+            </p>
             {detail.attachments.length === 0 ? (
-              <Typography color="text.secondary">
+              <p className="text-sm text-[var(--muted-foreground)]">
                 {t('cityProblem.attachmentsEmpty')}
-              </Typography>
+              </p>
             ) : (
               <AttachmentLinks
                 attachments={detail.attachments}
-                variant="outlined"
+                compact={false}
               />
             )}
-          </Paper>
+          </div>
 
-          <Divider />
-
+          <div className="h-px bg-black/10" />
           {viewMode === 'municipality' && canManageRequests ? (
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <Stack spacing={2}>
-                <Typography variant="h6">
+            <div className="rounded-lg border border-black/10 p-3">
+              <div className="space-y-2">
+                <p className="font-semibold">
                   {t('cityProblem.municipality.controlsTitle')}
-                </Typography>
-
+                </p>
                 {municipalityError ? (
-                  <Alert severity="warning">{municipalityError}</Alert>
+                  <p className="rounded-md border border-[var(--warning-dark)] bg-[var(--warning)]/10 px-3 py-2 text-sm text-[var(--warning-dark)]">
+                    {municipalityError}
+                  </p>
                 ) : null}
 
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}>
-                  <TextField
-                    select
-                    fullWidth
-                    label={t('cityProblem.fields.department')}
-                    value={selectedDepartmentId}
-                    onChange={(event) =>
-                      onSelectedDepartmentIdChange(event.target.value)
-                    }
+                <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+                  <Select
+                    value={selectedDepartmentId || undefined}
+                    onValueChange={onSelectedDepartmentIdChange}
                   >
-                    {departments.map((department) => (
-                      <MenuItem key={department.id} value={department.id}>
-                        {department.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <Button
-                    variant="outlined"
+                    <SelectTrigger className="h-10">
+                      <SelectValue
+                        placeholder={t('cityProblem.fields.department')}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.map((department) => (
+                        <SelectItem key={department.id} value={department.id}>
+                          {department.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <button
+                    type="button"
                     onClick={onAssignDepartment}
                     disabled={assignDisabled}
+                    className="h-10 rounded-md border border-black/15 px-3 text-sm disabled:opacity-60"
                   >
                     {t('cityProblem.actions.assign')}
-                  </Button>
-                </Stack>
+                  </button>
+                </div>
 
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}>
-                  <TextField
-                    select
-                    fullWidth
-                    label={t('cityProblem.fields.status')}
+                <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+                  <Select
                     value={nextStatus}
-                    onChange={(event) =>
-                      onNextStatusChange(
-                        event.target.value as CityRequestStatus,
-                      )
+                    onValueChange={(value) =>
+                      onNextStatusChange(value as CityRequestStatus)
                     }
                   >
-                    {EDITABLE_STATUS_OPTIONS.map((status) => (
-                      <MenuItem key={status} value={status}>
-                        {status}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <Button
-                    variant="outlined"
+                    <SelectTrigger className="h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EDITABLE_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <button
+                    type="button"
                     onClick={onUpdateStatus}
                     disabled={statusUpdateDisabled}
+                    className="h-10 rounded-md border border-black/15 px-3 text-sm disabled:opacity-60"
                   >
                     {t('cityProblem.actions.updateStatus')}
-                  </Button>
-                </Stack>
+                  </button>
+                </div>
                 {isFinalStatus ? (
-                  <Alert severity="info">
+                  <p className="rounded-md border border-[var(--secondary)] bg-[var(--secondary)]/10 px-3 py-2 text-sm text-[var(--secondary-dark)]">
                     {t('cityProblem.errors.useReportForFinalStatus')}
-                  </Alert>
+                  </p>
                 ) : null}
 
-                <Box component="form" onSubmit={onCreateReport}>
-                  <Stack spacing={1}>
-                    <TextField
-                      select
-                      label={t('cityProblem.fields.reportType')}
-                      value={reportType}
-                      onChange={(event) =>
-                        onReportTypeChange(event.target.value as ReportType)
-                      }
-                    >
+                <form onSubmit={onCreateReport} className="space-y-2">
+                  <Select
+                    value={reportType}
+                    onValueChange={(value) =>
+                      onReportTypeChange(value as ReportType)
+                    }
+                  >
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
                       {REPORT_TYPE_OPTIONS.map((type) => (
-                        <MenuItem key={type} value={type}>
+                        <SelectItem key={type} value={type}>
                           {type}
-                        </MenuItem>
+                        </SelectItem>
                       ))}
-                    </TextField>
-                    <TextField
-                      multiline
-                      minRows={3}
-                      label={t('cityProblem.fields.reportText')}
-                      value={reportText}
-                      required={isReportTextRequired}
-                      error={isReportTextRequired && isReportTextEmpty}
-                      helperText={
-                        isReportTextRequired
-                          ? t('cityProblem.municipality.reportTextRequiredHint')
-                          : undefined
-                      }
-                      onChange={(event) =>
-                        onReportTextChange(event.target.value)
-                      }
-                    />
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={createReportDisabled}
-                    >
-                      {t('cityProblem.actions.createReport')}
-                    </Button>
-                  </Stack>
-                </Box>
-              </Stack>
-            </Paper>
+                    </SelectContent>
+                  </Select>
+                  <textarea
+                    value={reportText}
+                    onChange={(event) => onReportTextChange(event.target.value)}
+                    rows={3}
+                    required={isReportTextRequired}
+                    className={`w-full rounded-md border px-3 py-2 text-sm outline-none ${
+                      isReportTextRequired && isReportTextEmpty
+                        ? 'border-[var(--danger-light)]'
+                        : 'border-black/15 focus:border-[var(--secondary)]'
+                    }`}
+                    placeholder={t('cityProblem.fields.reportText')}
+                  />
+                  {isReportTextRequired ? (
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      {t('cityProblem.municipality.reportTextRequiredHint')}
+                    </p>
+                  ) : null}
+                  <button
+                    type="submit"
+                    disabled={createReportDisabled}
+                    className="rounded-md bg-[var(--primary)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                  >
+                    {t('cityProblem.actions.createReport')}
+                  </button>
+                </form>
+              </div>
+            </div>
           ) : null}
 
-          <Divider />
-
-          <Typography variant="h6">{t('cityProblem.chatTitle')}</Typography>
+          <div className="h-px bg-black/10" />
+          <p className="text-base font-semibold">
+            {t('cityProblem.chatTitle')}
+          </p>
           {isMessageError ? (
-            <Alert severity="error">
+            <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
               {t('cityProblem.errors.messageFailed')}
-            </Alert>
+            </p>
           ) : null}
-
-          <Box sx={{ maxHeight: 220, overflow: 'auto', pr: 1 }}>
-            <Stack spacing={1.5}>
+          <div className="max-h-[220px] overflow-auto pr-1">
+            <div className="space-y-2">
               {messages.map((item) => (
-                <Box key={item.id}>
-                  <Typography variant="subtitle2">
-                    {item.author.name}
-                  </Typography>
-                  <Typography variant="body2">{item.content}</Typography>
-                </Box>
+                <div key={item.id}>
+                  <p className="text-sm font-semibold">{item.author.name}</p>
+                  <p className="text-sm">{item.content}</p>
+                </div>
               ))}
-            </Stack>
-          </Box>
+            </div>
+          </div>
 
-          <Box component="form" onSubmit={onSendMessage}>
-            <Stack direction="row" spacing={1}>
-              <TextField
-                fullWidth
-                size="small"
-                value={messageValue}
-                onChange={(event) => onMessageChange(event.target.value)}
-                placeholder={t('cityProblem.fields.message')}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={isSendingMessage}
-              >
-                {t('cityProblem.actions.send')}
-              </Button>
-            </Stack>
-          </Box>
-        </Stack>
+          <form onSubmit={onSendMessage} className="flex gap-2">
+            <input
+              value={messageValue}
+              onChange={(event) => onMessageChange(event.target.value)}
+              placeholder={t('cityProblem.fields.message')}
+              className="h-9 w-full rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
+            />
+            <button
+              type="submit"
+              disabled={isSendingMessage}
+              className="rounded-md bg-[var(--primary)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {t('cityProblem.actions.send')}
+            </button>
+          </form>
+        </div>
       ) : (
-        <Alert severity="error">{t('cityProblem.loadError')}</Alert>
+        <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+          {t('cityProblem.loadError')}
+        </p>
       )}
-    </Paper>
+    </div>
   );
 }

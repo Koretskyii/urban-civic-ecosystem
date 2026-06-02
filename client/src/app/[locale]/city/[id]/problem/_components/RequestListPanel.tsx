@@ -1,16 +1,6 @@
 'use client';
 
 import { memo, useMemo, useState } from 'react';
-import {
-  Button,
-  Chip,
-  List,
-  ListItemButton,
-  ListItemText,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import type { CityRequestListItem } from '@/types';
 
@@ -37,39 +27,33 @@ const RequestRow = memo(function RequestRow({
   onSelect,
 }: RequestRowProps) {
   return (
-    <ListItemButton
-      selected={isActive}
+    <button
+      type="button"
       onClick={() => onSelect(request.id)}
-      sx={{ alignItems: 'flex-start' }}
+      className={`w-full rounded-md border px-3 py-2 text-left ${
+        isActive
+          ? 'border-[var(--secondary)] bg-[var(--secondary)]/10'
+          : 'border-black/10'
+      }`}
     >
-      <ListItemText
-        primary={request.title}
-        secondaryTypographyProps={{ component: 'div' }}
-        secondary={
-          <Stack spacing={0.75} sx={{ mt: 0.5 }}>
-            <Typography variant="caption" color="text.secondary">
-              {request.user.name}
-            </Typography>
-            <Stack direction="row" spacing={0.75} flexWrap="wrap">
-              <Chip size="small" color="primary" label={request.status} />
-              <Chip
-                size="small"
-                variant="outlined"
-                label={`P${request.priority}`}
-              />
-              {request.assignedDepartment?.name ? (
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  color="secondary"
-                  label={request.assignedDepartment.name}
-                />
-              ) : null}
-            </Stack>
-          </Stack>
-        }
-      />
-    </ListItemButton>
+      <p className="text-sm font-semibold">{request.title}</p>
+      <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+        {request.user.name}
+      </p>
+      <div className="mt-1 flex flex-wrap gap-1">
+        <span className="rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] text-white">
+          {request.status}
+        </span>
+        <span className="rounded-full border border-black/20 px-2 py-0.5 text-[10px]">
+          {`P${request.priority}`}
+        </span>
+        {request.assignedDepartment?.name ? (
+          <span className="rounded-full border border-[var(--secondary)] px-2 py-0.5 text-[10px] text-[var(--secondary)]">
+            {request.assignedDepartment.name}
+          </span>
+        ) : null}
+      </div>
+    </button>
   );
 });
 
@@ -87,20 +71,20 @@ export const RequestListPanel = memo(function RequestListPanel(
   const canLoadMore = visibleCount < requests.length;
 
   return (
-    <Paper sx={{ p: 2, flex: 1, minHeight: 420 }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>
+    <div className="min-h-[420px] flex-1 rounded-lg border border-black/10 bg-white p-3">
+      <h3 className="mb-2 text-xl">
         {viewMode === 'municipality'
           ? t('cityProblem.municipality.listTitle')
           : t('cityProblem.listTitle')}
-      </Typography>
+      </h3>
 
       {isLoading ? (
-        <Typography>{t('cityProblem.loading')}</Typography>
+        <p className="text-sm">{t('cityProblem.loading')}</p>
       ) : requests.length === 0 ? (
-        <Typography>{t('cityProblem.empty')}</Typography>
+        <p className="text-sm">{t('cityProblem.empty')}</p>
       ) : (
         <>
-          <List>
+          <div className="space-y-2">
             {visibleRequests.map((request) => (
               <RequestRow
                 key={request.id}
@@ -109,17 +93,18 @@ export const RequestListPanel = memo(function RequestListPanel(
                 onSelect={onSelect}
               />
             ))}
-          </List>
+          </div>
           {canLoadMore ? (
-            <Button
-              variant="text"
+            <button
+              type="button"
               onClick={() => setVisibleCount((prev) => prev + LOAD_MORE_STEP)}
+              className="mt-2 text-sm text-[var(--primary-light)]"
             >
               {t('common.loadMore')}
-            </Button>
+            </button>
           ) : null}
         </>
       )}
-    </Paper>
+    </div>
   );
 });

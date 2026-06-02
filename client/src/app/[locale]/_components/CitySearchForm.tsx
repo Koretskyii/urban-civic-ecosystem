@@ -1,92 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import {
-  Box,
-  TextField,
-  Button,
-  Autocomplete,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import { useCities } from '@/hooks';
-import { City } from '@/types';
 import { useTranslations } from 'next-intl';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 export default function CitySearchForm() {
   const t = useTranslations();
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [selectedCityId, setSelectedCityId] = useState('');
   const router = useRouter();
   const { data: cities = [], isLoading } = useCities();
 
+  const sortedCities = useMemo(
+    () =>
+      [...cities].sort((a, b) =>
+        `${a.name} ${a.region}`.localeCompare(`${b.name} ${b.region}`, 'uk'),
+      ),
+    [cities],
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedCity) {
-      router.push(`/city/${selectedCity.id}`);
+    if (selectedCityId) {
+      router.push(`/city/${selectedCityId}`);
     }
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 4,
-      }}
-    >
-      <Typography variant="h4" fontWeight={700}>
-        {t('citySearch.title')}
-      </Typography>
-      <Box
-        component="form"
+    <div className="flex flex-col items-center gap-4">
+      <h2 className="text-2xl font-bold">{t('citySearch.title')}</h2>
+
+      <form
         onSubmit={handleSubmit}
-        sx={{ display: 'flex', gap: 2, alignItems: 'center' }}
+        className="flex flex-col gap-2 rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:flex-row"
       >
-        <Autocomplete
-          options={cities}
-          getOptionLabel={(option) => `${option.name} (${option.region})`}
-          value={selectedCity}
-          onChange={(event, newValue) => {
-            setSelectedCity(newValue);
-          }}
-          loading={isLoading}
-          sx={{ minWidth: 300 }}
-          noOptionsText={t('citySearch.noOptions')}
-          loadingText={t('citySearch.loading')}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="outlined"
-              placeholder={t('citySearch.placeholder')}
-              size="medium"
-              InputProps={{
-                ...params.InputProps,
-                endAdornment: (
-                  <>
-                    {isLoading ? (
-                      <CircularProgress color="inherit" size={20} />
-                    ) : null}
-                    {params.InputProps.endAdornment}
-                  </>
-                ),
-              }}
-            />
-          )}
-        />
+        <div className="flex min-w-[300px] flex-col gap-2">
+          <Select
+            value={selectedCityId || undefined}
+            onValueChange={setSelectedCityId}
+            disabled={isLoading}
+          >
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder={t('common.select')} />
+            </SelectTrigger>
+            <SelectContent>
+              {sortedCities.map((city) => (
+                <SelectItem
+                  key={city.id}
+                  value={city.id}
+                  className="py-2 pl-10 pr-3 text-base"
+                >
+                  {`${city.name} (${city.region})`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!isLoading && sortedCities.length === 0 ? (
+            <p className="text-xs text-[var(--muted-foreground)]">
+              {t('citySearch.noOptions')}
+            </p>
+          ) : null}
+          {isLoading ? (
+            <p className="text-xs text-[var(--muted-foreground)]">
+              {t('citySearch.loading')}
+            </p>
+          ) : null}
+        </div>
         <Button
           type="submit"
-          variant="contained"
-          size="large"
-          startIcon={<SearchIcon />}
-          sx={{ height: 56 }}
           disabled={isLoading}
+          size="lg"
+          className="text-sm"
         >
           {t('common.select')}
         </Button>
-      </Box>
-    </Box>
+      </form>
+    </div>
   );
 }

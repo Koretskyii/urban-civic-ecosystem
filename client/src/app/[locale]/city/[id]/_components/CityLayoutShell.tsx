@@ -2,33 +2,21 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import {
-  Box,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  Divider,
-  Chip,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import FeedRoundedIcon from '@mui/icons-material/FeedRounded';
-import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
-import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
-import ReportProblemRoundedIcon from '@mui/icons-material/ReportProblemRounded';
-import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
-import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
-import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
-import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { useCityById, useCityMembers, usePermission } from '@/hooks';
 import { useAuthStore } from '@/store';
 import { useTranslations } from 'next-intl';
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
+import {
+  House,
+  Newspaper,
+  Bell,
+  FileText,
+  Users,
+  Shield,
+  GitBranch,
+  TriangleAlert,
+  Building2,
+} from 'lucide-react';
 
 interface CityLayoutShellProps {
   cityId: string;
@@ -39,25 +27,17 @@ const DRAWER_WIDTH = 260;
 const COLLAPSED_WIDTH = 64;
 
 const NAV_ITEMS = [
-  { key: 'home', icon: <HomeRoundedIcon />, path: '' },
-  { key: 'news', icon: <FeedRoundedIcon />, path: '/news' },
-  {
-    key: 'alerts',
-    icon: <NotificationsActiveRoundedIcon />,
-    path: '/alerts',
-  },
-  { key: 'posts', icon: <ArticleRoundedIcon />, path: '/posts' },
-  { key: 'community', icon: <GroupsRoundedIcon />, path: '/community' },
-  {
-    key: 'members',
-    icon: <AdminPanelSettingsRoundedIcon />,
-    path: '/members',
-  },
-  { key: 'projects', icon: <AccountTreeRoundedIcon />, path: '/projects' },
+  { key: 'home', path: '', icon: <House size={18} /> },
+  { key: 'news', path: '/news', icon: <Newspaper size={18} /> },
+  { key: 'alerts', path: '/alerts', icon: <Bell size={18} /> },
+  { key: 'posts', path: '/posts', icon: <FileText size={18} /> },
+  { key: 'community', path: '/community', icon: <Users size={18} /> },
+  { key: 'members', path: '/members', icon: <Shield size={18} /> },
+  { key: 'projects', path: '/projects', icon: <GitBranch size={18} /> },
   {
     key: 'problem',
-    icon: <ReportProblemRoundedIcon />,
     path: '/problem',
+    icon: <TriangleAlert size={18} />,
     accent: true,
   },
 ];
@@ -70,9 +50,7 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
   });
   const { data: city, isLoading } = useCityById(cityId);
   const currentUserId = useAuthStore((state) => state.user?.id);
-  const { data: members } = useCityMembers(cityId, {
-    enabled: canManageRoles,
-  });
+  const { data: members } = useCityMembers(cityId, { enabled: canManageRoles });
   const pathname = usePathname();
   const router = useRouter();
   const baseRoute = `/city/${cityId}`;
@@ -87,127 +65,59 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexGrow: 1, height: '100%' }}>
-      {/* Sidebar — in document flow, never overlaps footer */}
-      <Box
-        sx={{
-          width,
-          minWidth: width,
-          backgroundColor: '#1A3A57',
-          transition: 'width 0.25s ease, min-width 0.25s ease',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          flexShrink: '1',
-          minHeight: '80vh',
-        }}
+    <div className="flex h-full min-h-[80vh] flex-1">
+      <aside
+        className="flex min-h-[80vh] flex-col overflow-hidden border-r border-[var(--secondary)]/20 bg-[var(--surface-1)] shadow-[inset_-1px_0_0_rgba(12,38,61,0.04)] transition-all duration-200"
+        style={{ width, minWidth: width }}
       >
-        {/* Toggle button */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: collapsed ? 'center' : 'flex-end',
-            p: 1,
-            pt: 1.5,
-          }}
+        <div
+          className={`flex p-2 pt-3 ${collapsed ? 'justify-center' : 'justify-end'}`}
         >
-          <Tooltip
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className="rounded p-1 text-[var(--primary-light)] transition-colors hover:bg-[var(--secondary)]/12 hover:text-[var(--primary)]"
             title={collapsed ? t('cityNav.expand') : t('cityNav.collapse')}
-            placement="right"
           >
-            <IconButton
-              onClick={() => setCollapsed((v) => !v)}
-              size="small"
-              sx={{
-                color: 'rgba(255,255,255,0.6)',
-                '&:hover': { color: 'white', bgcolor: 'primary.light' },
-              }}
-            >
-              {collapsed ? (
-                <ChevronRightRoundedIcon />
-              ) : (
-                <ChevronLeftRoundedIcon />
-              )}
-            </IconButton>
-          </Tooltip>
-        </Box>
+            {collapsed ? '›' : '‹'}
+          </button>
+        </div>
 
-        {/* City brand */}
-        {!collapsed && (
-          <Box sx={{ px: 3, pb: 2 }}>
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}
-            >
-              <LocationCityRoundedIcon
-                sx={{ fontSize: 28, color: 'secondary.light', flexShrink: 0 }}
-              />
-              <Typography
-                variant="h3"
-                sx={{
-                  color: 'white',
-                  lineHeight: 1.2,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
+        {!collapsed ? (
+          <div className="px-3 pb-2">
+            <div className="mb-1 flex items-center gap-2">
+              <Building2 size={20} className="text-[var(--secondary)]" />
+              <p className="truncate text-lg text-[var(--primary)]">
                 {isLoading ? '...' : city?.name}
-              </Typography>
-            </Box>
-            {city?.region && (
-              <Chip
-                label={city.region}
-                size="small"
-                sx={{
-                  bgcolor: 'primary.light',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  height: 22,
-                }}
-              />
-            )}
-            {myCityRole ? (
-              <Chip
-                label={`${t('cityLayout.myRole')}: ${t(`cityMembers.roles.${myCityRole}`)}`}
-                size="small"
-                sx={{
-                  mt: 1,
-                  bgcolor: 'secondary.main',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  height: 22,
-                }}
-              />
+              </p>
+            </div>
+            {city?.region ? (
+              <span className="inline-flex rounded-full bg-[var(--secondary)]/12 px-2 py-0.5 text-xs text-[var(--secondary-dark)]">
+                {city.region}
+              </span>
             ) : null}
-          </Box>
+            {myCityRole ? (
+              <div>
+                <span className="mt-1 inline-flex rounded-full bg-[var(--success)]/14 px-2 py-0.5 text-xs text-[var(--success)]">
+                  {`${t('cityLayout.myRole')}: ${t(`cityMembers.roles.${myCityRole}`)}`}
+                </span>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div
+            className="flex justify-center pb-2 text-xl text-[var(--secondary)]"
+            title={city?.name}
+          >
+            <Building2 size={20} />
+          </div>
         )}
 
-        {/* Collapsed city icon */}
-        {collapsed && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
-            <Tooltip
-              title={
-                isLoading
-                  ? '...'
-                  : `${city?.name ?? ''}${
-                      myCityRole
-                        ? ` • ${t('cityLayout.myRole')}: ${t(`cityMembers.roles.${myCityRole}`)}`
-                        : ''
-                    }`
-              }
-              placement="right"
-            >
-              <LocationCityRoundedIcon
-                sx={{ fontSize: 28, color: 'secondary.light' }}
-              />
-            </Tooltip>
-          </Box>
-        )}
+        <div
+          className={`${collapsed ? 'mx-1' : 'mx-2'} border-t border-black/10`}
+        />
 
-        <Divider sx={{ borderColor: 'primary.light', mx: collapsed ? 1 : 2 }} />
-
-        {/* Navigation */}
-        <List sx={{ px: collapsed ? 0.5 : 1.5, pt: 2, flex: 1 }}>
+        <nav className={`flex-1 pt-2 ${collapsed ? 'px-1' : 'px-2'}`}>
           {visibleNavItems.map((item) => {
             const label = t(`cityNav.items.${item.key}`);
             const fullPath = `${baseRoute}${item.path}`;
@@ -216,87 +126,44 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
                 ? pathname === baseRoute
                 : pathname.startsWith(fullPath);
 
+            const inactiveColor = item.accent
+              ? 'text-[var(--danger-light)]'
+              : 'text-[var(--primary-light)]';
+            const activeBg = item.accent
+              ? 'bg-[var(--danger)] text-white'
+              : 'bg-[var(--secondary)]/14 text-[var(--secondary-dark)]';
+
             return (
-              <Tooltip
+              <button
                 key={item.path}
-                title={collapsed ? label : ''}
-                placement="right"
+                type="button"
+                onClick={() => router.push(fullPath)}
+                title={collapsed ? label : undefined}
+                className={`mb-1 flex w-full items-center rounded-lg px-2 py-2 text-left transition-colors ${
+                  isActive
+                    ? `${activeBg} shadow-sm`
+                    : `${inactiveColor} hover:bg-[var(--secondary)]/10 hover:text-[var(--primary)]`
+                } ${collapsed ? 'justify-center' : ''}`}
               >
-                <ListItemButton
-                  onClick={() => router.push(fullPath)}
-                  sx={{
-                    borderRadius: 2,
-                    mb: 0.5,
-                    px: collapsed ? 1.5 : 2,
-                    py: 1.2,
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    minWidth: 0,
-                    bgcolor: isActive
-                      ? item.accent
-                        ? 'error.main'
-                        : 'secondary.main'
-                      : item.accent
-                        ? 'rgba(208, 0, 0, 0.15)'
-                        : 'transparent',
-                    color: isActive
-                      ? 'white'
-                      : item.accent
-                        ? 'error.light'
-                        : 'rgba(255,255,255,0.8)',
-                    '&:hover': {
-                      bgcolor: isActive
-                        ? item.accent
-                          ? 'error.dark'
-                          : 'secondary.dark'
-                        : item.accent
-                          ? 'rgba(208, 0, 0, 0.25)'
-                          : 'primary.light',
-                      color: 'white',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
+                <span
+                  className={`${collapsed ? '' : 'mr-2'} inline-flex w-6 justify-center`}
                 >
-                  <ListItemIcon
-                    sx={{
-                      color: 'inherit',
-                      minWidth: collapsed ? 0 : 36,
-                      justifyContent: 'center',
-                    }}
+                  {item.icon}
+                </span>
+                {!collapsed ? (
+                  <span
+                    className={`truncate text-sm ${isActive ? 'font-bold' : 'font-normal'}`}
                   >
-                    {item.icon}
-                  </ListItemIcon>
-                  {!collapsed && (
-                    <ListItemText
-                      primary={label}
-                      slotProps={{
-                        primary: {
-                          fontSize: '0.95rem',
-                          fontWeight: isActive ? 700 : 400,
-                          noWrap: true,
-                        },
-                      }}
-                    />
-                  )}
-                </ListItemButton>
-              </Tooltip>
+                    {label}
+                  </span>
+                ) : null}
+              </button>
             );
           })}
-        </List>
-      </Box>
+        </nav>
+      </aside>
 
-      {/* Main content */}
-      <Box
-        component="main"
-        sx={{
-          flex: 1,
-          p: 4,
-          bgcolor: 'background.default',
-          minWidth: 0,
-          transition: 'all 0.25s ease',
-        }}
-      >
-        {children}
-      </Box>
-    </Box>
+      <main className="min-w-0 flex-1 bg-white p-4 md:p-6">{children}</main>
+    </div>
   );
 }

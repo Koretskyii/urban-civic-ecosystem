@@ -1,46 +1,18 @@
 'use client';
 
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
-import { usePermission } from '@/hooks';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
-  useCityAlerts,
   useCityAlertTypes,
+  useCityAlerts,
   useCreateAlert,
   useDeleteAlert,
+  usePermission,
   useUpdateAlert,
-} from '@/hooks/useCities';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  Grid,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
-import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+} from '@/hooks';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { FormEvent, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import type { AlertSeverity } from '@/types';
+import type { Alert, AlertType, AlertSeverity } from '@/types';
 import {
   ALERT_DEFAULT_SEVERITY,
   ALERT_SEVERITY_FILTER_ALL,
@@ -52,6 +24,15 @@ import {
   toDateTimeLocalInputValue,
 } from '../alerts.utils';
 import AlertExpiryQuickActions from './AlertExpiryQuickActions';
+import { Bell } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface AlertsListProps {
   cityId: string;
@@ -60,7 +41,6 @@ interface AlertsListProps {
 export default function AlertsList(props: AlertsListProps) {
   const t = useTranslations();
   const { cityId } = props;
-
   const [search, setSearch] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [onlyActive, setOnlyActive] = useState(true);
@@ -85,11 +65,9 @@ export default function AlertsList(props: AlertsListProps) {
   const [editingExpiresAt, setEditingExpiresAt] = useState('');
   const [editingTitle, setEditingTitle] = useState('');
   const [editingContent, setEditingContent] = useState('');
-
   const [formError, setFormError] = useState('');
 
   const debouncedSearch = useDebouncedValue(search, 450);
-
   const { can: canCreateAlert } = usePermission(
     PERMISSION_GROUPS.ALERT.CREATE,
     {
@@ -137,25 +115,18 @@ export default function AlertsList(props: AlertsListProps) {
   );
 
   const { data: alerts, isLoading, error } = useCityAlerts(cityId, listQuery);
-
   const { data: alertTypes } = useCityAlertTypes(cityId);
-
   const createAlertMutation = useCreateAlert();
   const updateAlertMutation = useUpdateAlert();
   const deleteAlertMutation = useDeleteAlert();
-
   const canManageView =
     (canCreateAlert || canUpdateAlert || canDeleteAlert) && !isCitizenView;
 
   const visibleAlerts = useMemo(() => {
-    if (!alerts) {
-      return [];
-    }
-
+    if (!alerts) return [];
     const filtered = effectiveCanManageAlert
       ? alerts
-      : alerts.filter((item) => !item.deletedAt);
-
+      : alerts.filter((item: Alert) => !item.deletedAt);
     return sortAlertsByPriority(filtered);
   }, [alerts, effectiveCanManageAlert]);
 
@@ -167,10 +138,8 @@ export default function AlertsList(props: AlertsListProps) {
   const onCreateAlert = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError('');
-
     const title = newTitle.trim();
     const content = newContent.trim();
-
     if (!newAlertTypeId || title.length < 3 || content.length < 3) {
       setFormError(t('alerts.formValidation'));
       return;
@@ -187,7 +156,6 @@ export default function AlertsList(props: AlertsListProps) {
           content,
         },
       });
-
       setNewAlertTypeId('');
       setNewSeverity(ALERT_DEFAULT_SEVERITY);
       setNewExpiresAt('');
@@ -216,13 +184,9 @@ export default function AlertsList(props: AlertsListProps) {
   };
 
   const onSaveEdit = async () => {
-    if (!editingAlertId) {
-      return;
-    }
-
+    if (!editingAlertId) return;
     const title = editingTitle.trim();
     const content = editingContent.trim();
-
     if (!editingAlertTypeId || title.length < 3 || content.length < 3) {
       setFormError(t('alerts.formValidation'));
       return;
@@ -240,7 +204,6 @@ export default function AlertsList(props: AlertsListProps) {
           content,
         },
       });
-
       setEditingAlertId(null);
       setEditingAlertTypeId('');
       setEditingSeverity(ALERT_DEFAULT_SEVERITY);
@@ -262,260 +225,187 @@ export default function AlertsList(props: AlertsListProps) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
+        Loading...
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Typography color="error" sx={{ mt: 2 }}>
+      <p className="mt-2 text-sm text-[var(--danger-dark)]">
         {t('alerts.loadError')}
-      </Typography>
+      </p>
     );
   }
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-        <Box
-          sx={{
-            p: 1,
-            borderRadius: 2,
-            bgcolor: 'rgba(255, 186, 8, 0.1)',
-            color: 'warning.dark',
-            display: 'flex',
-          }}
-        >
-          <NotificationsActiveRoundedIcon />
-        </Box>
-        <Typography variant="h3">{t('alerts.title')}</Typography>
-      </Box>
+    <div className="mt-2">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="rounded-lg bg-[var(--warning)]/10 p-2 text-[var(--warning-dark)]">
+          <Bell size={20} />
+        </div>
+        <h2 className="text-2xl">{t('alerts.title')}</h2>
+      </div>
 
       {canManageView || canManageAlert ? (
-        <Box sx={{ mb: 3 }}>
-          {formError ? <Alert severity="error">{formError}</Alert> : null}
-          {createAlertMutation.isError ? (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('alerts.createError')}
-            </Alert>
-          ) : null}
-          {updateAlertMutation.isError ? (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('alerts.updateError')}
-            </Alert>
-          ) : null}
-          {deleteAlertMutation.isError ? (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('alerts.deleteError')}
-            </Alert>
+        <div className="mb-3">
+          {formError ? (
+            <p className="mb-2 rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+              {formError}
+            </p>
           ) : null}
 
           {canCreateAlert ? (
-            <Box
-              component="form"
+            <form
               onSubmit={onCreateAlert}
-              sx={{
-                display: 'grid',
-                gap: 1.5,
-                p: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}
+              className="grid gap-2 rounded-xl border border-[var(--warning-dark)]/25 bg-[linear-gradient(180deg,rgba(255,186,8,0.08)_0%,#fff_40%)] p-3 shadow-sm"
             >
-              <Typography variant="h5">{t('alerts.createTitle')}</Typography>
-
-              <FormControl fullWidth required>
-                <InputLabel id="alert-type-label">
-                  {t('alerts.fields.type')}
-                </InputLabel>
-                <Select
-                  labelId="alert-type-label"
-                  value={newAlertTypeId}
-                  label={t('alerts.fields.type')}
-                  onChange={(event: SelectChangeEvent) =>
-                    setNewAlertTypeId(event.target.value)
-                  }
-                >
-                  {(alertTypes ?? []).map((type) => (
-                    <MenuItem key={type.id} value={type.id}>
+              <p className="text-lg font-semibold">{t('alerts.createTitle')}</p>
+              <Select
+                value={newAlertTypeId || undefined}
+                onValueChange={setNewAlertTypeId}
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder={t('alerts.fields.type')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(alertTypes ?? []).map((type: AlertType) => (
+                    <SelectItem key={type.id} value={type.id}>
                       {translateAlertTypeName(type.name)}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label={t('alerts.fields.title')}
+                </SelectContent>
+              </Select>
+              <input
                 value={newTitle}
                 onChange={(event) => setNewTitle(event.target.value)}
+                placeholder={t('alerts.fields.title')}
                 required
+                className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
               />
-
-              <FormControl fullWidth required>
-                <InputLabel id="alert-severity-label">
-                  {t('alerts.fields.severity')}
-                </InputLabel>
-                <Select
-                  labelId="alert-severity-label"
-                  value={newSeverity}
-                  label={t('alerts.fields.severity')}
-                  onChange={(event: SelectChangeEvent) =>
-                    setNewSeverity(event.target.value as AlertSeverity)
-                  }
-                >
+              <Select
+                value={newSeverity}
+                onValueChange={(value) =>
+                  setNewSeverity(value as AlertSeverity)
+                }
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
                   {ALERT_SEVERITY_OPTIONS.map((severity) => (
-                    <MenuItem key={severity} value={severity}>
+                    <SelectItem key={severity} value={severity}>
                       {t(`alerts.severity.${severity}`)}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label={t('alerts.fields.expiresAt')}
+                </SelectContent>
+              </Select>
+              <input
                 type="datetime-local"
                 value={newExpiresAt}
                 onChange={(event) => setNewExpiresAt(event.target.value)}
-                InputLabelProps={{ shrink: true }}
-                fullWidth
+                className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
               />
-
               <AlertExpiryQuickActions
                 value={newExpiresAt}
                 onChange={setNewExpiresAt}
                 t={t}
               />
-
-              <TextField
-                label={t('alerts.fields.content')}
+              <textarea
                 value={newContent}
                 onChange={(event) => setNewContent(event.target.value)}
-                multiline
-                minRows={4}
+                placeholder={t('alerts.fields.content')}
                 required
+                rows={4}
+                className="rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-[var(--secondary)]"
               />
-
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
+              <div className="flex justify-end">
+                <button
                   type="submit"
-                  variant="contained"
                   disabled={createAlertMutation.isPending}
+                  className="rounded-md bg-[linear-gradient(90deg,var(--warning-dark)_0%,var(--danger-dark)_100%)] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-105 disabled:opacity-60"
                 >
                   {createAlertMutation.isPending
                     ? t('alerts.actions.creating')
                     : t('alerts.actions.create')}
-                </Button>
-              </Box>
-            </Box>
+                </button>
+              </div>
+            </form>
           ) : null}
 
-          <Box
-            sx={{
-              mt: 2,
-              display: 'flex',
-              gap: 1.5,
-              flexDirection: { xs: 'column', md: 'row' },
-              alignItems: { xs: 'stretch', md: 'center' },
-            }}
-          >
+          <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
             {canManageAlert ? (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isCitizenView}
-                    onChange={(event) =>
-                      setPreviewAsCitizen(event.target.checked)
-                    }
-                  />
-                }
-                label={t('alerts.previewAsCitizen')}
-              />
+              <label className="flex shrink-0 items-center gap-2 text-sm leading-none">
+                <Checkbox
+                  checked={isCitizenView}
+                  onCheckedChange={(checked) =>
+                    setPreviewAsCitizen(Boolean(checked))
+                  }
+                />
+                {t('alerts.previewAsCitizen')}
+              </label>
             ) : null}
-
-            <TextField
-              label={t('alerts.searchLabel')}
+            <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                }
-              }}
               placeholder={t('alerts.searchPlaceholder')}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ flex: 1 }}
+              className="h-10 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
             />
-
-            <FormControl sx={{ minWidth: 180 }}>
-              <InputLabel id="severity-filter-label">
-                {t('alerts.fields.severity')}
-              </InputLabel>
-              <Select
-                labelId="severity-filter-label"
-                value={severityFilter}
-                label={t('alerts.fields.severity')}
-                onChange={(event: SelectChangeEvent) =>
-                  setSeverityFilter(
-                    event.target.value as
-                      | typeof ALERT_SEVERITY_FILTER_ALL
-                      | AlertSeverity,
-                  )
-                }
-              >
-                <MenuItem value={ALERT_SEVERITY_FILTER_ALL}>
+            <Select
+              value={severityFilter}
+              onValueChange={(value) =>
+                setSeverityFilter(
+                  value as typeof ALERT_SEVERITY_FILTER_ALL | AlertSeverity,
+                )
+              }
+            >
+              <SelectTrigger className="h-10 !w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALERT_SEVERITY_FILTER_ALL}>
                   {t('alerts.filters.allSeverity')}
-                </MenuItem>
+                </SelectItem>
                 {ALERT_SEVERITY_OPTIONS.map((severity) => (
-                  <MenuItem key={severity} value={severity}>
+                  <SelectItem key={severity} value={severity}>
                     {t(`alerts.severity.${severity}`)}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
-              </Select>
-            </FormControl>
-
+              </SelectContent>
+            </Select>
             {effectiveCanManageAlert ? (
               <>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={includeDeleted}
-                      onChange={(event) =>
-                        setIncludeDeleted(event.target.checked)
-                      }
-                    />
-                  }
-                  label={t('alerts.includeDeleted')}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={onlyActive}
-                      onChange={(event) => setOnlyActive(event.target.checked)}
-                    />
-                  }
-                  label={t('alerts.onlyActive')}
-                />
+                <label className="flex shrink-0 items-center gap-2 text-sm leading-none">
+                  <Checkbox
+                    checked={includeDeleted}
+                    onCheckedChange={(checked) =>
+                      setIncludeDeleted(Boolean(checked))
+                    }
+                  />
+                  {t('alerts.includeDeleted')}
+                </label>
+                <label className="flex shrink-0 items-center gap-2 text-sm leading-none">
+                  <Checkbox
+                    checked={onlyActive}
+                    onCheckedChange={(checked) =>
+                      setOnlyActive(Boolean(checked))
+                    }
+                  />
+                  {t('alerts.onlyActive')}
+                </label>
               </>
             ) : null}
-          </Box>
-        </Box>
+          </div>
+        </div>
       ) : null}
 
       {visibleAlerts.length === 0 ? (
-        <Typography color="text.secondary" sx={{ mt: 2 }}>
+        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
           {t('alerts.empty')}
-        </Typography>
+        </p>
       ) : (
-        <Grid container spacing={3}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {visibleAlerts.map((alert) => {
             const date = new Date(alert.createdAt);
             const formattedDate = date.toLocaleDateString('uk-UA', {
@@ -529,202 +419,160 @@ export default function AlertsList(props: AlertsListProps) {
             });
 
             return (
-              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={alert.id}>
-                <Card
-                  elevation={0}
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderTop: '4px solid',
-                    borderTopColor: 'warning.main',
-                    borderRadius: 3,
-                    bgcolor: alert.deletedAt
-                      ? 'rgba(158, 158, 158, 0.08)'
-                      : 'transparent',
-                  }}
-                >
-                  <CardContent sx={{ display: 'grid', gap: 1.2, flex: 1 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        gap: 1,
-                      }}
-                    >
-                      <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                        {alert.title}
-                      </Typography>
-                      {alert.deletedAt ? (
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'text.secondary', fontWeight: 700 }}
-                        >
-                          {t('alerts.deletedLabel')}
-                        </Typography>
-                      ) : null}
-                    </Box>
-
-                    <Typography variant="body2" color="text.secondary">
-                      {translateAlertTypeName(alert.alertType.name)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {t(`alerts.severity.${alert.severity}`)} ·{' '}
-                      {`${t('alerts.expiresAtLabel')}: ${
-                        alert.expiresAt
-                          ? new Date(alert.expiresAt).toLocaleString('uk-UA')
-                          : t('alerts.noExpiry')
-                      }`}
-                    </Typography>
-
-                    <Typography variant="body1">{alert.content}</Typography>
-
-                    <Divider />
-
-                    <Typography variant="caption" color="text.secondary">
-                      {formattedDate} · {formattedTime}
-                    </Typography>
-
-                    {canManageView && !alert.deletedAt ? (
-                      <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                        {canUpdateAlert ? (
-                          <Button
-                            size="small"
-                            startIcon={<EditRoundedIcon fontSize="small" />}
-                            onClick={() =>
-                              startEdit({
-                                id: alert.id,
-                                alertTypeId: alert.alertTypeId,
-                                severity: alert.severity,
-                                expiresAt: alert.expiresAt,
-                                title: alert.title,
-                                content: alert.content,
-                              })
-                            }
-                          >
-                            {t('alerts.actions.edit')}
-                          </Button>
-                        ) : null}
-
-                        {canDeleteAlert ? (
-                          <Button
-                            size="small"
-                            color="error"
-                            startIcon={<DeleteRoundedIcon fontSize="small" />}
-                            onClick={() => onDeleteAlert(alert.id)}
-                            disabled={deleteAlertMutation.isPending}
-                          >
-                            {t('alerts.actions.delete')}
-                          </Button>
-                        ) : null}
-                      </Box>
+              <article
+                key={alert.id}
+                className={`flex h-full flex-col rounded-xl border border-black/10 border-t-4 border-t-[var(--warning)] bg-[linear-gradient(180deg,rgba(255,186,8,0.08)_0%,#fff_38%)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(204,149,0,0.2)] ${
+                  alert.deletedAt ? 'bg-black/5' : ''
+                }`}
+              >
+                <div className="mb-1 flex items-start justify-between gap-2">
+                  <h3 className="text-lg font-bold">{alert.title}</h3>
+                  {alert.deletedAt ? (
+                    <span className="text-xs font-bold text-[var(--muted-foreground)]">
+                      {t('alerts.deletedLabel')}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="text-sm text-[var(--muted-foreground)]">
+                  {translateAlertTypeName(alert.alertType.name)}
+                </p>
+                <p className="text-sm text-[var(--muted-foreground)]">
+                  {t(`alerts.severity.${alert.severity}`)} ·{' '}
+                  {`${t('alerts.expiresAtLabel')}: ${
+                    alert.expiresAt
+                      ? new Date(alert.expiresAt).toLocaleString('uk-UA')
+                      : t('alerts.noExpiry')
+                  }`}
+                </p>
+                <p className="my-2 text-sm">{alert.content}</p>
+                <div className="my-1 h-px bg-black/10" />
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  {formattedDate} · {formattedTime}
+                </p>
+                {canManageView && !alert.deletedAt ? (
+                  <div className="mt-2 flex gap-2">
+                    {canUpdateAlert ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          startEdit({
+                            id: alert.id,
+                            alertTypeId: alert.alertTypeId,
+                            severity: alert.severity,
+                            expiresAt: alert.expiresAt,
+                            title: alert.title,
+                            content: alert.content,
+                          })
+                        }
+                        className="rounded-md border border-[var(--warning-dark)]/40 px-2 py-1 text-xs text-[var(--warning-dark)] hover:bg-[var(--warning)]/10"
+                      >
+                        {t('alerts.actions.edit')}
+                      </button>
                     ) : null}
-                  </CardContent>
-                </Card>
-              </Grid>
+                    {canDeleteAlert ? (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteAlert(alert.id)}
+                        disabled={deleteAlertMutation.isPending}
+                        className="rounded-md border border-[var(--danger)] px-2 py-1 text-xs text-[var(--danger)] disabled:opacity-60"
+                      >
+                        {t('alerts.actions.delete')}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </article>
             );
           })}
-        </Grid>
+        </div>
       )}
 
-      <Dialog
-        open={Boolean(editingAlertId)}
-        onClose={() => setEditingAlertId(null)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>{t('alerts.editTitle')}</DialogTitle>
-        <DialogContent sx={{ display: 'grid', gap: 1.5, pt: 2 }}>
-          <FormControl fullWidth required>
-            <InputLabel id="edit-alert-type-label">
-              {t('alerts.fields.type')}
-            </InputLabel>
-            <Select
-              labelId="edit-alert-type-label"
-              value={editingAlertTypeId}
-              label={t('alerts.fields.type')}
-              onChange={(event: SelectChangeEvent) =>
-                setEditingAlertTypeId(event.target.value)
-              }
-            >
-              {(alertTypes ?? []).map((type) => (
-                <MenuItem key={type.id} value={type.id}>
-                  {translateAlertTypeName(type.name)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            label={t('alerts.fields.title')}
-            value={editingTitle}
-            onChange={(event) => setEditingTitle(event.target.value)}
-            fullWidth
-          />
-
-          <FormControl fullWidth required>
-            <InputLabel id="edit-alert-severity-label">
-              {t('alerts.fields.severity')}
-            </InputLabel>
-            <Select
-              labelId="edit-alert-severity-label"
-              value={editingSeverity}
-              label={t('alerts.fields.severity')}
-              onChange={(event: SelectChangeEvent) =>
-                setEditingSeverity(event.target.value as AlertSeverity)
-              }
-            >
-              {ALERT_SEVERITY_OPTIONS.map((severity) => (
-                <MenuItem key={severity} value={severity}>
-                  {t(`alerts.severity.${severity}`)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            label={t('alerts.fields.expiresAt')}
-            type="datetime-local"
-            value={editingExpiresAt}
-            onChange={(event) => setEditingExpiresAt(event.target.value)}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
-
-          <AlertExpiryQuickActions
-            value={editingExpiresAt}
-            onChange={setEditingExpiresAt}
-            t={t}
-          />
-
-          <TextField
-            label={t('alerts.fields.content')}
-            value={editingContent}
-            onChange={(event) => setEditingContent(event.target.value)}
-            multiline
-            minRows={4}
-            fullWidth
-          />
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setEditingAlertId(null)}>
-            {t('alerts.actions.cancel')}
-          </Button>
-          <Button
-            onClick={onSaveEdit}
-            variant="contained"
-            disabled={updateAlertMutation.isPending}
-          >
-            {updateAlertMutation.isPending
-              ? t('alerts.actions.saving')
-              : t('alerts.actions.save')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+      {editingAlertId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-4 shadow-xl">
+            <h3 className="mb-3 text-lg font-semibold">
+              {t('alerts.editTitle')}
+            </h3>
+            <div className="grid gap-2">
+              <Select
+                value={editingAlertTypeId}
+                onValueChange={setEditingAlertTypeId}
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(alertTypes ?? []).map((type: AlertType) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {translateAlertTypeName(type.name)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <input
+                value={editingTitle}
+                onChange={(event) => setEditingTitle(event.target.value)}
+                placeholder={t('alerts.fields.title')}
+                className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
+              />
+              <Select
+                value={editingSeverity}
+                onValueChange={(value) =>
+                  setEditingSeverity(value as AlertSeverity)
+                }
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ALERT_SEVERITY_OPTIONS.map((severity) => (
+                    <SelectItem key={severity} value={severity}>
+                      {t(`alerts.severity.${severity}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <input
+                type="datetime-local"
+                value={editingExpiresAt}
+                onChange={(event) => setEditingExpiresAt(event.target.value)}
+                className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
+              />
+              <AlertExpiryQuickActions
+                value={editingExpiresAt}
+                onChange={setEditingExpiresAt}
+                t={t}
+              />
+              <textarea
+                value={editingContent}
+                onChange={(event) => setEditingContent(event.target.value)}
+                placeholder={t('alerts.fields.content')}
+                rows={4}
+                className="rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-[var(--secondary)]"
+              />
+            </div>
+            <div className="mt-3 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingAlertId(null)}
+                className="rounded-md px-3 py-2 text-sm"
+              >
+                {t('alerts.actions.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={onSaveEdit}
+                disabled={updateAlertMutation.isPending}
+                className="rounded-md bg-[var(--primary)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {updateAlertMutation.isPending
+                  ? t('alerts.actions.saving')
+                  : t('alerts.actions.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -1,12 +1,18 @@
 'use client';
 
-import { MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import {
   PRIORITY_OPTIONS,
   STATUS_OPTIONS,
 } from './problem-workspace.constants';
 import type { CityRequestStatus, Department } from '@/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface MunicipalityQueueHeaderProps {
   filterStatus: CityRequestStatus | 'ALL';
@@ -31,60 +37,64 @@ export function MunicipalityQueueHeader(props: MunicipalityQueueHeaderProps) {
   } = props;
 
   return (
-    <Paper sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ mb: 1 }}>
+    <div className="rounded-lg border border-black/10 bg-white p-3">
+      <h3 className="mb-1 text-xl">
         {t('cityProblem.municipality.queueTitle')}
-      </Typography>
-      <Typography color="text.secondary">
+      </h3>
+      <p className="text-sm text-[var(--muted-foreground)]">
         {t('cityProblem.municipality.queueHint')}
-      </Typography>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mt: 2 }}>
-        <TextField
-          select
-          label={t('cityProblem.fields.filterStatus')}
+      </p>
+
+      <div className="mt-2 grid gap-2 md:grid-cols-3">
+        <Select
           value={filterStatus}
-          onChange={(event) =>
-            onFilterStatusChange(
-              event.target.value as CityRequestStatus | 'ALL',
-            )
+          onValueChange={(value) =>
+            onFilterStatusChange(value as CityRequestStatus | 'ALL')
           }
-          sx={{ minWidth: 220 }}
         >
-          <MenuItem value="ALL">ALL</MenuItem>
-          {STATUS_OPTIONS.map((status) => (
-            <MenuItem key={status} value={status}>
-              {status}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label={t('cityProblem.fields.filterDepartment')}
+          <SelectTrigger className="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">ALL</SelectItem>
+            {STATUS_OPTIONS.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
           value={filterDepartmentId}
-          onChange={(event) => onFilterDepartmentChange(event.target.value)}
-          sx={{ minWidth: 220 }}
+          onValueChange={onFilterDepartmentChange}
         >
-          <MenuItem value="ALL">ALL</MenuItem>
-          {departments.map((department) => (
-            <MenuItem key={department.id} value={department.id}>
-              {department.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label={t('cityProblem.fields.filterPriority')}
-          value={filterPriority}
-          onChange={(event) => onFilterPriorityChange(event.target.value)}
-          sx={{ minWidth: 180 }}
-        >
-          {PRIORITY_OPTIONS.map((priority) => (
-            <MenuItem key={priority} value={priority}>
-              {priority}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
-    </Paper>
+          <SelectTrigger className="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">ALL</SelectItem>
+            {departments.map((department) => (
+              <SelectItem key={department.id} value={department.id}>
+                {department.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={filterPriority} onValueChange={onFilterPriorityChange}>
+          <SelectTrigger className="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PRIORITY_OPTIONS.map((priority) => (
+              <SelectItem key={priority} value={priority}>
+                {priority}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
   );
 }

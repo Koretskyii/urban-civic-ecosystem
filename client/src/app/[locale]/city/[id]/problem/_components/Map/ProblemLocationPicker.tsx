@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
-import { Box, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import {
   DEFAULT_CITY_MAP_CENTER,
@@ -29,14 +28,9 @@ const ProblemLocationMap = dynamic(
 const normalizeDefaultCenter = (
   center: { lat: number; lng: number } | undefined,
 ): { lat: number; lng: number } | undefined => {
-  if (!center) {
+  if (!center) return undefined;
+  if (!Number.isFinite(center.lat) || !Number.isFinite(center.lng))
     return undefined;
-  }
-
-  if (!Number.isFinite(center.lat) || !Number.isFinite(center.lng)) {
-    return undefined;
-  }
-
   if (
     center.lat < -90 ||
     center.lat > 90 ||
@@ -45,11 +39,7 @@ const normalizeDefaultCenter = (
   ) {
     return undefined;
   }
-
-  if (center.lat === 0 || center.lng === 0) {
-    return undefined;
-  }
-
+  if (center.lat === 0 || center.lng === 0) return undefined;
   return center;
 };
 
@@ -64,15 +54,11 @@ export function ProblemLocationPicker(props: ProblemLocationPickerProps) {
     titleKey = 'cityProblem.map.title',
     hintKey = 'cityProblem.map.hint',
   } = props;
-
   const t = useTranslations();
 
   const markerPosition = useMemo(() => {
     const parsed = validateCoordinates(lat.trim(), lng.trim());
-    if (!parsed.ok) {
-      return null;
-    }
-
+    if (!parsed.ok) return null;
     return { lat: parsed.lat, lng: parsed.lng };
   }, [lat, lng]);
 
@@ -80,18 +66,15 @@ export function ProblemLocationPicker(props: ProblemLocationPickerProps) {
     () => normalizeDefaultCenter(defaultCenter),
     [defaultCenter],
   );
-
   const center = markerPosition ?? safeDefaultCenter ?? DEFAULT_CITY_MAP_CENTER;
 
   return (
-    <Box>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        {t(titleKey)}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+    <div>
+      <p className="mb-1 text-sm font-semibold">{t(titleKey)}</p>
+      <p className="mb-1 text-sm text-[var(--muted-foreground)]">
         {t(hintKey)}
-      </Typography>
-      <Box sx={{ height: 280, borderRadius: 2, overflow: 'hidden' }}>
+      </p>
+      <div className="h-[280px] overflow-hidden rounded-lg">
         <ProblemLocationMap
           center={center}
           markerPosition={markerPosition}
@@ -99,7 +82,7 @@ export function ProblemLocationPicker(props: ProblemLocationPickerProps) {
           onLatChange={onLatChange}
           onLngChange={onLngChange}
         />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

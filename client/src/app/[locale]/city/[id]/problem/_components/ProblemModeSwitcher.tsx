@@ -1,6 +1,5 @@
 'use client';
 
-import { Paper, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
 type ViewMode = 'citizen' | 'municipality';
@@ -16,29 +15,39 @@ export function ProblemModeSwitcher(props: ProblemModeSwitcherProps) {
   const { value, canManageRequests, isPermissionLoading, onChange } = props;
   const t = useTranslations();
 
+  const onModeChange = (nextValue: ViewMode) => {
+    if (nextValue === 'municipality' && !canManageRequests) return;
+    onChange(nextValue);
+  };
+
   return (
-    <Paper sx={{ p: 2 }}>
-      <Stack spacing={2}>
-        <ToggleButtonGroup
-          value={value}
-          exclusive
-          size="small"
-          onChange={(_event, nextValue: ViewMode | null) => {
-            if (!nextValue) return;
-            if (nextValue === 'municipality' && !canManageRequests) return;
-            onChange(nextValue);
-          }}
+    <div className="rounded-lg border border-black/10 bg-white p-3">
+      <div className="inline-flex rounded-md bg-black/5 p-1">
+        <button
+          type="button"
+          onClick={() => onModeChange('citizen')}
+          className={`rounded px-3 py-1.5 text-sm ${
+            value === 'citizen'
+              ? 'bg-white text-[var(--primary-light)] shadow-sm'
+              : 'text-[var(--muted-foreground)]'
+          }`}
         >
-          <ToggleButton value="citizen">
-            {t('cityProblem.viewModes.citizen')}
-          </ToggleButton>
-          {isPermissionLoading || canManageRequests ? (
-            <ToggleButton value="municipality">
-              {t('cityProblem.viewModes.municipality')}
-            </ToggleButton>
-          ) : null}
-        </ToggleButtonGroup>
-      </Stack>
-    </Paper>
+          {t('cityProblem.viewModes.citizen')}
+        </button>
+        {isPermissionLoading || canManageRequests ? (
+          <button
+            type="button"
+            onClick={() => onModeChange('municipality')}
+            className={`rounded px-3 py-1.5 text-sm ${
+              value === 'municipality'
+                ? 'bg-white text-[var(--primary-light)] shadow-sm'
+                : 'text-[var(--muted-foreground)]'
+            }`}
+          >
+            {t('cityProblem.viewModes.municipality')}
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 }

@@ -2,13 +2,14 @@
 
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/navigation';
+import { useTransition } from 'react';
 import {
   Select,
-  MenuItem,
-  SelectChangeEvent,
-  FormControl,
-} from '@mui/material';
-import { useTransition } from 'react';
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function LocaleSwitcher() {
   const locale = useLocale();
@@ -16,34 +17,21 @@ export default function LocaleSwitcher() {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
-  const onSelectChange = (event: SelectChangeEvent<string>) => {
-    const nextLocale = event.target.value;
+  const onSelectChange = (nextLocale: string) => {
     startTransition(() => {
       router.replace(pathname, { locale: nextLocale });
     });
   };
 
   return (
-    <FormControl size="small" variant="outlined" sx={{ minWidth: 80, mr: 2 }}>
-      <Select
-        value={locale}
-        onChange={onSelectChange}
-        disabled={isPending}
-        sx={{
-          color: 'white',
-          '.MuiOutlinedInput-notchedOutline': {
-            borderColor: 'rgba(255, 255, 255, 0.5)',
-          },
-          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'white',
-          },
-          '.MuiSvgIcon-root': { color: 'white' },
-        }}
-      >
-        <MenuItem value="uk">UK</MenuItem>
-        <MenuItem value="en">EN</MenuItem>
-      </Select>
-    </FormControl>
+    <Select value={locale} onValueChange={onSelectChange} disabled={isPending}>
+      <SelectTrigger className="h-9 min-w-20 border-[var(--secondary)]/35 px-2 pr-2 focus:ring-[var(--secondary)]/20">
+        <SelectValue placeholder="Locale" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="uk">UK</SelectItem>
+        <SelectItem value="en">EN</SelectItem>
+      </SelectContent>
+    </Select>
   );
 }

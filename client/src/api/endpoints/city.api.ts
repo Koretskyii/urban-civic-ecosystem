@@ -1,60 +1,6 @@
 import { apiClient } from '../client';
 import { API_ROUTES } from '../routes';
-import {
-  City,
-  Alert,
-  AlertType,
-  AlertListQuery,
-  CreateAlertPayload,
-  UpdateAlertPayload,
-  News,
-  NewsListQuery,
-  CreateNewsPayload,
-  UpdateNewsPayload,
-  Post,
-  Community,
-  DomainVerificationData,
-} from '@/types';
-
-const buildNewsQuery = (query?: NewsListQuery) => {
-  if (!query) {
-    return '';
-  }
-
-  const params = new URLSearchParams();
-  if (query.includeDeleted !== undefined) {
-    params.set('includeDeleted', String(query.includeDeleted));
-  }
-  if (query.search) {
-    params.set('search', query.search);
-  }
-
-  const queryString = params.toString();
-  return queryString ? `?${queryString}` : '';
-};
-
-const buildAlertsQuery = (query?: AlertListQuery) => {
-  if (!query) {
-    return '';
-  }
-
-  const params = new URLSearchParams();
-  if (query.includeDeleted !== undefined) {
-    params.set('includeDeleted', String(query.includeDeleted));
-  }
-  if (query.onlyActive !== undefined) {
-    params.set('onlyActive', String(query.onlyActive));
-  }
-  if (query.search) {
-    params.set('search', query.search);
-  }
-  if (query.severity) {
-    params.set('severity', query.severity);
-  }
-
-  const queryString = params.toString();
-  return queryString ? `?${queryString}` : '';
-};
+import { City, Post, Community, DomainVerificationData } from '@/types';
 
 export const cityApi = {
   generateDomainToken: (domain: string) => {
@@ -74,61 +20,6 @@ export const cityApi = {
   },
   joinCity: (id: string) => {
     return apiClient.post(API_ROUTES.city.join(id), {});
-  },
-  getCityAlerts: (cityId: string, query?: AlertListQuery) => {
-    return apiClient.get<Alert[]>(
-      `${API_ROUTES.alerts.all(cityId)}${buildAlertsQuery(query)}`,
-    );
-  },
-  getCityAlertById: (cityId: string, alertId: string) => {
-    return apiClient.get<Alert>(API_ROUTES.alerts.detail(cityId, alertId));
-  },
-  getCityAlertTypes: (cityId: string) => {
-    return apiClient.get<AlertType[]>(API_ROUTES.alerts.types(cityId));
-  },
-  createCityAlert: (cityId: string, payload: CreateAlertPayload) => {
-    return apiClient.post<Alert>(API_ROUTES.alerts.all(cityId), payload);
-  },
-  updateCityAlert: (
-    cityId: string,
-    alertId: string,
-    payload: UpdateAlertPayload,
-  ) => {
-    return apiClient.patch<Alert>(
-      API_ROUTES.alerts.detail(cityId, alertId),
-      payload,
-    );
-  },
-  deleteCityAlert: (cityId: string, alertId: string) => {
-    return apiClient.delete<{ success: boolean; deleted: boolean }>(
-      API_ROUTES.alerts.detail(cityId, alertId),
-    );
-  },
-  getCityNews: (cityId: string, query?: NewsListQuery) => {
-    return apiClient.get<News[]>(
-      `${API_ROUTES.news.all(cityId)}${buildNewsQuery(query)}`,
-    );
-  },
-  getCityNewsById: (cityId: string, newsId: string) => {
-    return apiClient.get<News>(API_ROUTES.news.detail(cityId, newsId));
-  },
-  createCityNews: (cityId: string, payload: CreateNewsPayload) => {
-    return apiClient.post<News>(API_ROUTES.news.all(cityId), payload);
-  },
-  updateCityNews: (
-    cityId: string,
-    newsId: string,
-    payload: UpdateNewsPayload,
-  ) => {
-    return apiClient.patch<News>(
-      API_ROUTES.news.detail(cityId, newsId),
-      payload,
-    );
-  },
-  deleteCityNews: (cityId: string, newsId: string) => {
-    return apiClient.delete<{ success: boolean; deleted: boolean }>(
-      API_ROUTES.news.detail(cityId, newsId),
-    );
   },
   getCityPosts: (cityId: string) => {
     return apiClient.get<Post[]>(API_ROUTES.posts.all(cityId));

@@ -1,6 +1,5 @@
 'use client';
 
-import { Button, Box } from '@mui/material';
 import { addDaysToDateTimeInput } from '../alerts.utils';
 
 interface AlertExpiryQuickActionsProps {
@@ -15,33 +14,37 @@ export default function AlertExpiryQuickActions({
   t,
 }: AlertExpiryQuickActionsProps) {
   return (
-    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-      <Button
+    <div className="flex flex-wrap gap-2">
+      <button
         type="button"
-        size="small"
         onClick={() => onChange(addDaysToDateTimeInput(value, 7))}
+        className="rounded-md border border-black/15 px-2 py-1 text-xs"
       >
         {t('alerts.actions.plus7Days')}
-      </Button>
-      <Button
+      </button>
+      <button
         type="button"
-        size="small"
         onClick={() => onChange(addDaysToDateTimeInput(value, 30))}
+        className="rounded-md border border-black/15 px-2 py-1 text-xs"
       >
         {t('alerts.actions.plus30Days')}
-      </Button>
-      <Button
+      </button>
+      <button
         type="button"
-        size="small"
-        variant={value ? 'text' : 'contained'}
-        color={value ? 'inherit' : 'primary'}
         onClick={() => onChange('')}
+        className={`rounded-md px-2 py-1 text-xs ${
+          value ? 'border border-black/15' : 'bg-[var(--primary)] text-white'
+        }`}
       >
         {t('alerts.actions.noExpiry')}
-      </Button>
-      <Button type="button" size="small" onClick={() => onChange('')}>
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange('')}
+        className="rounded-md border border-black/15 px-2 py-1 text-xs"
+      >
         {t('alerts.actions.clearExpiry')}
-      </Button>
-    </Box>
+      </button>
+    </div>
   );
 }
