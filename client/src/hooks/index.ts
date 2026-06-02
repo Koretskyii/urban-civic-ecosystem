@@ -6,20 +6,20 @@ export {
   useChangePassword,
 } from './useAuth';
 
+export { useCities, useCityById, useJoinCity } from './useCities';
 export {
-  useCities,
-  useCityById,
-  useJoinCity,
+  useCityNews,
+  useCreateNews,
+  useUpdateNews,
+  useDeleteNews,
+} from './useCityNews';
+export {
   useCityAlerts,
   useCityAlertTypes,
   useCreateAlert,
   useUpdateAlert,
   useDeleteAlert,
-  useCityNews,
-  useCreateNews,
-  useUpdateNews,
-  useDeleteNews,
-} from './useCities';
+} from './useCityAlerts';
 export { useCityMembers, useUpdateCityMemberRole } from './useCityMembers';
 export {
   useAssignCityRequestDepartment,

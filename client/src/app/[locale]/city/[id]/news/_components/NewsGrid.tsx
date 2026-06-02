@@ -8,11 +8,12 @@ import {
   useCreateNews,
   useDeleteNews,
   useUpdateNews,
-} from '@/hooks/useCities';
+} from '@/hooks';
 import { useTranslations } from 'next-intl';
 import { FormEvent, useMemo, useState } from 'react';
 import { Newspaper } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { News } from '@/types';
 
 interface NewsGridProps {
   cityId: string;
@@ -61,7 +62,7 @@ export default function NewsGrid(props: NewsGridProps) {
   const visibleNews = useMemo(() => {
     if (!news) return [];
     if (canManageNews) return news;
-    return news.filter((item) => !item.deletedAt);
+    return news.filter((item: News) => !item.deletedAt);
   }, [news, canManageNews]);
 
   const onCreateNews = async (event: FormEvent<HTMLFormElement>) => {
@@ -220,7 +221,7 @@ export default function NewsGrid(props: NewsGridProps) {
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {visibleNews.map((n) => {
+          {visibleNews.map((n: News) => {
             const date = new Date(n.createdAt);
             const formattedDate = date.toLocaleDateString('uk-UA', {
               day: 'numeric',

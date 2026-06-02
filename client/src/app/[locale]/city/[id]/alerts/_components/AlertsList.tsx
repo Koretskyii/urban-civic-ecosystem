@@ -1,18 +1,18 @@
 'use client';
 
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
-import { usePermission } from '@/hooks';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
-  useCityAlerts,
   useCityAlertTypes,
+  useCityAlerts,
   useCreateAlert,
   useDeleteAlert,
+  usePermission,
   useUpdateAlert,
-} from '@/hooks/useCities';
+} from '@/hooks';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { FormEvent, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import type { AlertSeverity } from '@/types';
+import type { Alert, AlertType, AlertSeverity } from '@/types';
 import {
   ALERT_DEFAULT_SEVERITY,
   ALERT_SEVERITY_FILTER_ALL,
@@ -126,7 +126,7 @@ export default function AlertsList(props: AlertsListProps) {
     if (!alerts) return [];
     const filtered = effectiveCanManageAlert
       ? alerts
-      : alerts.filter((item) => !item.deletedAt);
+      : alerts.filter((item: Alert) => !item.deletedAt);
     return sortAlertsByPriority(filtered);
   }, [alerts, effectiveCanManageAlert]);
 
@@ -270,7 +270,7 @@ export default function AlertsList(props: AlertsListProps) {
                   <SelectValue placeholder={t('alerts.fields.type')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {(alertTypes ?? []).map((type) => (
+                  {(alertTypes ?? []).map((type: AlertType) => (
                     <SelectItem key={type.id} value={type.id}>
                       {translateAlertTypeName(type.name)}
                     </SelectItem>
@@ -502,7 +502,7 @@ export default function AlertsList(props: AlertsListProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(alertTypes ?? []).map((type) => (
+                  {(alertTypes ?? []).map((type: AlertType) => (
                     <SelectItem key={type.id} value={type.id}>
                       {translateAlertTypeName(type.name)}
                     </SelectItem>
