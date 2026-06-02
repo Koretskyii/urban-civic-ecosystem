@@ -1,17 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  MenuItem,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import {
   usePermission,
@@ -21,6 +10,13 @@ import {
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
 import type { RoleKey } from '@/types';
 import { CITY_MEMBER_ROLE_OPTIONS } from '@/features/city-members';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface MembersViewProps {
   cityId: string;
@@ -39,59 +35,56 @@ export default function MembersView({ cityId }: MembersViewProps) {
   const [rowError, setRowError] = useState<Record<string, string>>({});
 
   const members = membersQuery.data ?? [];
-
   const pendingUserId = useMemo(() => {
     const variables = updateRoleMutation.variables;
-    if (!variables) {
-      return '';
-    }
+    if (!variables) return '';
     return variables.userId;
   }, [updateRoleMutation.variables]);
   const isMutating = updateRoleMutation.isPending;
 
   if (isPermissionLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
+        Loading...
+      </div>
     );
   }
 
   if (!canManageRoles) {
-    return <Alert severity="error">{t('forbidden.description')}</Alert>;
+    return (
+      <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+        {t('forbidden.description')}
+      </p>
+    );
   }
 
   if (membersQuery.isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
+        Loading...
+      </div>
     );
   }
 
   if (membersQuery.isError) {
-    return <Alert severity="error">{t('cityMembers.loadError')}</Alert>;
+    return (
+      <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+        {t('cityMembers.loadError')}
+      </p>
+    );
   }
 
   const onSave = async (userId: string) => {
     const member = members.find((item) => item.userId === userId);
-    if (!member) {
-      return;
-    }
+    if (!member) return;
 
     const nextRole = draftRoles[userId] ?? member.role;
-    if (nextRole === member.role) {
-      return;
-    }
+    if (nextRole === member.role) return;
 
     setRowError((prev) => ({ ...prev, [userId]: '' }));
 
     try {
-      await updateRoleMutation.mutateAsync({
-        cityId,
-        userId,
-        role: nextRole,
-      });
+      await updateRoleMutation.mutateAsync({ cityId, userId, role: nextRole });
     } catch (error) {
       setRowError((prev) => ({
         ...prev,
@@ -104,15 +97,15 @@ export default function MembersView({ cityId }: MembersViewProps) {
   };
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h2">{t('cityMembers.title')}</Typography>
-      <Paper sx={{ p: 2 }}>
+    <div className="space-y-3">
+      <h2 className="text-3xl">{t('cityMembers.title')}</h2>
+      <div className="rounded-lg border border-black/10 bg-white p-3">
         {members.length === 0 ? (
-          <Typography color="text.secondary">
+          <p className="text-sm text-[var(--muted-foreground)]">
             {t('cityMembers.empty')}
-          </Typography>
+          </p>
         ) : (
-          <Stack spacing={1.5}>
+          <div className="space-y-2">
             {members.map((member) => {
               const selectedRole = draftRoles[member.userId] ?? member.role;
               const changed = selectedRole !== member.role;
@@ -120,61 +113,67 @@ export default function MembersView({ cityId }: MembersViewProps) {
                 updateRoleMutation.isPending && pendingUserId === member.userId;
 
               return (
-                <Paper key={member.userId} variant="outlined" sx={{ p: 2 }}>
-                  <Stack spacing={1.5}>
-                    <Box>
-                      <Typography variant="subtitle1">{member.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {member.email}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {t('cityMembers.joinedAt')}:{' '}
-                        {new Date(member.joinedAt).toLocaleString()}
-                      </Typography>
-                    </Box>
+                <div
+                  key={member.userId}
+                  className="rounded-lg border border-black/10 p-3"
+                >
+                  <div className="mb-2">
+                    <p className="text-base">{member.name}</p>
+                    <p className="text-sm text-[var(--muted-foreground)]">
+                      {member.email}
+                    </p>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      {t('cityMembers.joinedAt')}:{' '}
+                      {new Date(member.joinedAt).toLocaleString()}
+                    </p>
+                  </div>
 
-                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}>
-                      <TextField
-                        select
-                        fullWidth
-                        label={t('cityMembers.roleLabel')}
-                        value={selectedRole}
-                        disabled={isMutating}
-                        onChange={(event) =>
-                          setDraftRoles((prev) => ({
-                            ...prev,
-                            [member.userId]: event.target.value as RoleKey,
-                          }))
-                        }
-                      >
+                  <div className="flex flex-col gap-2 md:flex-row">
+                    <Select
+                      value={selectedRole}
+                      disabled={isMutating}
+                      onValueChange={(value) =>
+                        setDraftRoles((prev) => ({
+                          ...prev,
+                          [member.userId]: value as RoleKey,
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="h-10 w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
                         {CITY_MEMBER_ROLE_OPTIONS.map((role) => (
-                          <MenuItem key={role} value={role}>
+                          <SelectItem key={role} value={role}>
                             {t(`cityMembers.roles.${role}`)}
-                          </MenuItem>
+                          </SelectItem>
                         ))}
-                      </TextField>
+                      </SelectContent>
+                    </Select>
 
-                      <Button
-                        variant="contained"
-                        disabled={!changed || isPending || isMutating}
-                        onClick={() => onSave(member.userId)}
-                      >
-                        {isPending
-                          ? t('cityMembers.saving')
-                          : t('cityMembers.save')}
-                      </Button>
-                    </Stack>
+                    <button
+                      type="button"
+                      disabled={!changed || isPending || isMutating}
+                      onClick={() => onSave(member.userId)}
+                      className="h-10 rounded-md bg-[var(--primary)] px-3 text-sm font-semibold text-white disabled:opacity-60"
+                    >
+                      {isPending
+                        ? t('cityMembers.saving')
+                        : t('cityMembers.save')}
+                    </button>
+                  </div>
 
-                    {rowError[member.userId] ? (
-                      <Alert severity="error">{rowError[member.userId]}</Alert>
-                    ) : null}
-                  </Stack>
-                </Paper>
+                  {rowError[member.userId] ? (
+                    <p className="mt-2 rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+                      {rowError[member.userId]}
+                    </p>
+                  ) : null}
+                </div>
               );
             })}
-          </Stack>
+          </div>
         )}
-      </Paper>
-    </Stack>
+      </div>
+    </div>
   );
 }

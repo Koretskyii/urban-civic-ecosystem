@@ -1,56 +1,52 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
 import HeaderNotifications from './HeaderNotifications';
 import { useAuthStore } from '@/store';
-
-const HeaderBox = styled(Box)({
-  backgroundColor: '#1A3A57',
-});
-const HeaderAppBar = styled(AppBar)({
-  backgroundColor: '#1A3A57',
-});
 
 export default function Header() {
   const t = useTranslations();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
-    <HeaderBox>
-      <HeaderAppBar position="sticky">
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <Typography
-              variant="h6"
-              sx={{ cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              {t('app.name')}
-            </Typography>
+    <header className="sticky top-0 z-40 border-b border-[var(--secondary)]/25 bg-white/92 text-[var(--primary)] shadow-[0_8px_24px_rgba(6,24,41,0.1)] backdrop-blur">
+      <div className="mx-auto flex h-16 w-full items-center justify-between px-4 md:px-6">
+        <Link
+          href="/"
+          className="cursor-pointer text-xl font-bold text-[var(--primary)] no-underline"
+        >
+          <span>{t('app.name')}</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/city/create"
+            className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-[var(--primary)] no-underline transition hover:bg-[var(--warning)]/20 hover:shadow-sm"
+          >
+            {t('header.createCity')}
           </Link>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button color="inherit" component={Link} href="/city/create">
-              {t('header.createCity')}
-            </Button>
-            {isAuthenticated ? (
-              <>
-                <HeaderNotifications />
-                <Button color="inherit" component={Link} href="/user/profile">
-                  {t('header.profile')}
-                </Button>
-              </>
-            ) : (
-              <Button color="inherit" component={Link} href="/user/auth">
-                {t('header.signIn')}
-              </Button>
-            )}
-            <LocaleSwitcher />
-          </Box>
-        </Toolbar>
-      </HeaderAppBar>
-    </HeaderBox>
+          {isAuthenticated ? (
+            <>
+              <HeaderNotifications />
+              <Link
+                href="/user/profile"
+                className="rounded-md px-3 py-2 text-sm font-medium text-[var(--primary)] no-underline transition hover:bg-[var(--secondary)]/20 hover:shadow-sm"
+              >
+                {t('header.profile')}
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/user/auth"
+              className="rounded-md px-3 py-2 text-sm font-medium text-[var(--primary)] no-underline transition hover:bg-[var(--success)]/20 hover:shadow-sm"
+            >
+              {t('header.signIn')}
+            </Link>
+          )}
+          <LocaleSwitcher />
+        </div>
+      </div>
+    </header>
   );
 }

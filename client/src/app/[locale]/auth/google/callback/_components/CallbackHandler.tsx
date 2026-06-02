@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useAuthStore } from '@/store';
 import { authApi } from '@/api/endpoints';
-import { Container, Typography } from '@mui/material';
 import { ERROR_MESSAGES } from '@/constants';
 import { useTranslations } from 'next-intl';
 
@@ -27,42 +26,32 @@ export default function GoogleCallbackPage() {
           setError(ERROR_MESSAGES.AUTH.MISSING_TOKEN);
           return;
         }
-
         useAuthStore.setState({ token: accessToken });
-
         const user = await authApi.getProfile();
-
         setUser(user, accessToken);
         router.replace('/user/profile');
       } catch {
         setError(ERROR_MESSAGES.AUTH.GOOGLE_AUTH_FAILED);
       }
     }
-
-    handleGoogleAuth();
+    void handleGoogleAuth();
   }, [router, setUser]);
 
   if (error) {
     return (
-      <Container sx={{ maxWidth: 520, margin: '40px auto' }}>
-        <Typography variant="h1">{t('googleCallback.errorTitle')}</Typography>
-        <Typography variant="body1">{error}</Typography>
-        <Link href="/user/auth" style={{ textDecoration: 'none' }}>
+      <div className="mx-auto mt-10 max-w-[520px]">
+        <h1 className="text-3xl">{t('googleCallback.errorTitle')}</h1>
+        <p className="mt-2 text-sm">{error}</p>
+        <Link href="/user/auth" className="mt-3 inline-block underline">
           {t('googleCallback.back')}
         </Link>
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container
-      sx={{
-        maxWidth: 520,
-        margin: '40px auto',
-        textAlign: 'center',
-      }}
-    >
-      <Typography variant="body1">{t('googleCallback.processing')}</Typography>
-    </Container>
+    <div className="mx-auto mt-10 max-w-[520px] text-center">
+      <p className="text-sm">{t('googleCallback.processing')}</p>
+    </div>
   );
 }

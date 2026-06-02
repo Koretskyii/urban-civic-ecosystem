@@ -4,32 +4,11 @@ import { useCurrentUser, useLogout } from '@/hooks';
 import { useAuthStore } from '@/store';
 import { useRouter } from '@/i18n/navigation';
 import { useState } from 'react';
-import {
-  Container,
-  Typography,
-  Box,
-  Avatar,
-  Paper,
-  Divider,
-  Chip,
-  Button,
-  Skeleton,
-  Stack,
-} from '@mui/material';
-import {
-  Email as EmailIcon,
-  Person as PersonIcon,
-  CalendarMonth as CalendarIcon,
-  Shield as ShieldIcon,
-  Logout as LogoutIcon,
-  Google as GoogleIcon,
-  Lock as LockIcon,
-} from '@mui/icons-material';
 import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 import { useLocale, useTranslations } from 'next-intl';
+import { Shield } from 'lucide-react';
 
 interface InfoRowProps {
-  icon: React.ReactNode;
   label: string;
   value: string;
   mono?: boolean;
@@ -54,39 +33,19 @@ function formatDate(dateString: string, locale: string): string {
 
 function ProfileSkeleton() {
   return (
-    <Container maxWidth="sm" sx={{ py: 6 }}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-          }}
-        >
-          <Skeleton variant="circular" width={96} height={96} />
-          <Skeleton variant="text" width={180} height={40} />
-          <Skeleton variant="text" width={220} height={24} />
-        </Box>
-        <Divider sx={{ my: 3 }} />
-        {[1, 2, 3].map((i) => (
-          <Skeleton
-            key={i}
-            variant="rectangular"
-            height={56}
-            sx={{ mb: 1.5, borderRadius: 2 }}
-          />
-        ))}
-      </Paper>
-    </Container>
+    <div className="mx-auto w-full max-w-xl px-4 py-6">
+      <div className="rounded-xl border border-black/10 bg-white p-6">
+        <div className="mx-auto h-24 w-24 animate-pulse rounded-full bg-black/10" />
+        <div className="mx-auto mt-3 h-8 w-44 animate-pulse rounded bg-black/10" />
+        <div className="mx-auto mt-2 h-5 w-56 animate-pulse rounded bg-black/10" />
+        <div className="my-4 h-px bg-black/10" />
+        <div className="space-y-2">
+          <div className="h-14 animate-pulse rounded-lg bg-black/10" />
+          <div className="h-14 animate-pulse rounded-lg bg-black/10" />
+          <div className="h-14 animate-pulse rounded-lg bg-black/10" />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -97,7 +56,6 @@ export default function UserProfilePage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useLogout();
   const router = useRouter();
-
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const handleLogout = () => {
@@ -106,34 +64,28 @@ export default function UserProfilePage() {
     });
   };
 
-  if (isLoading) {
-    return <ProfileSkeleton />;
-  }
+  if (isLoading) return <ProfileSkeleton />;
 
   if (!isAuthenticated || !profile) {
     return (
-      <Container maxWidth="sm" sx={{ py: 6, textAlign: 'center' }}>
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <ShieldIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h3" gutterBottom>
-            {t('profile.authRequiredTitle')}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+      <div className="mx-auto w-full max-w-xl px-4 py-6 text-center">
+        <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm">
+          <div className="mb-2 flex justify-center text-black/40">
+            <Shield size={56} />
+          </div>
+          <h2 className="text-2xl">{t('profile.authRequiredTitle')}</h2>
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
             {t('profile.authRequiredSubtitle')}
-          </Typography>
-          <Button variant="contained" onClick={() => router.push('/user/auth')}>
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push('/user/auth')}
+            className="mt-4 h-10 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white"
+          >
             {t('profile.loginAction')}
-          </Button>
-        </Paper>
-      </Container>
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -141,120 +93,64 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <Container maxWidth="sm" sx={{ py: 6 }}>
-        {/* Header card */}
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-            background: (theme) =>
-              `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}12 100%)`,
-          }}
-        >
-          {/* Avatar + Name */}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 1.5,
-            }}
-          >
-            <Avatar
-              sx={{
-                width: 96,
-                height: 96,
-                bgcolor: 'primary.main',
-                fontSize: '2rem',
-                fontWeight: 700,
-                boxShadow: '0 4px 14px rgba(12, 38, 61, 0.25)',
-              }}
-            >
+      <div className="mx-auto w-full max-w-xl px-4 py-6">
+        <div className="rounded-xl border border-black/10 bg-gradient-to-br from-[#0C263D08] to-[#3F88C512] p-6 shadow-sm">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--primary)] text-3xl font-bold text-white shadow-[0_4px_14px_rgba(12,38,61,0.25)]">
               {getInitials(profile.name)}
-            </Avatar>
-
-            <Typography variant="h2" sx={{ textAlign: 'center' }}>
-              {profile.name}
-            </Typography>
-
-            <Chip
-              icon={isGoogleUser ? <GoogleIcon /> : <LockIcon />}
-              label={
+            </div>
+            <h1 className="text-center text-3xl">{profile.name}</h1>
+            <div
+              className={`rounded-full border px-3 py-1 text-xs ${
                 isGoogleUser
-                  ? t('profile.googleAccount')
-                  : t('profile.localAccount')
-              }
-              size="small"
-              variant="outlined"
-              sx={{
-                borderColor: isGoogleUser ? 'secondary.main' : 'success.main',
-                color: isGoogleUser ? 'secondary.dark' : 'success.dark',
-                '& .MuiChip-icon': {
-                  color: 'inherit',
-                  fontSize: 16,
-                },
-              }}
-            />
-          </Box>
+                  ? 'border-[var(--secondary)] text-[var(--secondary-dark)]'
+                  : 'border-[var(--success)] text-[var(--success)]'
+              }`}
+            >
+              {isGoogleUser
+                ? t('profile.googleAccount')
+                : t('profile.localAccount')}
+            </div>
+          </div>
 
-          <Divider sx={{ my: 3 }} />
+          <div className="my-4 h-px bg-black/10" />
 
-          {/* Info rows */}
-          <Stack spacing={1.5}>
-            <InfoRow
-              icon={<EmailIcon />}
-              label={t('profile.emailLabel')}
-              value={profile.email}
-            />
-            <InfoRow
-              icon={<PersonIcon />}
-              label={t('profile.idLabel')}
-              value={profile.id}
-              mono
-            />
-            {profile.createdAt && (
+          <div className="space-y-2">
+            <InfoRow label={t('profile.emailLabel')} value={profile.email} />
+            <InfoRow label={t('profile.idLabel')} value={profile.id} mono />
+            {profile.createdAt ? (
               <InfoRow
-                icon={<CalendarIcon />}
                 label={t('profile.registeredLabel')}
                 value={formatDate(profile.createdAt, locale)}
               />
-            )}
-          </Stack>
+            ) : null}
+          </div>
 
-          <Divider sx={{ my: 3 }} />
+          <div className="my-4 h-px bg-black/10" />
 
-          {/* Action buttons */}
-          <Stack spacing={1.5}>
-            {!isGoogleUser && (
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<LockIcon />}
+          <div className="space-y-2">
+            {!isGoogleUser ? (
+              <button
+                type="button"
                 onClick={() => setIsPasswordModalOpen(true)}
-                sx={{ py: 1.2 }}
+                className="h-11 w-full rounded-md border border-black/20 px-4 text-sm font-semibold"
               >
                 {t('profile.changePassword')}
-              </Button>
-            )}
-            <Button
-              variant="outlined"
-              color="error"
-              fullWidth
-              startIcon={<LogoutIcon />}
+              </button>
+            ) : null}
+            <button
+              type="button"
               onClick={handleLogout}
               disabled={logout.isPending}
-              sx={{ py: 1.2 }}
+              className="h-11 w-full rounded-md border border-[var(--danger)] px-4 text-sm font-semibold text-[var(--danger)] disabled:opacity-60"
             >
               {logout.isPending
                 ? t('profile.logoutPending')
                 : t('profile.logout')}
-            </Button>
-          </Stack>
-        </Paper>
-      </Container>
+            </button>
+          </div>
+        </div>
+      </div>
       <ChangePasswordDialog
         isOpenValue={isPasswordModalOpen}
         setIsOpenValue={setIsPasswordModalOpen}
@@ -263,42 +159,15 @@ export default function UserProfilePage() {
   );
 }
 
-function InfoRow({ icon, label, value, mono = false }: InfoRowProps) {
+function InfoRow({ label, value, mono = false }: InfoRowProps) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        p: 1.5,
-        borderRadius: 2,
-        bgcolor: 'background.paper',
-        border: '1px solid',
-        borderColor: 'divider',
-      }}
-    >
-      <Box sx={{ color: 'secondary.main', display: 'flex' }}>{icon}</Box>
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ lineHeight: 1.2 }}
-        >
-          {label}
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={{
-            fontFamily: mono ? 'monospace' : 'inherit',
-            fontSize: mono ? '0.8rem' : undefined,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {value}
-        </Typography>
-      </Box>
-    </Box>
+    <div className="rounded-lg border border-black/10 bg-white p-3">
+      <p className="text-xs text-[var(--muted-foreground)]">{label}</p>
+      <p
+        className={`truncate text-sm ${mono ? 'font-mono text-xs' : 'font-normal'}`}
+      >
+        {value}
+      </p>
+    </div>
   );
 }

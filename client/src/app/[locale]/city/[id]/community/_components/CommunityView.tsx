@@ -1,24 +1,10 @@
 'use client';
 
 import { useCityCommunity } from '@/hooks/useCities';
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CircularProgress,
-  Grid,
-  Avatar,
-  AvatarGroup,
-  Paper,
-  TextField,
-  IconButton,
-} from '@mui/material';
-import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
-import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import { useTranslations } from 'next-intl';
+import { Users, UserRound, MessageCircle, SendHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface CommunityViewProps {
   cityId: string;
@@ -31,17 +17,17 @@ export default function CommunityView(props: CommunityViewProps) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
+        Loading...
+      </div>
     );
   }
 
   if (error || !community) {
     return (
-      <Typography color="error" sx={{ mt: 2 }}>
+      <p className="mt-2 text-sm text-[var(--danger-dark)]">
         {t('community.loadError')}
-      </Typography>
+      </p>
     );
   }
 
@@ -50,98 +36,41 @@ export default function CommunityView(props: CommunityViewProps) {
   const messages = chat?.messages || [];
 
   return (
-    <Box sx={{ mt: 2, pb: 4 }}>
-      {/* Header Section */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-        <Box
-          sx={{
-            p: 1,
-            borderRadius: 2,
-            bgcolor: 'rgba(92, 103, 125, 0.1)',
-            color: 'primary.main',
-            display: 'flex',
-          }}
-        >
-          <GroupsRoundedIcon />
-        </Box>
-        <Box>
-          <Typography variant="h3">{community.name}</Typography>
-          <Typography variant="body2" color="text.secondary">
+    <div className="mt-2 pb-4">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="rounded-lg bg-[var(--primary)]/10 p-2 text-[var(--primary)]">
+          <Users size={20} />
+        </div>
+        <div>
+          <h2 className="text-2xl">{community.name}</h2>
+          <p className="text-sm text-[var(--muted-foreground)]">
             {community.description}
-          </Typography>
-        </Box>
-      </Box>
+          </p>
+        </div>
+      </div>
 
-      <Grid container spacing={4}>
-        {/* Left Column: Members & Posts */}
-        <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-          {/* Mock Members Section */}
-          <Card
-            elevation={0}
-            sx={{
-              mb: 4,
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 3,
-            }}
-          >
-            <CardContent
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Typography variant="h6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="lg:col-span-8">
+          <div className="mb-4 rounded-xl border border-black/10 bg-white p-3 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-base font-semibold">
                 {t('community.membersTitle')}
-              </Typography>
-              <AvatarGroup
-                max={6}
-                sx={{
-                  '& .MuiAvatar-root': {
-                    width: 36,
-                    height: 36,
-                    fontSize: '0.875rem',
-                  },
-                }}
-              >
-                <Avatar
-                  alt={t('community.memberNames.alexander')}
-                  src="/static/images/avatar/1.jpg"
-                />
-                <Avatar
-                  alt={t('community.memberNames.maria')}
-                  src="/static/images/avatar/2.jpg"
-                />
-                <Avatar
-                  alt={t('community.memberNames.ivan')}
-                  src="/static/images/avatar/3.jpg"
-                />
-                <Avatar
-                  alt={t('community.memberNames.anna')}
-                  src="/static/images/avatar/4.jpg"
-                />
-                <Avatar
-                  alt={t('community.memberNames.petro')}
-                  src="/static/images/avatar/5.jpg"
-                />
-                <Avatar
-                  alt={t('community.memberNames.olena')}
-                  src="/static/images/avatar/6.jpg"
-                />
-                <Avatar
-                  alt={t('community.memberNames.denys')}
-                  src="/static/images/avatar/7.jpg"
-                />
-              </AvatarGroup>
-            </CardContent>
-          </Card>
+              </p>
+              <div className="flex -space-x-2">
+                {['О', 'М', 'І', 'А', 'П', 'Д'].map((initial) => (
+                  <div
+                    key={initial}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[var(--success-light)] text-xs font-semibold text-white"
+                  >
+                    {initial}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
 
-          {/* Posts Section */}
-          <Typography variant="h5" sx={{ mb: 3 }}>
-            {t('community.latestPostsTitle')}
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <h3 className="mb-3 text-xl">{t('community.latestPostsTitle')}</h3>
+          <div className="space-y-3">
             {posts.map((post) => {
               const date = new Date(post.createdAt);
               const formattedDate = date.toLocaleDateString('uk-UA', {
@@ -157,100 +86,45 @@ export default function CommunityView(props: CommunityViewProps) {
                 : t('common.unknownUser');
 
               return (
-                <Card
+                <article
                   key={post.id}
-                  elevation={0}
-                  sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 3,
-                  }}
+                  className="rounded-xl border border-black/10 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(15,23,42,0.12)]"
                 >
-                  <CardContent sx={{ p: 3 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        mb: 2,
-                      }}
-                    >
-                      <Avatar
-                        sx={{ bgcolor: 'success.light', width: 40, height: 40 }}
-                      >
-                        <PersonRoundedIcon />
-                      </Avatar>
-                      <Box>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: 600, lineHeight: 1.2 }}
-                        >
-                          {authorName}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'text.secondary' }}
-                        >
-                          {formattedDate} {t('common.timeSeparator')}{' '}
-                          {formattedTime}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                      {post.content}
-                    </Typography>
-                  </CardContent>
-                </Card>
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success-light)] text-xs text-white">
+                      <UserRound size={16} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{authorName}</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">
+                        {formattedDate} {t('common.timeSeparator')}{' '}
+                        {formattedTime}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm">{post.content}</p>
+                </article>
               );
             })}
-            {posts.length === 0 && (
-              <Typography color="text.secondary">
+            {posts.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">
                 {t('community.noPosts')}
-              </Typography>
-            )}
-          </Box>
-        </Grid>
+              </p>
+            ) : null}
+          </div>
+        </div>
 
-        {/* Right Column: Chat Widget */}
-        <Grid size={{ xs: 12, md: 5, lg: 4 }}>
-          <Paper
-            elevation={0}
-            sx={{
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              height: '600px', // Fixed height for the chat widget
-              position: 'sticky',
-              top: 24,
-            }}
-          >
-            <Box
-              sx={{
-                p: 2,
-                borderBottom: '1px solid',
-                borderColor: 'divider',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-              }}
-            >
-              <ChatBubbleOutlineRoundedIcon color="primary" />
-              <Typography variant="h6">{t('community.chatTitle')}</Typography>
-            </Box>
+        <div className="lg:col-span-4">
+          <div className="sticky top-6 flex h-[600px] flex-col overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm">
+            <div className="flex items-center gap-2 border-b border-black/10 p-3">
+              <MessageCircle
+                size={18}
+                className="text-[var(--primary-light)]"
+              />
+              <p className="font-semibold">{t('community.chatTitle')}</p>
+            </div>
 
-            <Box
-              sx={{
-                flexGrow: 1,
-                overflowY: 'auto',
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-                bgcolor: 'rgba(0,0,0,0.01)',
-              }}
-            >
+            <div className="flex-1 space-y-2 overflow-y-auto bg-black/[0.01] p-3">
               {messages.map((msg) => {
                 const time = new Date(msg.timestamp).toLocaleTimeString(
                   'uk-UA',
@@ -259,81 +133,42 @@ export default function CommunityView(props: CommunityViewProps) {
                 const authorName = msg.author
                   ? msg.author.name
                   : t('common.guest');
-                // Mock logic: assume some messages are 'mine' based on random or we can just render all the same for now
-                // Actually, let's just render all left-aligned for simplicity since we don't have current user id easily available here
                 return (
-                  <Box
-                    key={msg.id}
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{ color: 'text.secondary', ml: 1 }}
-                    >
+                  <div key={msg.id} className="space-y-0.5">
+                    <p className="ml-1 text-xs text-[var(--muted-foreground)]">
                       {authorName} • {time}
-                    </Typography>
-                    <Box
-                      sx={{
-                        p: 1.5,
-                        bgcolor: 'white',
-                        borderRadius: 2,
-                        borderTopLeftRadius: 4,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        alignSelf: 'flex-start',
-                        maxWidth: '90%',
-                      }}
-                    >
-                      <Typography variant="body2">{msg.content}</Typography>
-                    </Box>
-                  </Box>
+                    </p>
+                    <div className="max-w-[90%] rounded-lg border border-black/10 bg-white p-2 text-sm">
+                      {msg.content}
+                    </div>
+                  </div>
                 );
               })}
-              {messages.length === 0 && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  align="center"
-                  sx={{ mt: 2 }}
-                >
+              {messages.length === 0 ? (
+                <p className="mt-2 text-center text-sm text-[var(--muted-foreground)]">
                   {t('community.noMessages')}
-                </Typography>
-              )}
-            </Box>
+                </p>
+              ) : null}
+            </div>
 
-            <Box
-              sx={{
-                p: 2,
-                borderTop: '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'background.paper',
-                borderBottomLeftRadius: 12,
-                borderBottomRightRadius: 12,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <TextField
-                  fullWidth
-                  size="small"
+            <div className="border-t border-black/10 p-3">
+              <div className="flex items-center gap-2">
+                <Input
                   placeholder={t('community.messagePlaceholder')}
-                  variant="outlined"
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                  className="h-9"
                 />
-                <IconButton
-                  color="primary"
-                  sx={{
-                    bgcolor: 'primary.light',
-                    color: 'primary.main',
-                    '&:hover': { bgcolor: 'primary.light', opacity: 0.8 },
-                  }}
+                <Button
+                  type="button"
+                  size="icon"
+                  className="h-9 w-9 bg-[var(--primary-light)] hover:bg-[var(--primary)]"
                 >
-                  <SendRoundedIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+                  <SendHorizontal size={15} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

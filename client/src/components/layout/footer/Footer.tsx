@@ -1,31 +1,15 @@
-'use client';
-import { UCE_COLORS } from '@/theme';
 import { useTranslations } from 'next-intl';
-import styled from '@emotion/styled';
-import { Box, Container, Grid, Typography } from '@mui/material';
-
-const FooterBox = styled(Box)({
-  backgroundColor: '#1A3A57',
-  color: UCE_COLORS.text.light.primary,
-  height: `8rem`,
-  padding: `2rem 0rem 2rem 0rem`,
-});
-const FooterContainer = styled(Container)({
-  margin: `0 2rem`,
-});
 
 export default function Footer() {
   const t = useTranslations();
 
   return (
-    <FooterBox>
-      <FooterContainer>
-        <Grid container spacing={2}>
-          <Grid size={6}>
-            <Typography>{t('footer.rights')}</Typography>
-          </Grid>
-        </Grid>
-      </FooterContainer>
-    </FooterBox>
+    <footer className="mt-auto border-t border-[var(--secondary)]/20 bg-[var(--surface-2)] px-8 py-8 text-[var(--primary)]">
+      <div className="mx-2">
+        <p className="text-sm text-[var(--primary-light)]">
+          {t('footer.rights')}
+        </p>
+      </div>
+    </footer>
   );
 }

@@ -5,12 +5,19 @@ import { cookies } from 'next/headers';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { QueryClient, dehydrate } from '@tanstack/react-query';
-import { QueryProvider, ThemeRegistry } from '@/providers';
+import { QueryProvider } from '@/providers';
 import Header from '@/components/layout/header/Header';
 import Footer from '@/components/layout/footer/Footer';
 import { locales } from '@/i18n';
 import { queryKeys } from '@/api/queryKeys';
 import { API_BASE_URL } from '@/config';
+import { Didact_Gothic } from 'next/font/google';
+
+const didactGothic = Didact_Gothic({
+  weight: '400',
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+});
 
 type MetadataProps = {
   params: Promise<{ locale: string }>;
@@ -71,17 +78,16 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
+        className={didactGothic.className}
         style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
       >
-        <ThemeRegistry>
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <QueryProvider dehydratedState={dehydratedState}>
-              <Header />
-              <main style={{ flexGrow: 1 }}>{children}</main>
-              <Footer />
-            </QueryProvider>
-          </NextIntlClientProvider>
-        </ThemeRegistry>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <QueryProvider dehydratedState={dehydratedState}>
+            <Header />
+            <main style={{ flexGrow: 1 }}>{children}</main>
+            <Footer />
+          </QueryProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

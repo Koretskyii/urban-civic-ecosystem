@@ -1,19 +1,8 @@
 'use client';
 
 import { useCityPosts } from '@/hooks/useCities';
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CircularProgress,
-  Grid,
-  Divider,
-  Avatar,
-} from '@mui/material';
-import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import { useTranslations } from 'next-intl';
+import { FileText, UserRound } from 'lucide-react';
 
 interface PostsGridProps {
   cityId: string;
@@ -26,46 +15,38 @@ export default function PostsGrid(props: PostsGridProps) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
+        Loading...
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Typography color="error" sx={{ mt: 2 }}>
+      <p className="mt-2 text-sm text-[var(--danger-dark)]">
         {t('posts.loadError')}
-      </Typography>
+      </p>
     );
   }
 
   if (!posts || posts.length === 0) {
     return (
-      <Typography color="text.secondary" sx={{ mt: 2 }}>
+      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
         {t('posts.empty')}
-      </Typography>
+      </p>
     );
   }
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-        <Box
-          sx={{
-            p: 1,
-            borderRadius: 2,
-            bgcolor: 'rgba(49, 107, 80, 0.1)',
-            color: 'success.main',
-            display: 'flex',
-          }}
-        >
-          <ArticleRoundedIcon />
-        </Box>
-        <Typography variant="h3">{t('posts.title')}</Typography>
-      </Box>
+    <div className="mt-2">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="rounded-lg bg-[var(--success)]/10 p-2 text-[var(--success)]">
+          <FileText size={20} />
+        </div>
+        <h2 className="text-2xl">{t('posts.title')}</h2>
+      </div>
 
-      <Grid container spacing={3}>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {posts.map((post) => {
           const date = new Date(post.createdAt);
           const formattedDate = date.toLocaleDateString('uk-UA', {
@@ -83,92 +64,36 @@ export default function PostsGrid(props: PostsGridProps) {
             : t('common.unknownUser');
 
           return (
-            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={post.id}>
-              <Card
-                elevation={0}
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderTop: '4px solid',
-                  borderTopColor: 'success.main',
-                  borderRadius: 3,
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    boxShadow: '0 8px 24px rgba(49, 107, 80, 0.12)',
-                    transform: 'translateY(-4px)',
-                  },
-                }}
-              >
-                <CardContent
-                  sx={{
-                    p: 3,
-                    flexGrow: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      mb: 2,
-                    }}
-                  >
-                    <Avatar
-                      sx={{ bgcolor: 'success.light', width: 32, height: 32 }}
-                    >
-                      <PersonRoundedIcon fontSize="small" />
-                    </Avatar>
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 600,
-                          color: 'text.primary',
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {authorName}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: 'text.secondary' }}
-                      >
-                        {formattedDate} {t('common.timeSeparator')}{' '}
-                        {formattedTime}
-                      </Typography>
-                    </Box>
-                  </Box>
+            <article
+              key={post.id}
+              className="flex h-full flex-col rounded-xl border border-black/10 border-t-4 border-t-[var(--success)] bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(49,107,80,0.16)]"
+            >
+              <div className="mb-2 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success-light)] text-xs text-white">
+                  <UserRound size={14} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold leading-4">
+                    {authorName}
+                  </p>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    {formattedDate} {t('common.timeSeparator')} {formattedTime}
+                  </p>
+                </div>
+              </div>
 
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'text.primary',
-                      flexGrow: 1,
-                      whiteSpace: 'pre-wrap',
-                    }}
-                  >
-                    {post.content}
-                  </Typography>
+              <p className="flex-1 whitespace-pre-wrap text-sm">
+                {post.content}
+              </p>
 
-                  <Divider sx={{ my: 2 }} />
-
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'success.main', fontWeight: 500 }}
-                  >
-                    {t('posts.residentPost')}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+              <div className="my-2 h-px bg-black/10" />
+              <p className="text-xs font-medium text-[var(--success)]">
+                {t('posts.residentPost')}
+              </p>
+            </article>
           );
         })}
-      </Grid>
-    </Box>
+      </div>
+    </div>
   );
 }

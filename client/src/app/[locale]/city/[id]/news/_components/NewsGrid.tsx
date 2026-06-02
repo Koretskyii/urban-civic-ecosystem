@@ -9,31 +9,10 @@ import {
   useDeleteNews,
   useUpdateNews,
 } from '@/hooks/useCities';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Grid,
-  InputAdornment,
-  Switch,
-  TextField,
-  Divider,
-  Typography,
-} from '@mui/material';
-import FeedRoundedIcon from '@mui/icons-material/FeedRounded';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { useTranslations } from 'next-intl';
 import { FormEvent, useMemo, useState } from 'react';
+import { Newspaper } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface NewsGridProps {
   cityId: string;
@@ -80,22 +59,14 @@ export default function NewsGrid(props: NewsGridProps) {
 
   const canManageView = canCreateNews || canUpdateNews || canDeleteNews;
   const visibleNews = useMemo(() => {
-    if (!news) {
-      return [];
-    }
-
-    if (canManageNews) {
-      return news;
-    }
-
-    // Defensive UI filter: citizens never see soft-deleted items even if backend query changes.
+    if (!news) return [];
+    if (canManageNews) return news;
     return news.filter((item) => !item.deletedAt);
   }, [news, canManageNews]);
 
   const onCreateNews = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError('');
-
     const title = newTitle.trim();
     const content = newContent.trim();
 
@@ -107,12 +78,8 @@ export default function NewsGrid(props: NewsGridProps) {
     try {
       await createNewsMutation.mutateAsync({
         cityId,
-        payload: {
-          title,
-          content,
-        },
+        payload: { title, content },
       });
-
       setNewTitle('');
       setNewContent('');
     } catch {
@@ -128,10 +95,7 @@ export default function NewsGrid(props: NewsGridProps) {
   };
 
   const onSaveEdit = async () => {
-    if (!editingNewsId) {
-      return;
-    }
-
+    if (!editingNewsId) return;
     const title = editingTitle.trim();
     const content = editingContent.trim();
     if (title.length < 3 || content.length < 3) {
@@ -143,10 +107,7 @@ export default function NewsGrid(props: NewsGridProps) {
       await updateNewsMutation.mutateAsync({
         cityId,
         newsId: editingNewsId,
-        payload: {
-          title,
-          content,
-        },
+        payload: { title, content },
       });
       setEditingNewsId(null);
       setEditingTitle('');
@@ -166,148 +127,99 @@ export default function NewsGrid(props: NewsGridProps) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
+        Loading...
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Typography color="error" sx={{ mt: 2 }}>
+      <p className="mt-2 text-sm text-[var(--danger-dark)]">
         {t('news.loadError')}
-      </Typography>
+      </p>
     );
   }
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-        <Box
-          sx={{
-            p: 1,
-            borderRadius: 2,
-            bgcolor: 'rgba(63, 136, 197, 0.1)',
-            color: 'secondary.main',
-            display: 'flex',
-          }}
-        >
-          <FeedRoundedIcon />
-        </Box>
-        <Typography variant="h3">{t('news.title')}</Typography>
-      </Box>
+    <div className="mt-2">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="rounded-lg bg-[var(--secondary)]/10 p-2 text-[var(--secondary)]">
+          <Newspaper size={20} />
+        </div>
+        <h2 className="text-2xl">{t('news.title')}</h2>
+      </div>
 
       {canManageView ? (
-        <Box sx={{ mb: 3 }}>
-          {formError ? <Alert severity="error">{formError}</Alert> : null}
-          {createNewsMutation.isError ? (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('news.createError')}
-            </Alert>
-          ) : null}
-          {updateNewsMutation.isError ? (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('news.updateError')}
-            </Alert>
-          ) : null}
-          {deleteNewsMutation.isError ? (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('news.deleteError')}
-            </Alert>
+        <div className="mb-3">
+          {formError ? (
+            <p className="mb-2 rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+              {formError}
+            </p>
           ) : null}
           {canCreateNews ? (
-            <Box
-              component="form"
+            <form
               onSubmit={onCreateNews}
-              sx={{
-                display: 'grid',
-                gap: 1.5,
-                p: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}
+              className="grid gap-2 rounded-xl border border-[var(--secondary)]/20 bg-[linear-gradient(180deg,rgba(63,136,197,0.04)_0%,#fff_46%)] p-3 shadow-sm"
             >
-              <Typography variant="h5">{t('news.createTitle')}</Typography>
-              <TextField
-                label={t('news.fields.title')}
+              <p className="text-lg font-semibold">{t('news.createTitle')}</p>
+              <input
+                placeholder={t('news.fields.title')}
                 value={newTitle}
                 onChange={(event) => setNewTitle(event.target.value)}
                 required
+                className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
               />
-              <TextField
-                label={t('news.fields.content')}
+              <textarea
+                placeholder={t('news.fields.content')}
                 value={newContent}
                 onChange={(event) => setNewContent(event.target.value)}
-                multiline
-                minRows={4}
                 required
+                rows={4}
+                className="rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
               />
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
+              <div className="flex justify-end">
+                <button
                   type="submit"
-                  variant="contained"
                   disabled={createNewsMutation.isPending}
+                  className="rounded-md bg-[linear-gradient(90deg,var(--secondary-dark)_0%,var(--primary)_100%)] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
                 >
                   {createNewsMutation.isPending
                     ? t('news.actions.creating')
                     : t('news.actions.create')}
-                </Button>
-              </Box>
-            </Box>
+                </button>
+              </div>
+            </form>
           ) : null}
 
-          <Box
-            sx={{
-              mt: 2,
-              display: 'flex',
-              gap: 1.5,
-              flexDirection: { xs: 'column', md: 'row' },
-              alignItems: { xs: 'stretch', md: 'center' },
-            }}
-          >
-            <TextField
-              label={t('news.searchLabel')}
+          <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
+            <input
+              placeholder={t('news.searchPlaceholder')}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                }
-              }}
-              placeholder={t('news.searchPlaceholder')}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ flex: 1 }}
+              className="h-10 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
             />
             {canManageNews ? (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={includeDeleted}
-                    onChange={(event) =>
-                      setIncludeDeleted(event.target.checked)
-                    }
-                  />
-                }
-                label={t('news.includeDeleted')}
-              />
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={includeDeleted}
+                  onCheckedChange={(checked) =>
+                    setIncludeDeleted(Boolean(checked))
+                  }
+                />
+                {t('news.includeDeleted')}
+              </label>
             ) : null}
-          </Box>
-        </Box>
+          </div>
+        </div>
       ) : null}
 
       {visibleNews.length === 0 ? (
-        <Typography color="text.secondary" sx={{ mt: 2 }}>
+        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
           {t('news.empty')}
-        </Typography>
+        </p>
       ) : (
-        <Grid container spacing={3}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {visibleNews.map((n) => {
             const date = new Date(n.createdAt);
             const formattedDate = date.toLocaleDateString('uk-UA', {
@@ -321,159 +233,103 @@ export default function NewsGrid(props: NewsGridProps) {
             });
 
             return (
-              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={n.id}>
-                <Card
-                  elevation={0}
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderTop: '4px solid',
-                    borderTopColor: 'secondary.main',
-                    borderRadius: 3,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      boxShadow: '0 8px 24px rgba(63, 136, 197, 0.12)',
-                      transform: 'translateY(-4px)',
-                    },
-                  }}
-                >
-                  <CardContent
-                    sx={{
-                      p: 3,
-                      flexGrow: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'text.secondary',
-                        mb: 1.5,
-                        display: 'block',
-                      }}
-                    >
-                      {formattedDate} {t('common.timeSeparator')}{' '}
-                      {formattedTime}
-                    </Typography>
-
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        mb: 2,
-                        fontWeight: 600,
-                        color: 'text.primary',
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {n.title}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'text.secondary', flexGrow: 1, mb: 2 }}
-                    >
-                      {n.content}
-                    </Typography>
-
-                    <Divider sx={{ my: 1.5 }} />
-
-                    <Typography
-                      variant="caption"
-                      sx={{ color: 'primary.light', fontWeight: 500 }}
-                    >
-                      {n.deletedAt
-                        ? t('news.deletedLabel')
-                        : t('news.officialSource')}
-                    </Typography>
-                    {(canUpdateNews || canDeleteNews) && !n.deletedAt ? (
-                      <Box
-                        sx={{
-                          mt: 1.5,
-                          display: 'flex',
-                          gap: 1,
-                          justifyContent: 'flex-end',
-                        }}
+              <article
+                key={n.id}
+                className="flex h-full flex-col rounded-xl border border-black/10 border-t-4 border-t-[var(--secondary)] bg-[linear-gradient(180deg,rgba(63,136,197,0.05)_0%,#fff_36%)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(63,136,197,0.18)]"
+              >
+                <p className="mb-1 text-xs text-[var(--muted-foreground)]">
+                  {formattedDate} {t('common.timeSeparator')} {formattedTime}
+                </p>
+                <h3 className="mb-2 text-lg font-semibold">{n.title}</h3>
+                <p className="mb-2 flex-1 text-sm text-[var(--muted-foreground)]">
+                  {n.content}
+                </p>
+                <div className="my-1 h-px bg-black/10" />
+                <p className="text-xs font-medium text-[var(--primary-light)]">
+                  {n.deletedAt
+                    ? t('news.deletedLabel')
+                    : t('news.officialSource')}
+                </p>
+                {(canUpdateNews || canDeleteNews) && !n.deletedAt ? (
+                  <div className="mt-2 flex justify-end gap-2">
+                    {canUpdateNews ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          startEdit({
+                            id: n.id,
+                            title: n.title,
+                            content: n.content,
+                          })
+                        }
+                        className="rounded-md border border-[var(--secondary)]/40 px-2 py-1 text-xs text-[var(--secondary-dark)] hover:bg-[var(--secondary)]/10"
                       >
-                        {canUpdateNews ? (
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<EditRoundedIcon />}
-                            onClick={() =>
-                              startEdit({
-                                id: n.id,
-                                title: n.title,
-                                content: n.content,
-                              })
-                            }
-                          >
-                            {t('news.actions.edit')}
-                          </Button>
-                        ) : null}
-                        {canDeleteNews ? (
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            color="error"
-                            startIcon={<DeleteRoundedIcon />}
-                            onClick={() => onDeleteNews(n.id)}
-                            disabled={deleteNewsMutation.isPending}
-                          >
-                            {t('news.actions.delete')}
-                          </Button>
-                        ) : null}
-                      </Box>
+                        {t('news.actions.edit')}
+                      </button>
                     ) : null}
-                  </CardContent>
-                </Card>
-              </Grid>
+                    {canDeleteNews ? (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteNews(n.id)}
+                        disabled={deleteNewsMutation.isPending}
+                        className="rounded-md border border-[var(--danger)] px-2 py-1 text-xs text-[var(--danger)] disabled:opacity-60"
+                      >
+                        {t('news.actions.delete')}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </article>
             );
           })}
-        </Grid>
+        </div>
       )}
 
-      <Dialog
-        open={Boolean(editingNewsId)}
-        onClose={() => setEditingNewsId(null)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>{t('news.editTitle')}</DialogTitle>
-        <DialogContent sx={{ display: 'grid', gap: 2, pt: 1 }}>
-          <TextField
-            label={t('news.fields.title')}
-            value={editingTitle}
-            onChange={(event) => setEditingTitle(event.target.value)}
-            required
-          />
-          <TextField
-            label={t('news.fields.content')}
-            value={editingContent}
-            onChange={(event) => setEditingContent(event.target.value)}
-            multiline
-            minRows={5}
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditingNewsId(null)}>
-            {t('news.actions.cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={onSaveEdit}
-            disabled={updateNewsMutation.isPending}
-          >
-            {updateNewsMutation.isPending
-              ? t('news.actions.saving')
-              : t('news.actions.save')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+      {editingNewsId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
+          <div className="w-full max-w-2xl rounded-xl bg-white p-4 shadow-2xl">
+            <h3 className="mb-3 text-lg font-semibold">
+              {t('news.editTitle')}
+            </h3>
+            <div className="grid gap-2">
+              <input
+                placeholder={t('news.fields.title')}
+                value={editingTitle}
+                onChange={(event) => setEditingTitle(event.target.value)}
+                required
+                className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
+              />
+              <textarea
+                placeholder={t('news.fields.content')}
+                value={editingContent}
+                onChange={(event) => setEditingContent(event.target.value)}
+                required
+                rows={5}
+                className="rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-[var(--secondary)]"
+              />
+            </div>
+            <div className="mt-3 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingNewsId(null)}
+                className="rounded-md px-3 py-2 text-sm"
+              >
+                {t('news.actions.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={onSaveEdit}
+                disabled={updateNewsMutation.isPending}
+                className="rounded-md bg-[var(--primary)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {updateNewsMutation.isPending
+                  ? t('news.actions.saving')
+                  : t('news.actions.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

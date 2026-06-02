@@ -4,41 +4,18 @@ import { useState } from 'react';
 import { useLogin, useRegister } from '@/hooks';
 import { useRouter } from '@/i18n/navigation';
 import { API_BASE_URL } from '@/config';
-import {
-  Container,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Box,
-  Tab,
-  Tabs,
-  Alert,
-  Divider,
-  InputAdornment,
-  IconButton,
-  CircularProgress,
-} from '@mui/material';
-import {
-  Visibility,
-  VisibilityOff,
-  Google as GoogleIcon,
-  PersonAdd as RegisterIcon,
-  Login as LoginIcon,
-} from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function AuthPage() {
   const t = useTranslations();
   const [tab, setTab] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
-
-  // Form state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Hooks
   const login = useLogin();
   const register = useRegister();
   const router = useRouter();
@@ -54,170 +31,141 @@ export default function AuthPage() {
         { name, email, password },
         { onSuccess: () => router.push('/user/profile') },
       );
-    } else {
-      login.mutate(
-        { email, password },
-        { onSuccess: () => router.push('/user/profile') },
-      );
+      return;
     }
+
+    login.mutate(
+      { email, password },
+      { onSuccess: () => router.push('/user/profile') },
+    );
   };
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (newValue: number) => {
     setTab(newValue);
     login.reset();
     register.reset();
   };
 
   return (
-    <Container maxWidth="xs" sx={{ py: 8 }}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        {/* Header */}
-        <Typography variant="h2" sx={{ textAlign: 'center', mb: 1 }}>
-          {t('app.shortName')}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ textAlign: 'center', mb: 3 }}
-        >
+    <div className="mx-auto w-full max-w-xs px-4 py-8">
+      <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-[0_12px_30px_rgba(12,38,61,0.12)]">
+        <h1 className="mb-1 text-center text-3xl">{t('app.shortName')}</h1>
+        <p className="mb-3 text-center text-sm text-[var(--muted-foreground)]">
           {t('app.tagline')}
-        </Typography>
+        </p>
 
-        {/* Tabs */}
-        <Tabs
-          value={tab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{
-            mb: 3,
-            '& .MuiTab-root': {
-              fontWeight: 600,
-              py: 1.5,
-            },
-          }}
-        >
-          <Tab label={t('auth.registerTab')} />
-          <Tab label={t('auth.loginTab')} />
-        </Tabs>
+        <div className="mb-3 grid grid-cols-2 rounded-md bg-black/5 p-1">
+          <button
+            type="button"
+            onClick={() => handleTabChange(0)}
+            className={`rounded px-3 py-2 text-sm font-semibold transition-colors ${
+              tab === 0
+                ? 'bg-white text-[var(--primary-light)] shadow-sm'
+                : 'text-[var(--muted-foreground)]'
+            }`}
+          >
+            {t('auth.registerTab')}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTabChange(1)}
+            className={`rounded px-3 py-2 text-sm font-semibold transition-colors ${
+              tab === 1
+                ? 'bg-white text-[var(--primary-light)] shadow-sm'
+                : 'text-[var(--muted-foreground)]'
+            }`}
+          >
+            {t('auth.loginTab')}
+          </button>
+        </div>
 
-        {/* Error */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+        {error ? (
+          <p className="mb-2 rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
             {(error as Error).message}
-          </Alert>
-        )}
+          </p>
+        ) : null}
 
-        {/* Form */}
-        <Box component="form" onSubmit={handleSubmit}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {isRegister && (
-              <TextField
-                label={t('auth.nameLabel')}
+        <form onSubmit={handleSubmit} className="space-y-2">
+          {isRegister ? (
+            <label className="block">
+              <span className="mb-1 block text-sm text-[var(--muted-foreground)]">
+                {t('auth.nameLabel')}
+              </span>
+              <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                fullWidth
                 required
                 autoFocus
                 autoComplete="name"
+                className="h-11"
               />
-            )}
-            <TextField
-              label={t('auth.emailLabel')}
+            </label>
+          ) : null}
+
+          <label className="block">
+            <span className="mb-1 block text-sm text-[var(--muted-foreground)]">
+              {t('auth.emailLabel')}
+            </span>
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              fullWidth
               required
               autoComplete="email"
               autoFocus={!isRegister}
+              className="h-11"
             />
-            <TextField
-              label={t('auth.passwordLabel')}
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              fullWidth
-              required
-              autoComplete={isRegister ? 'new-password' : 'current-password'}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        size="small"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
+          </label>
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              size="large"
-              disabled={isPending}
-              startIcon={
-                isPending ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : isRegister ? (
-                  <RegisterIcon />
-                ) : (
-                  <LoginIcon />
-                )
-              }
-              sx={{ py: 1.5, mt: 1 }}
-            >
-              {isPending
-                ? t('common.processing')
-                : isRegister
-                  ? t('auth.register')
-                  : t('auth.login')}
-            </Button>
-          </Box>
-        </Box>
+          <label className="block">
+            <span className="mb-1 block text-sm text-[var(--muted-foreground)]">
+              {t('auth.passwordLabel')}
+            </span>
+            <div className="flex h-11 items-center rounded-md border border-black/15 px-3 transition-colors focus-within:border-[var(--secondary)]">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete={isRegister ? 'new-password' : 'current-password'}
+                className="h-full w-full border-none bg-transparent text-sm outline-none focus:border-transparent focus:outline-none focus:ring-0"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="ml-2 text-xs text-[var(--muted-foreground)]"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </label>
 
-        {/* Divider */}
-        <Divider sx={{ my: 3 }}>
-          <Typography variant="body2" color="text.secondary">
-            {t('common.or')}
-          </Typography>
-        </Divider>
+          <Button
+            type="submit"
+            disabled={isPending}
+            size="lg"
+            className="mt-1 w-full text-sm"
+          >
+            {isPending
+              ? t('common.processing')
+              : isRegister
+                ? t('auth.register')
+                : t('auth.login')}
+          </Button>
+        </form>
 
-        {/* Google OAuth */}
-        <Button
-          variant="outlined"
-          fullWidth
-          size="large"
-          startIcon={<GoogleIcon />}
-          href={`${API_BASE_URL}/auth/google`}
-          sx={{
-            py: 1.5,
-            borderColor: 'divider',
-            color: 'text.primary',
-            '&:hover': {
-              borderColor: 'secondary.main',
-              bgcolor: 'secondary.main',
-              color: '#fff',
-            },
-          }}
-        >
-          {t('auth.loginWithGoogle')}
+        <div className="my-3 flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+          <div className="h-px flex-1 bg-black/10" />
+          <span>{t('common.or')}</span>
+          <div className="h-px flex-1 bg-black/10" />
+        </div>
+
+        <Button asChild variant="outline" size="lg" className="w-full text-sm">
+          <a href={`${API_BASE_URL}/auth/google`}>
+            {t('auth.loginWithGoogle')}
+          </a>
         </Button>
-      </Paper>
-    </Container>
+      </div>
+    </div>
   );
 }

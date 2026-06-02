@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import {
@@ -43,29 +42,16 @@ type CreateRequestErrorKey =
   | 'coordinatesOutOfRange';
 
 const isUsableCityCenter = (lat: unknown, lng: unknown): boolean => {
-  if (typeof lat !== 'number' || typeof lng !== 'number') {
-    return false;
-  }
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return false;
-  }
-
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    return false;
-  }
-
-  if (lat === 0 || lng === 0) {
-    return false;
-  }
-
+  if (typeof lat !== 'number' || typeof lng !== 'number') return false;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return false;
+  if (lat === 0 || lng === 0) return false;
   return true;
 };
 
 export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const t = useTranslations();
   const router = useRouter();
-
   const [selectedRequestId, setSelectedRequestId] = useState<string>('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -108,10 +94,8 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
 
   const requests = useMemo(() => {
     const baseRequests = requestsQuery.data ?? [];
-    if (viewMode !== 'municipality' || filterPriority === 'ALL') {
+    if (viewMode !== 'municipality' || filterPriority === 'ALL')
       return baseRequests;
-    }
-
     return baseRequests.filter(
       (request) => String(request.priority) === filterPriority,
     );
@@ -122,7 +106,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const cityDefaultCenter = useMemo(() => {
     const centerLat = cityQuery.data?.centerLat;
     const centerLng = cityQuery.data?.centerLng;
-
     if (
       typeof centerLat === 'number' &&
       typeof centerLng === 'number' &&
@@ -130,7 +113,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     ) {
       return { lat: centerLat, lng: centerLng };
     }
-
     return undefined;
   }, [cityQuery.data]);
   const effectiveDefaultCenter = cityDefaultCenter ?? DEFAULT_CITY_MAP_CENTER;
@@ -189,13 +171,11 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const onCreateRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setCreateRequestError('');
-
     try {
       if (!title.trim() || !resolvedLat.trim() || !resolvedLng.trim()) {
         setCreateRequestError('required');
         return;
       }
-
       const coordinateValidation = validateCoordinates(
         resolvedLat.trim(),
         resolvedLng.trim(),
@@ -208,10 +188,8 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
         );
         return;
       }
-
       setLat(coordinateValidation.normalizedLat);
       setLng(coordinateValidation.normalizedLng);
-
       await createRequestMutation.mutateAsync({
         cityId,
         payload: {
@@ -221,41 +199,29 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           locationLng: coordinateValidation.lng,
         },
       });
-
       setTitle('');
       setDescription('');
       setLat('');
       setLng('');
       setCreateRequestError('');
     } catch (error) {
-      if (isForbiddenError(error)) {
-        router.replace('/forbidden');
-        return;
-      }
+      if (isForbiddenError(error)) router.replace('/forbidden');
       return;
     }
   };
 
   const onSendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!activeRequestId || !message.trim()) {
-      return;
-    }
-
+    if (!activeRequestId || !message.trim()) return;
     try {
       await createMessageMutation.mutateAsync({
         cityId,
         requestId: activeRequestId,
         content: message.trim(),
       });
-
       setMessage('');
     } catch (error) {
-      if (isForbiddenError(error)) {
-        router.replace('/forbidden');
-        return;
-      }
+      if (isForbiddenError(error)) router.replace('/forbidden');
       return;
     }
   };
@@ -265,9 +231,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
       setMunicipalityError(t('cityProblem.errors.departmentRequired'));
       return;
     }
-
     setMunicipalityError('');
-
     try {
       await assignDepartmentMutation.mutateAsync({
         cityId,
@@ -285,17 +249,12 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   };
 
   const onUpdateStatus = async () => {
-    if (!activeRequestId) {
-      return;
-    }
-
+    if (!activeRequestId) return;
     if (nextStatus === 'RESOLVED' || nextStatus === 'REJECTED') {
       setMunicipalityError(t('cityProblem.errors.useReportForFinalStatus'));
       return;
     }
-
     setMunicipalityError('');
-
     try {
       await updateStatusMutation.mutateAsync({
         cityId,
@@ -314,10 +273,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
 
   const onCreateReport = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!activeRequestId) {
-      return;
-    }
-
+    if (!activeRequestId) return;
     if (
       (reportType === 'RESOLUTION' || reportType === 'REJECTION') &&
       !reportText.trim()
@@ -325,9 +281,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
       setMunicipalityError(t('cityProblem.errors.reportTextRequired'));
       return;
     }
-
     setMunicipalityError('');
-
     try {
       await createReportMutation.mutateAsync({
         cityId,
@@ -343,7 +297,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           description: reportText.trim() || undefined,
         },
       });
-
       setReportText('');
     } catch (error) {
       if (isForbiddenError(error)) {
@@ -361,10 +314,10 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     setNextStatus('IN_PROGRESS');
     setMunicipalityError('');
   }, []);
-  return (
-    <Stack spacing={3}>
-      <Typography variant="h2">{t('cityProblem.title')}</Typography>
 
+  return (
+    <div className="space-y-3">
+      <h2 className="text-3xl">{t('cityProblem.title')}</h2>
       <ProblemModeSwitcher
         value={viewMode}
         canManageRequests={canManageRequests}
@@ -413,11 +366,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
         />
       )}
 
-      <Stack
-        direction={{ xs: 'column', lg: 'row' }}
-        spacing={3}
-        alignItems="stretch"
-      >
+      <div className="flex flex-col gap-3 lg:flex-row">
         <RequestListPanel
           key={`${viewMode}-${filterStatus}-${filterDepartmentId}-${filterPriority}`}
           requests={requests}
@@ -426,7 +375,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           activeRequestId={activeRequestId}
           onSelect={onSelectRequest}
         />
-
         <RequestDetailPanel
           cityId={cityId}
           viewMode={viewMode}
@@ -459,7 +407,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           isCreatingReport={createReportMutation.isPending}
           municipalityError={municipalityError}
         />
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 }

@@ -1,17 +1,11 @@
 'use client';
 
 import { FormEvent } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ProblemLocationPicker } from './Map/ProblemLocationPicker';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CitizenCreateRequestFormProps {
   title: string;
@@ -50,63 +44,71 @@ export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
   } = props;
 
   return (
-    <Paper sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        {t('cityProblem.createTitle')}
-      </Typography>
-      <Box component="form" onSubmit={onSubmit}>
-        <Stack spacing={2}>
-          {formError ? <Alert severity="warning">{formError}</Alert> : null}
-          {isError ? (
-            <Alert severity="error">
-              {t('cityProblem.errors.createFailed')}
-            </Alert>
-          ) : null}
-          <TextField
-            label={t('cityProblem.fields.title')}
-            value={title}
-            onChange={(event) => onTitleChange(event.target.value)}
+    <div className="rounded-lg border border-black/10 bg-white p-3">
+      <h3 className="mb-2 text-xl">{t('cityProblem.createTitle')}</h3>
+      <form onSubmit={onSubmit} className="space-y-2">
+        {formError ? (
+          <p className="rounded-md border border-[var(--warning-dark)] bg-[var(--warning)]/10 px-3 py-2 text-sm text-[var(--warning-dark)]">
+            {formError}
+          </p>
+        ) : null}
+        {isError ? (
+          <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+            {t('cityProblem.errors.createFailed')}
+          </p>
+        ) : null}
+        <Input
+          placeholder={t('cityProblem.fields.title')}
+          value={title}
+          onChange={(event) => onTitleChange(event.target.value)}
+          required
+        />
+        <Textarea
+          placeholder={t('cityProblem.fields.description')}
+          value={description}
+          onChange={(event) => onDescriptionChange(event.target.value)}
+          rows={3}
+          className="min-h-0"
+        />
+        <div className="grid gap-2 md:grid-cols-2">
+          <Input
+            placeholder={t('cityProblem.fields.lat')}
+            value={lat}
+            onChange={(event) => onLatChange(event.target.value)}
             required
+            inputMode="decimal"
+            className={
+              hasCoordinateError
+                ? 'border-[var(--danger-light)] focus:border-[var(--danger-light)] focus:ring-[var(--danger-light)]/20'
+                : undefined
+            }
           />
-          <TextField
-            label={t('cityProblem.fields.description')}
-            value={description}
-            onChange={(event) => onDescriptionChange(event.target.value)}
-            multiline
-            minRows={3}
+          <Input
+            placeholder={t('cityProblem.fields.lng')}
+            value={lng}
+            onChange={(event) => onLngChange(event.target.value)}
+            required
+            inputMode="decimal"
+            className={
+              hasCoordinateError
+                ? 'border-[var(--danger-light)] focus:border-[var(--danger-light)] focus:ring-[var(--danger-light)]/20'
+                : undefined
+            }
           />
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <TextField
-              label={t('cityProblem.fields.lat')}
-              value={lat}
-              onChange={(event) => onLatChange(event.target.value)}
-              error={hasCoordinateError}
-              inputProps={{ inputMode: 'decimal' }}
-              required
-            />
-            <TextField
-              label={t('cityProblem.fields.lng')}
-              value={lng}
-              onChange={(event) => onLngChange(event.target.value)}
-              error={hasCoordinateError}
-              inputProps={{ inputMode: 'decimal' }}
-              required
-            />
-          </Stack>
-          <ProblemLocationPicker
-            lat={lat}
-            lng={lng}
-            defaultCenter={defaultCenter}
-            onLatChange={onLatChange}
-            onLngChange={onLngChange}
-          />
-          <Button type="submit" variant="contained" disabled={isSubmitting}>
-            {isSubmitting
-              ? t('cityProblem.actions.creating')
-              : t('cityProblem.actions.create')}
-          </Button>
-        </Stack>
-      </Box>
-    </Paper>
+        </div>
+        <ProblemLocationPicker
+          lat={lat}
+          lng={lng}
+          defaultCenter={defaultCenter}
+          onLatChange={onLatChange}
+          onLngChange={onLngChange}
+        />
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting
+            ? t('cityProblem.actions.creating')
+            : t('cityProblem.actions.create')}
+        </Button>
+      </form>
+    </div>
   );
 }
