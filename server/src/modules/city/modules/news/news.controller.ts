@@ -8,7 +8,9 @@ import {
   Post,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -19,6 +21,7 @@ import { RequirePermissions } from '@/modules/rbac/decorators/permissions.decora
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import type { RequestWithUser } from '@/types/auth.types';
 import { CreateNewsDto, GetNewsQueryDto, UpdateNewsDto } from './dto';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('city/:cityId/news')
 @UseGuards(JWTGuard)
@@ -35,12 +38,14 @@ export class NewsController {
   @Post()
   @UseGuards(PermissionsGuard)
   @RequirePermissions(PERMISSIONS_KEYS.NEWS_CREATE)
+  @UseInterceptors(AnyFilesInterceptor())
   async createNews(
     @Param('cityId') cityId: string,
     @Req() req: RequestWithUser,
     @Body() dto: CreateNewsDto,
+    @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    return this.newsService.createCityNews(cityId, req.user.id, dto);
+    return this.newsService.createCityNews(cityId, req.user.id, dto, files);
   }
 
   @Get()

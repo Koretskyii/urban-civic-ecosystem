@@ -23,6 +23,14 @@ interface UploadCityRequestAttachmentParams {
   buffer: Buffer;
 }
 
+interface UploadCityNewsAttachmentParams {
+  cityId: string;
+  newsId: string;
+  fileName: string;
+  mimeType?: string;
+  buffer: Buffer;
+}
+
 @Injectable()
 export class R2StorageService {
   private readonly s3Client: S3Client;
@@ -84,6 +92,25 @@ export class R2StorageService {
       ? `reports/${params.reportId}`
       : `requests/${params.requestId}`;
     const key = `city-requests/${params.cityId}/${scope}/${Date.now()}-${safeName}`;
+
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: params.buffer,
+        ContentType: params.mimeType || 'application/octet-stream',
+      }),
+    );
+
+    return {
+      key,
+      url: `${this.publicBaseUrl}/${key}`,
+    };
+  }
+
+  async uploadCityNewsAttachment(params: UploadCityNewsAttachmentParams) {
+    const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const key = `city/${params.cityId}/news/${Date.now()}-${safeName}`;
 
     await this.s3Client.send(
       new PutObjectCommand({

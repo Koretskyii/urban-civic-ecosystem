@@ -10,15 +10,22 @@ import { RbacService } from '@/modules/rbac/rbac.service';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 import { buildNewsEventPayload } from '@/modules/notifications/domain/domain-event.factory';
+import { R2StorageService } from '@/modules/r2/r2.service';
 
 @Injectable()
 export class NewsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly rbacService: RbacService,
+    private readonly r2StorageService: R2StorageService,
   ) {}
 
-  async createCityNews(cityId: string, userId: string, dto: CreateNewsDto) {
+  async createCityNews(
+    cityId: string,
+    userId: string,
+    dto: CreateNewsDto,
+    files?: Express.Multer.File[],
+  ) {
     await this.ensureCityMembership(cityId, userId);
 
     return this.prisma.$transaction(async (tx) => {
@@ -29,6 +36,42 @@ export class NewsService {
           title: dto.title.trim(),
           content: dto.content.trim(),
         },
+      });
+
+      if (files?.length) {
+        const uploadedFiles = await Promise.all(
+          files.map(async (file) => {
+            const uploaded =
+              await this.r2StorageService.uploadCityNewsAttachment({
+                cityId,
+                newsId: news.id,
+                fileName: file.originalname,
+                mimeType: file.mimetype,
+                buffer: file.buffer,
+              });
+            return {
+              fileName: file.originalname,
+              mimeType: file.mimetype,
+              url: uploaded.url,
+            };
+          }),
+        );
+
+        await tx.attachment.createMany({
+          data: uploadedFiles.map((attachment) => ({
+            fileName: attachment.fileName,
+            mimeType: attachment.mimeType,
+            url: attachment.url,
+            type: 'NEWS_ATTACHMENT',
+            entityId: news.id,
+            entityType: 'NEWS',
+            newsId: news.id,
+          })),
+        });
+      }
+
+      const newsWithAttachments = await tx.generalNews.findUniqueOrThrow({
+        where: { id: news.id },
         select: {
           id: true,
           publisherId: true,
@@ -37,6 +80,7 @@ export class NewsService {
           createdAt: true,
           updatedAt: true,
           deletedAt: true,
+          attachments: true,
         },
       });
 
@@ -53,7 +97,7 @@ export class NewsService {
           }),
         },
       });
-      return news;
+      return newsWithAttachments;
     });
   }
 
@@ -99,6 +143,7 @@ export class NewsService {
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
+        attachments: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -124,6 +169,7 @@ export class NewsService {
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
+        attachments: true,
       },
     });
 
@@ -181,6 +227,7 @@ export class NewsService {
           createdAt: true,
           updatedAt: true,
           deletedAt: true,
+          attachments: true,
         },
       });
 
