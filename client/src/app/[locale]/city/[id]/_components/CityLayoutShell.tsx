@@ -114,7 +114,7 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
         )}
 
         <div
-          className={`mx-${collapsed ? '1' : '2'} border-t border-black/10`}
+          className={`${collapsed ? 'mx-1' : 'mx-2'} border-t border-black/10`}
         />
 
         <nav className={`flex-1 pt-2 ${collapsed ? 'px-1' : 'px-2'}`}>
