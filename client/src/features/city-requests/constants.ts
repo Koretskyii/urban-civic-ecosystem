@@ -10,5 +10,3 @@ export const CITY_REQUESTS_REALTIME_EVENTS: readonly CityRequestRealtimeEvent[] 
     'status.updated',
     'assignment.updated',
   ] as const;
-
-export const CITY_REQUESTS_DEFAULT_SCOPE = 'all' as const;

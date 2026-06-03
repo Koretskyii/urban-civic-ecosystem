@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cityRequestsApi } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import {
-  CITY_REQUESTS_DEFAULT_SCOPE,
   invalidateCityRequestQueries,
   type AssignDepartmentInput,
   type CreateCityRequestInput,
@@ -18,10 +17,8 @@ export function useCityRequestsList(
   cityId: string,
   query?: GetCityRequestsQuery,
 ) {
-  const scope = query?.scope ?? CITY_REQUESTS_DEFAULT_SCOPE;
-
   return useQuery({
-    queryKey: queryKeys.cityRequests.list(cityId, scope),
+    queryKey: queryKeys.cityRequests.list(cityId, query),
     queryFn: () => cityRequestsApi.getRequests(cityId, query),
     enabled: Boolean(cityId),
   });

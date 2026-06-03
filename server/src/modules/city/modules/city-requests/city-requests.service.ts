@@ -186,7 +186,7 @@ export class CityRequestsService {
       throw new NotFoundException(CITY_REQUESTS_ERRORS.REQUEST_NOT_FOUND);
     }
 
-    await this.ensureCanAccessRequest(cityId, userId, request.userId);
+    await this.ensureCityMembership(cityId, userId);
 
     return this.withPublicRequestAttachmentUrls(request);
   }
@@ -357,7 +357,7 @@ export class CityRequestsService {
       throw new NotFoundException(CITY_REQUESTS_ERRORS.CHAT_NOT_FOUND);
     }
 
-    await this.ensureCanAccessRequest(cityId, userId, request.userId);
+    await this.ensureCityMembership(cityId, userId);
 
     return this.prisma.message.create({
       data: {
@@ -386,7 +386,7 @@ export class CityRequestsService {
       throw new NotFoundException(CITY_REQUESTS_ERRORS.CHAT_NOT_FOUND);
     }
 
-    await this.ensureCanAccessRequest(cityId, userId, request.userId);
+    await this.ensureCityMembership(cityId, userId);
 
     return this.prisma.message.findMany({
       where: { chatId: request.chat.id },
@@ -430,7 +430,7 @@ export class CityRequestsService {
       throw new NotFoundException(CITY_REQUESTS_ERRORS.REQUEST_NOT_FOUND);
     }
 
-    await this.ensureCanAccessRequest(request.cityId, userId, request.userId);
+    await this.ensureCityMembership(request.cityId, userId);
 
     return {
       cityId: request.cityId,
@@ -467,20 +467,6 @@ export class CityRequestsService {
         CITY_REQUESTS_ERRORS.INSUFFICIENT_MANAGE_PERMISSIONS,
       );
     }
-  }
-
-  private async ensureCanAccessRequest(
-    cityId: string,
-    userId: string,
-    requestOwnerId: string,
-  ) {
-    await this.ensureCityMembership(cityId, userId);
-
-    if (requestOwnerId === userId) {
-      return;
-    }
-
-    await this.ensureManagePermission(cityId, userId);
   }
 
   private async uploadRequestAttachments(

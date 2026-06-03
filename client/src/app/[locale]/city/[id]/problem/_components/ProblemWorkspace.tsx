@@ -83,7 +83,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     usePermission(PERMISSION_GROUPS.CITY_REQUEST.MANAGE, { cityId });
 
   const requestsQuery = useCityRequestsList(cityId, {
-    scope: viewMode === 'municipality' ? 'all' : 'mine',
+    scope: 'all',
     status:
       viewMode === 'municipality' && filterStatus !== 'ALL'
         ? filterStatus
