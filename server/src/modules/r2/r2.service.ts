@@ -35,19 +35,28 @@ interface UploadCityNewsAttachmentParams {
 export class R2StorageService {
   private readonly s3Client: S3Client;
   private readonly bucketName: string;
+  private readonly endpoint: string;
   private readonly publicBaseUrl: string;
 
   constructor(private readonly configService: ConfigService) {
-    const endpoint = this.configService.get<string>('r2.endpoint') || '';
+    this.endpoint = this.normalizePublicBaseUrl(
+      this.configService.get<string>('r2.endpoint') || '',
+    );
     const accessKeyId = this.configService.get<string>('r2.accessKeyId') || '';
     const secretAccessKey =
       this.configService.get<string>('r2.secretAccessKey') || '';
 
     this.bucketName = this.configService.get<string>('r2.bucketName') || '';
-    this.publicBaseUrl =
-      this.configService.get<string>('r2.publicBaseUrl') || '';
+    this.publicBaseUrl = this.normalizePublicBaseUrl(
+      this.configService.get<string>('r2.publicBaseUrl') || '',
+    );
 
-    if (!endpoint || !accessKeyId || !secretAccessKey || !this.bucketName) {
+    if (
+      !this.endpoint ||
+      !accessKeyId ||
+      !secretAccessKey ||
+      !this.bucketName
+    ) {
       throw new InternalServerErrorException(
         'R2 configuration is missing. Please check server environment variables.',
       );
@@ -55,7 +64,7 @@ export class R2StorageService {
 
     this.s3Client = new S3Client({
       region: 'auto',
-      endpoint,
+      endpoint: this.endpoint,
       credentials: {
         accessKeyId,
         secretAccessKey,
@@ -110,7 +119,7 @@ export class R2StorageService {
 
   async uploadCityNewsAttachment(params: UploadCityNewsAttachmentParams) {
     const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const key = `city/${params.cityId}/news/${Date.now()}-${safeName}`;
+    const key = `city-news/${params.cityId}/news/${params.newsId}/${Date.now()}-${safeName}`;
 
     await this.s3Client.send(
       new PutObjectCommand({
@@ -125,5 +134,18 @@ export class R2StorageService {
       key,
       url: `${this.publicBaseUrl}/${key}`,
     };
+  }
+
+  toPublicUrl(url: string) {
+    const privatePrefix = `${this.endpoint}/${this.bucketName}/`;
+    if (url.startsWith(privatePrefix)) {
+      return `${this.publicBaseUrl}/${url.slice(privatePrefix.length)}`;
+    }
+
+    return url;
+  }
+
+  private normalizePublicBaseUrl(url: string) {
+    return url.replace(/\/+$/, '');
   }
 }
