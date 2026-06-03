@@ -1,4 +1,4 @@
-import type { AlertSeverity } from '@/types';
+import type { AlertSeverity, GetCityRequestsQuery } from '@/types';
 
 export const queryKeys = {
   auth: {
@@ -23,8 +23,15 @@ export const queryKeys = {
 
   cityRequests: {
     all: (cityId: string) => ['city-requests', cityId] as const,
-    list: (cityId: string, scope: string = 'all') =>
-      ['city-requests', cityId, 'list', scope] as const,
+    list: (cityId: string, query?: GetCityRequestsQuery) =>
+      [
+        'city-requests',
+        cityId,
+        'list',
+        query?.scope ?? 'all',
+        query?.status ?? 'all-statuses',
+        query?.departmentId ?? 'all-departments',
+      ] as const,
     detail: (cityId: string, requestId: string) =>
       ['city-requests', cityId, 'detail', requestId] as const,
     departments: (cityId: string) =>

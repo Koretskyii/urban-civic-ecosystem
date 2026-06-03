@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ForbiddenException } from '@nestjs/common';
 import { CityRequestsService } from './city-requests.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RbacService } from '@/modules/rbac/rbac.service';
@@ -226,8 +225,8 @@ describe('CityRequestsService', () => {
     expect(updateRequestCall.data.resolvedAt).toBeInstanceOf(Date);
   });
 
-  it('getRequestDetail should forbid citizen access to another citizen request', async () => {
-    mockPrismaService.cityRequest.findFirst.mockResolvedValue({
+  it('getRequestDetail should allow city members to view another citizen request', async () => {
+    const requestDetail = {
       id: 'request-1',
       cityId: 'city-1',
       userId: 'owner-1',
@@ -236,16 +235,20 @@ describe('CityRequestsService', () => {
       assignedDepartment: null,
       reports: [],
       chat: { messages: [] },
+    };
+
+    mockPrismaService.cityRequest.findFirst.mockResolvedValue({
+      ...requestDetail,
     });
 
     mockPrismaService.userCity.findUnique.mockResolvedValue({
       userId: 'citizen-2',
       cityId: 'city-1',
     });
-    mockRbacService.hasPermission.mockResolvedValue(false);
 
     await expect(
       service.getRequestDetail('city-1', 'request-1', 'citizen-2'),
-    ).rejects.toThrow(ForbiddenException);
+    ).resolves.toEqual(requestDetail);
+    expect(mockRbacService.hasPermission).not.toHaveBeenCalled();
   });
 });
