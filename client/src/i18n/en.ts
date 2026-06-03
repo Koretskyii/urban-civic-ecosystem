@@ -165,9 +165,76 @@ export const en = {
   },
   cityHome: {
     heroText:
-      'Welcome to the city digital hub. Here you can follow news, join the community, and report city issues.',
+      'Urban Civic Ecosystem brings residents, organizers, and the municipality into one working space: news, important announcements, city issue requests, and service coordination.',
     joinCity: 'Join City',
     joined: 'Joined',
+    notJoined: 'Not joined',
+    privateContentHint:
+      'Join the city to see news, announcements, requests, and the map.',
+    actions: {
+      reportProblem: 'Report a problem',
+      readNews: 'Read news',
+      openNews: 'All news',
+      openAlerts: 'All announcements',
+      openRequests: 'All requests',
+    },
+    rolePanel: {
+      title: 'Your city role',
+      guestTitle: 'City guest',
+      guestDescription:
+        'Until you join, only introductory city space information is available.',
+      allowedTitle: 'Allowed actions',
+      roleDescriptions: {
+        admin:
+          'Full control over the city space, roles, content, and requests.',
+        municipality:
+          'Process requests, coordinate departments, and publish operational notices.',
+        organizer:
+          'Work with content, community activity, and city initiatives.',
+        citizen:
+          'Create requests, follow news and announcements, and participate in the community.',
+      },
+      capabilities: {
+        join: 'Join the city to receive a role and access working sections.',
+        overview: 'View the city dashboard with current updates.',
+        manageCity: 'Manage city space settings.',
+        manageRoles: 'Manage members and their roles.',
+        publishContent: 'Publish and update city content.',
+        processRequests: 'Process resident requests and update their status.',
+        publishAlerts: 'Publish important announcements and warnings.',
+        coordinateDepartments: 'Assign requests to responsible departments.',
+        createRequests: 'Create city issue requests with a point on the map.',
+        followUpdates: 'Follow news, announcements, and request statuses.',
+        community: 'Participate in community posts and communication.',
+        projects: 'Work with city initiatives and projects.',
+      },
+    },
+    latestNews: {
+      title: 'Latest news',
+      description: 'Four newest official city updates.',
+    },
+    activeAlerts: {
+      title: 'Important active announcements',
+      description: 'Five current announcements prioritized by severity.',
+    },
+    latestRequests: {
+      title: 'Latest requests',
+      description: 'Three newest requests from city residents.',
+    },
+    requestsMap: {
+      title: 'Requests map',
+      description:
+        'All requests with coordinates on the map, so issue locations are visible.',
+      empty: 'No requests with coordinates to show on the map.',
+    },
+    requests: {
+      status: {
+        OPEN: 'Open',
+        IN_PROGRESS: 'In progress',
+        RESOLVED: 'Resolved',
+        REJECTED: 'Rejected',
+      },
+    },
     sectionsTitle: 'Sections',
     sectionsSubtitle: 'Choose a section to explore your city space',
     sections: {
@@ -252,11 +319,18 @@ export const en = {
       saving: 'Saving...',
       cancel: 'Cancel',
     },
+    detail: {
+      backToNews: 'Back to news',
+      updatedAt: 'Updated: {date}',
+      attachmentsTitle: 'Attachments',
+      attachmentsDescription: 'Files and images attached to this news item.',
+      noAttachments: 'No attachments were added to this news item.',
+    },
   },
   alerts: {
     loadError: 'Failed to load alerts.',
     empty: 'No alerts to display.',
-    title: 'Alerts feed',
+    title: 'Alerts board',
     createTitle: 'Create alert',
     editTitle: 'Edit alert',
     searchLabel: 'Search',
@@ -310,6 +384,13 @@ export const en = {
       plus30Days: '+30 days',
       noExpiry: 'No expiry',
       clearExpiry: 'Clear',
+    },
+    detail: {
+      backToAlerts: 'Back to alerts',
+      createdAt: 'Published: {date}',
+      updatedLabel: 'Updated',
+      summaryTitle: 'Alert details',
+      expired: 'Expired',
     },
   },
   changePassword: {

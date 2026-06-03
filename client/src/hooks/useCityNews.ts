@@ -25,12 +25,32 @@ export const invalidateNewsQueries = async (
   await Promise.all(tasks);
 };
 
-export function useCityNews(cityId: string, query?: NewsListQuery) {
+export function useCityNews(
+  cityId: string,
+  query?: NewsListQuery,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+
   return useQuery({
     queryKey: queryKeys.news.list(cityId, query),
     queryFn: () => cityNewsApi.getCityNews(cityId, query),
-    enabled: !!cityId,
+    enabled: enabled && !!cityId,
     placeholderData: (previousData) => previousData,
+  });
+}
+
+export function useCityNewsDetail(
+  cityId: string,
+  newsId: string,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+
+  return useQuery({
+    queryKey: queryKeys.news.detail(cityId, newsId),
+    queryFn: () => cityNewsApi.getCityNewsById(cityId, newsId),
+    enabled: enabled && Boolean(cityId && newsId),
   });
 }
 

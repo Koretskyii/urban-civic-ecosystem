@@ -1,4 +1,4 @@
-import CityLayoutShell from './_components/CityLayoutShell';
+import CityLayoutShell from './city-home/CityLayoutShell';
 interface CityLayoutProps {
   children: React.ReactNode;
   params: Promise<{ id: string }>;

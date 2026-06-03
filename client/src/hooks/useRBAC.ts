@@ -19,10 +19,12 @@ export const useRBAC = ({ cityId, enabled = true }: UseRBACOptions) => {
     gcTime: RBAC_CACHE_TTL,
     retry: 1,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    select: (res) => res.permissions as PermissionKey[],
   });
 
-  const permissions = useMemo(() => data ?? [], [data]);
+  const permissions = useMemo(
+    () => (data?.permissions ?? []) as PermissionKey[],
+    [data],
+  );
 
   const hasPermission = useCallback(
     (permission: PermissionKey | PermissionKey[]): boolean => {
@@ -42,12 +44,21 @@ export const useRBAC = ({ cityId, enabled = true }: UseRBACOptions) => {
   return useMemo(
     () => ({
       permissions,
+      role: data?.role ?? null,
       hasPermission,
       hasAllPermissions,
       isLoading,
       error,
       refetch,
     }),
-    [permissions, hasPermission, hasAllPermissions, isLoading, error, refetch],
+    [
+      permissions,
+      data?.role,
+      hasPermission,
+      hasAllPermissions,
+      isLoading,
+      error,
+      refetch,
+    ],
   );
 };

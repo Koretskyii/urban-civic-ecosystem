@@ -1,4 +1,4 @@
-import CityHomeView from './_components/CityHomeView';
+import CityHomeView from './city-home/CityHomeView';
 
 interface CityPageProps {
   params: Promise<{ id: string }>;

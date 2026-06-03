@@ -12,6 +12,7 @@ import {
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { FormEvent, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import type { Alert, AlertType, AlertSeverity } from '@/types';
 import {
   ALERT_DEFAULT_SEVERITY,
@@ -41,6 +42,7 @@ interface AlertsListProps {
 export default function AlertsList(props: AlertsListProps) {
   const t = useTranslations();
   const { cityId } = props;
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [onlyActive, setOnlyActive] = useState(true);
@@ -221,6 +223,10 @@ export default function AlertsList(props: AlertsListProps) {
     } catch {
       setFormError(t('alerts.deleteError'));
     }
+  };
+
+  const openAlertDetail = (alertId: string) => {
+    router.push(`/city/${cityId}/alerts/${alertId}`);
   };
 
   if (isLoading) {
@@ -421,6 +427,15 @@ export default function AlertsList(props: AlertsListProps) {
             return (
               <article
                 key={alert.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => openAlertDetail(alert.id)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openAlertDetail(alert.id);
+                  }
+                }}
                 className={`flex h-full flex-col rounded-xl border border-black/10 border-t-4 border-t-[var(--warning)] bg-[linear-gradient(180deg,rgba(255,186,8,0.08)_0%,#fff_38%)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(204,149,0,0.2)] ${
                   alert.deletedAt ? 'bg-black/5' : ''
                 }`}
@@ -454,7 +469,8 @@ export default function AlertsList(props: AlertsListProps) {
                     {canUpdateAlert ? (
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={(event) => {
+                          event.stopPropagation();
                           startEdit({
                             id: alert.id,
                             alertTypeId: alert.alertTypeId,
@@ -462,8 +478,8 @@ export default function AlertsList(props: AlertsListProps) {
                             expiresAt: alert.expiresAt,
                             title: alert.title,
                             content: alert.content,
-                          })
-                        }
+                          });
+                        }}
                         className="rounded-md border border-[var(--warning-dark)]/40 px-2 py-1 text-xs text-[var(--warning-dark)] hover:bg-[var(--warning)]/10"
                       >
                         {t('alerts.actions.edit')}
@@ -472,7 +488,10 @@ export default function AlertsList(props: AlertsListProps) {
                     {canDeleteAlert ? (
                       <button
                         type="button"
-                        onClick={() => onDeleteAlert(alert.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onDeleteAlert(alert.id);
+                        }}
                         disabled={deleteAlertMutation.isPending}
                         className="rounded-md border border-[var(--danger)] px-2 py-1 text-xs text-[var(--danger)] disabled:opacity-60"
                       >

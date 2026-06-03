@@ -12,6 +12,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { FormEvent, useMemo, useState } from 'react';
 import { Newspaper } from 'lucide-react';
+import { useRouter } from '@/i18n/navigation';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileUpload } from '@/components/ui/file-upload';
 import { FilePreviewList } from '@/components/ui/file-preview-list';
@@ -24,6 +25,7 @@ interface NewsGridProps {
 export default function NewsGrid(props: NewsGridProps) {
   const t = useTranslations();
   const { cityId } = props;
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -131,6 +133,10 @@ export default function NewsGrid(props: NewsGridProps) {
     }
   };
 
+  const openNewsDetail = (newsId: string) => {
+    router.push(`/city/${cityId}/news/${newsId}`);
+  };
+
   if (isLoading) {
     return (
       <div className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
@@ -231,7 +237,7 @@ export default function NewsGrid(props: NewsGridProps) {
           {t('news.empty')}
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {visibleNews.map((n: News) => {
             const date = new Date(n.createdAt);
             const formattedDate = date.toLocaleDateString('uk-UA', {
@@ -247,6 +253,15 @@ export default function NewsGrid(props: NewsGridProps) {
             return (
               <article
                 key={n.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => openNewsDetail(n.id)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openNewsDetail(n.id);
+                  }
+                }}
                 className="flex h-full flex-col rounded-xl border border-black/10 border-t-4 border-t-[var(--secondary)] bg-[linear-gradient(180deg,rgba(63,136,197,0.05)_0%,#fff_36%)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(63,136,197,0.18)]"
               >
                 <p className="mb-1 text-xs text-[var(--muted-foreground)]">
@@ -274,13 +289,14 @@ export default function NewsGrid(props: NewsGridProps) {
                     {canUpdateNews ? (
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={(event) => {
+                          event.stopPropagation();
                           startEdit({
                             id: n.id,
                             title: n.title,
                             content: n.content,
-                          })
-                        }
+                          });
+                        }}
                         className="rounded-md border border-[var(--secondary)]/40 px-2 py-1 text-xs text-[var(--secondary-dark)] hover:bg-[var(--secondary)]/10"
                       >
                         {t('news.actions.edit')}
@@ -289,7 +305,10 @@ export default function NewsGrid(props: NewsGridProps) {
                     {canDeleteNews ? (
                       <button
                         type="button"
-                        onClick={() => onDeleteNews(n.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onDeleteNews(n.id);
+                        }}
                         disabled={deleteNewsMutation.isPending}
                         className="rounded-md border border-[var(--danger)] px-2 py-1 text-xs text-[var(--danger)] disabled:opacity-60"
                       >

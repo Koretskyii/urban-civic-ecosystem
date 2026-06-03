@@ -1,7 +1,14 @@
-import type { PermissionKey } from '@/types/rbac.types';
+import type { PermissionKey, RoleKey } from '@/types/rbac.types';
 
 // ─── Grouped Permissions ───
 export const PERMISSION_GROUPS = {
+  CITY: {
+    CREATE: 'city:create' as PermissionKey,
+    UPDATE: 'city:update' as PermissionKey,
+    DELETE: 'city:delete' as PermissionKey,
+    MANAGE: 'city:manage' as PermissionKey,
+  },
+
   CITY_REQUEST: {
     CREATE: 'city_request:create' as PermissionKey,
     UPDATE: 'city_request:update' as PermissionKey,
@@ -143,3 +150,52 @@ export const RBAC_PERMISSIONS = {
   canManageRole: [PERMISSION_GROUPS.ROLE.MANAGE] as const,
   canManageCommunity: [PERMISSION_GROUPS.COMMUNITY.MANAGE] as const,
 } as const;
+
+export const ROLE_ACCENT_CLASSES: Record<RoleKey, string> = {
+  admin: 'border-[var(--primary)]/20 bg-[rgba(12,38,61,0.06)]',
+  municipality: 'border-[var(--secondary)]/25 bg-[rgba(63,136,197,0.08)]',
+  organizer: 'border-[var(--success)]/25 bg-[rgba(49,107,80,0.08)]',
+  citizen: 'border-[var(--warning)]/40 bg-[rgba(255,186,8,0.10)]',
+};
+
+export const ROLE_CAPABILITY_KEYS: Record<RoleKey, string[]> = {
+  admin: ['manageCity', 'manageRoles', 'publishContent', 'processRequests'],
+  municipality: ['processRequests', 'publishAlerts', 'coordinateDepartments'],
+  organizer: ['publishContent', 'community', 'projects'],
+  citizen: ['createRequests', 'followUpdates', 'community'],
+};
+
+export const inferRoleFromPermissions = (
+  permissions: PermissionKey[],
+): RoleKey | null => {
+  const permissionSet = new Set<PermissionKey>(permissions);
+
+  if (
+    permissionSet.has(PERMISSION_GROUPS.ROLE.MANAGE) ||
+    permissionSet.has(PERMISSION_GROUPS.CITY.MANAGE) ||
+    permissionSet.has(PERMISSION_GROUPS.USER.MANAGE_PROFILE)
+  ) {
+    return 'admin';
+  }
+
+  if (
+    permissionSet.has(PERMISSION_GROUPS.CITY_REQUEST.MANAGE) ||
+    permissionSet.has(PERMISSION_GROUPS.ALERT.MANAGE) ||
+    permissionSet.has(PERMISSION_GROUPS.NEWS.MANAGE)
+  ) {
+    return 'municipality';
+  }
+
+  if (
+    permissionSet.has(PERMISSION_GROUPS.PROJECT.MANAGE) ||
+    permissionSet.has(PERMISSION_GROUPS.PROJECT.CREATE)
+  ) {
+    return 'organizer';
+  }
+
+  if (permissions.length > 0) {
+    return 'citizen';
+  }
+
+  return null;
+};

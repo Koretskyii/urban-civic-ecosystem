@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 import {
   usePermission,
@@ -52,7 +53,10 @@ const isUsableCityCenter = (lat: unknown, lng: unknown): boolean => {
 export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const t = useTranslations();
   const router = useRouter();
-  const [selectedRequestId, setSelectedRequestId] = useState<string>('');
+  const searchParams = useSearchParams();
+  const initialRequestId = searchParams.get('requestId') ?? '';
+  const [selectedRequestId, setSelectedRequestId] =
+    useState<string>(initialRequestId);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [lat, setLat] = useState('');
