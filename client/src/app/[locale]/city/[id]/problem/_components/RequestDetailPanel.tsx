@@ -3,7 +3,6 @@
 import { FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import type {
-  Attachment,
   CityRequestDetail,
   CityRequestMessage,
   CityRequestStatus,
@@ -22,6 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { FilePreviewList } from '@/components/ui/file-preview-list';
+import { FileUpload } from '@/components/ui/file-upload';
 
 interface RequestDetailPanelProps {
   cityId: string;
@@ -49,36 +50,14 @@ interface RequestDetailPanelProps {
   onReportTypeChange: (value: ReportType) => void;
   reportText: string;
   onReportTextChange: (value: string) => void;
+  reportFiles: File[];
+  onReportFilesChange: (files: File[]) => void;
   onCreateReport: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   isCreatingReport: boolean;
   municipalityError: string;
 }
 
-function AttachmentLinks({
-  attachments,
-  compact,
-}: {
-  attachments: Attachment[];
-  compact: boolean;
-}) {
-  return (
-    <div className="flex flex-wrap gap-1">
-      {attachments.map((attachment) => (
-        <a
-          key={attachment.id}
-          href={attachment.url}
-          target="_blank"
-          rel="noreferrer"
-          className={`rounded-md border border-black/15 ${
-            compact ? 'px-1 py-0.5 text-xs' : 'px-2 py-1 text-sm'
-          }`}
-        >
-          {attachment.fileName || attachment.url}
-        </a>
-      ))}
-    </div>
-  );
-}
+// Remove AttachmentLinks since we use FilePreviewList
 
 export function RequestDetailPanel(props: RequestDetailPanelProps) {
   const t = useTranslations();
@@ -107,6 +86,8 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
     onReportTypeChange,
     reportText,
     onReportTextChange,
+    reportFiles,
+    onReportFilesChange,
     onCreateReport,
     isCreatingReport,
     municipalityError,
@@ -179,11 +160,8 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                         t('cityProblem.timelineNoDescription')}
                     </p>
                     {report.attachments.length > 0 ? (
-                      <div className="mt-1">
-                        <AttachmentLinks
-                          attachments={report.attachments}
-                          compact
-                        />
+                      <div className="mt-2">
+                        <FilePreviewList attachments={report.attachments} />
                       </div>
                     ) : null}
                     <p className="text-xs text-[var(--muted-foreground)]">
@@ -204,10 +182,9 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                 {t('cityProblem.attachmentsEmpty')}
               </p>
             ) : (
-              <AttachmentLinks
-                attachments={detail.attachments}
-                compact={false}
-              />
+              <div className="mt-2">
+                <FilePreviewList attachments={detail.attachments} />
+              </div>
             )}
           </div>
 
@@ -320,6 +297,12 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                       {t('cityProblem.municipality.reportTextRequiredHint')}
                     </p>
                   ) : null}
+                  <FileUpload
+                    value={reportFiles}
+                    onChange={onReportFilesChange}
+                    maxFiles={5}
+                    disabled={isCreatingReport}
+                  />
                   <button
                     type="submit"
                     disabled={createReportDisabled}

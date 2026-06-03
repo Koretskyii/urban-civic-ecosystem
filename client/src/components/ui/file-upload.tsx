@@ -30,7 +30,7 @@ export function FileUpload({
       const combined = [...value, ...newFiles].slice(0, maxFiles);
       onChange(combined);
     }
-    // Reset input so the same file can be selected again if removed
+
     if (inputRef.current) {
       inputRef.current.value = '';
     }

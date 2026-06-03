@@ -6,8 +6,9 @@ import { ProblemLocationPicker } from './Map/ProblemLocationPicker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUpload } from '@/components/ui/file-upload';
 
-interface CitizenCreateRequestFormProps {
+interface CitizenRequestFormProps {
   title: string;
   description: string;
   lat: string;
@@ -21,10 +22,12 @@ interface CitizenCreateRequestFormProps {
   onDescriptionChange: (value: string) => void;
   onLatChange: (value: string) => void;
   onLngChange: (value: string) => void;
+  files: File[];
+  onFilesChange: (files: File[]) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }
 
-export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
+export function CitizenRequestForm(props: CitizenRequestFormProps) {
   const t = useTranslations();
   const {
     title,
@@ -40,6 +43,8 @@ export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
     onDescriptionChange,
     onLatChange,
     onLngChange,
+    files,
+    onFilesChange,
     onSubmit,
   } = props;
 
@@ -102,6 +107,12 @@ export function CitizenCreateRequestForm(props: CitizenCreateRequestFormProps) {
           defaultCenter={defaultCenter}
           onLatChange={onLatChange}
           onLngChange={onLngChange}
+        />
+        <FileUpload
+          value={files}
+          onChange={onFilesChange}
+          maxFiles={5}
+          disabled={isSubmitting}
         />
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting

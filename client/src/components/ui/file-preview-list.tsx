@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { File as FileIcon, Download } from 'lucide-react';
 import type { Attachment } from '@/types';
 import { Button } from './button';
@@ -19,7 +20,6 @@ export function FilePreviewList({ attachments }: FilePreviewListProps) {
 
   return (
     <div className="space-y-4 w-full">
-      {/* Image Gallery */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {images.map((image) => (
@@ -30,10 +30,13 @@ export function FilePreviewList({ attachments }: FilePreviewListProps) {
               rel="noopener noreferrer"
               className="group block relative aspect-square rounded-md overflow-hidden border bg-muted"
             >
-              <img
+              <Image
                 src={image.url}
                 alt={image.fileName}
-                className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                fill
+                sizes="(min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+                unoptimized
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Download className="text-white h-6 w-6" />
@@ -43,7 +46,6 @@ export function FilePreviewList({ attachments }: FilePreviewListProps) {
         </div>
       )}
 
-      {/* Document List */}
       {documents.length > 0 && (
         <ul className="space-y-2">
           {documents.map((doc) => (
