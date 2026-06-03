@@ -24,7 +24,7 @@ import {
   validateCoordinates,
 } from '@/features/city-requests';
 import type { CityRequestStatus, ReportType } from '@/types';
-import { CitizenCreateRequestForm } from './CitizenCreateRequestForm';
+import { CitizenRequestForm } from './CitizenRequestForm';
 import { MunicipalityQueueHeader } from './MunicipalityQueueHeader';
 import { ProblemModeSwitcher } from './ProblemModeSwitcher';
 import { RequestDetailPanel } from './RequestDetailPanel';
@@ -57,6 +57,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const [description, setDescription] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
+  const [requestFiles, setRequestFiles] = useState<File[]>([]);
   const [message, setMessage] = useState('');
   const [createRequestError, setCreateRequestError] =
     useState<CreateRequestErrorKey>('');
@@ -75,6 +76,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     useState<CityRequestStatus>('IN_PROGRESS');
   const [reportType, setReportType] = useState<ReportType>('PROGRESS');
   const [reportText, setReportText] = useState('');
+  const [reportFiles, setReportFiles] = useState<File[]>([]);
   const [municipalityError, setMunicipalityError] = useState('');
 
   const { can: canManageRequests, isLoading: isPermissionLoading } =
@@ -198,11 +200,13 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           locationLat: coordinateValidation.lat,
           locationLng: coordinateValidation.lng,
         },
+        files: requestFiles,
       });
       setTitle('');
       setDescription('');
       setLat('');
       setLng('');
+      setRequestFiles([]);
       setCreateRequestError('');
     } catch (error) {
       if (isForbiddenError(error)) router.replace('/forbidden');
@@ -296,8 +300,10 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
                 : undefined,
           description: reportText.trim() || undefined,
         },
+        files: reportFiles,
       });
       setReportText('');
+      setReportFiles([]);
     } catch (error) {
       if (isForbiddenError(error)) {
         router.replace('/forbidden');
@@ -322,11 +328,11 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
         value={viewMode}
         canManageRequests={canManageRequests}
         isPermissionLoading={isPermissionLoading}
-        onChange={(value) => setViewMode(value)}
+        onChange={(value: 'citizen' | 'municipality') => setViewMode(value)}
       />
 
       {viewMode === 'citizen' ? (
-        <CitizenCreateRequestForm
+        <CitizenRequestForm
           title={title}
           description={description}
           lat={resolvedLat}
@@ -336,22 +342,24 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           hasCoordinateError={hasCoordinateError}
           isSubmitting={createRequestMutation.isPending}
           isError={createRequestMutation.isError}
-          onTitleChange={(value) => {
+          onTitleChange={(value: string) => {
             setTitle(value);
             setCreateRequestError('');
           }}
-          onDescriptionChange={(value) => {
+          onDescriptionChange={(value: string) => {
             setDescription(value);
             setCreateRequestError('');
           }}
-          onLatChange={(value) => {
+          onLatChange={(value: string) => {
             setLat(value);
             setCreateRequestError('');
           }}
-          onLngChange={(value) => {
+          onLngChange={(value: string) => {
             setLng(value);
             setCreateRequestError('');
           }}
+          files={requestFiles}
+          onFilesChange={setRequestFiles}
           onSubmit={onCreateRequest}
         />
       ) : (
@@ -403,6 +411,8 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           onReportTypeChange={setReportType}
           reportText={reportText}
           onReportTextChange={setReportText}
+          reportFiles={reportFiles}
+          onReportFilesChange={setReportFiles}
           onCreateReport={onCreateReport}
           isCreatingReport={createReportMutation.isPending}
           municipalityError={municipalityError}

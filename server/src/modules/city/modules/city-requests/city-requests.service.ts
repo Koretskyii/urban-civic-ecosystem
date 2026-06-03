@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import crypto from 'node:crypto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RbacService } from '@/modules/rbac/rbac.service';
 import { R2StorageService } from '@/modules/r2/r2.service';
@@ -39,9 +40,15 @@ export class CityRequestsService {
   ) {
     await this.ensureCityMembership(cityId, userId);
 
-    return this.prisma.$transaction(async (tx) => {
+    const requestId = crypto.randomUUID();
+    const attachments = files?.length
+      ? await this.uploadRequestAttachments(cityId, requestId, files)
+      : [];
+
+    const request = await this.prisma.$transaction(async (tx) => {
       const cityRequest = await tx.cityRequest.create({
         data: {
+          id: requestId,
           cityId,
           userId,
           title: dto.title,
@@ -63,28 +70,22 @@ export class CityRequestsService {
         },
       });
 
-      if (files?.length) {
-        const attachments = await this.uploadRequestAttachments(
-          cityId,
-          cityRequest.id,
-          files,
-        );
-
+      if (attachments.length) {
         await tx.attachment.createMany({
           data: attachments.map((attachment) => ({
             fileName: attachment.fileName,
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REQUEST,
-            entityId: cityRequest.id,
+            entityId: requestId,
             entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.CITY_REQUEST,
-            cityRequestId: cityRequest.id,
+            cityRequestId: requestId,
           })),
         });
       }
 
       return tx.cityRequest.findUnique({
-        where: { id: cityRequest.id },
+        where: { id: requestId },
         include: {
           attachments: true,
           chat: true,
@@ -92,6 +93,8 @@ export class CityRequestsService {
         },
       });
     });
+
+    return this.withPublicAttachmentUrls(request);
   }
 
   async listRequests(
@@ -185,7 +188,7 @@ export class CityRequestsService {
 
     await this.ensureCanAccessRequest(cityId, userId, request.userId);
 
-    return request;
+    return this.withPublicRequestAttachmentUrls(request);
   }
 
   async assignDepartment(
@@ -277,9 +280,15 @@ export class CityRequestsService {
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const report = await tx.report.create({
+    const reportId = crypto.randomUUID();
+    const uploaded = files?.length
+      ? await this.uploadReportAttachments(cityId, requestId, reportId, files)
+      : [];
+
+    const report = await this.prisma.$transaction(async (tx) => {
+      await tx.report.create({
         data: {
+          id: reportId,
           cityRequestId: requestId,
           authorId: userId,
           type: dto.type,
@@ -288,23 +297,16 @@ export class CityRequestsService {
         },
       });
 
-      if (files?.length) {
-        const uploaded = await this.uploadReportAttachments(
-          cityId,
-          requestId,
-          report.id,
-          files,
-        );
-
+      if (uploaded.length) {
         await tx.attachment.createMany({
           data: uploaded.map((attachment) => ({
             fileName: attachment.fileName,
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REPORT,
-            entityId: report.id,
+            entityId: reportId,
             entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.REPORT,
-            reportId: report.id,
+            reportId,
           })),
         });
       }
@@ -324,7 +326,7 @@ export class CityRequestsService {
       }
 
       return tx.report.findUnique({
-        where: { id: report.id },
+        where: { id: reportId },
         include: {
           attachments: true,
           author: {
@@ -336,6 +338,8 @@ export class CityRequestsService {
         },
       });
     });
+
+    return this.withPublicAttachmentUrls(report);
   }
 
   async createMessage(
@@ -541,5 +545,25 @@ export class CityRequestsService {
     }
 
     return request;
+  }
+
+  private withPublicRequestAttachmentUrls<
+    T extends {
+      attachments?: Array<{ url: string }> | null;
+      reports?: Array<{ attachments?: Array<{ url: string }> | null }> | null;
+    },
+  >(request: T) {
+    this.withPublicAttachmentUrls(request);
+    request.reports?.forEach((report) => this.withPublicAttachmentUrls(report));
+    return request;
+  }
+
+  private withPublicAttachmentUrls<
+    T extends { attachments?: Array<{ url: string }> | null } | null,
+  >(entity: T) {
+    entity?.attachments?.forEach((attachment) => {
+      attachment.url = this.r2StorageService.toPublicUrl(attachment.url);
+    });
+    return entity;
   }
 }

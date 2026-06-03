@@ -61,7 +61,7 @@ enum AlertSeverity {
 //////////////////// CITY (TENANT) ////////////////////
 
 model City {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   name      String
   region    String
   centerLat Float?
@@ -114,7 +114,7 @@ model User {
   reports              Report[]
   messages             Message[]
   alertSubscriptions   AlertSubscription[]
-  publishedAlerts      Alert[]                 @relation("alertPublisher")
+  publishedAlerts      Alert[]               @relation("alertPublisher")
   posts                Post[]
   comments             Comment[]
   reactions            Reaction[]
@@ -268,6 +268,9 @@ model Attachment {
   cityRequestId String?
   cityRequest   CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
 
+  newsId String?
+  news   GeneralNews? @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
   uploadedAt DateTime @default(now())
 }
 
@@ -303,7 +306,7 @@ model Message {
 //////////////////// ALERTS ////////////////////
 
 model Alert {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   cityId      String
   publisherId String?
   alertTypeId String
@@ -311,11 +314,11 @@ model Alert {
   expiresAt   DateTime?
   title       String
   content     String
-  timestamp   DateTime @default(now())
+  timestamp   DateTime      @default(now())
 
-  city       City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  publisher  User?     @relation("alertPublisher", fields: [publisherId], references: [id], onDelete: Cascade)
-  alertType  AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
+  city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  publisher User?     @relation("alertPublisher", fields: [publisherId], references: [id], onDelete: Cascade)
+  alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -533,11 +536,12 @@ model GeneralNews {
   content     String
   timestamp   DateTime @default(now())
 
-  city      City @relation("news", fields: [cityId], references: [id], onDelete: Cascade)
-  publisher User @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+  city        City         @relation("news", fields: [cityId], references: [id], onDelete: Cascade)
+  publisher   User         @relation(fields: [publisherId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@index([cityId, deletedAt, createdAt(sort: Desc)])
@@ -546,24 +550,24 @@ model GeneralNews {
 //////////////////// OUTBOX ////////////////////
 
 model DomainEventOutbox {
-  id            String      @id @default(cuid())
+  id            String       @id @default(cuid())
   aggregateType String
   aggregateId   String
   eventType     String
   payload       Json
   status        OutboxStatus @default(PENDING)
-  attempts      Int         @default(0)
-  availableAt   DateTime    @default(now())
+  attempts      Int          @default(0)
+  availableAt   DateTime     @default(now())
   lastError     String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@index([status, availableAt, createdAt])
   @@index([aggregateType, aggregateId])
 }
 
 model InAppNotification {
-  id        String                 @id @default(cuid())
+  id        String                @id @default(cuid())
   userId    String
   cityId    String
   type      InAppNotificationType
@@ -571,9 +575,9 @@ model InAppNotification {
   body      String?
   link      String?
   payload   Json?
-  isRead    Boolean                @default(false)
+  isRead    Boolean               @default(false)
   readAt    DateTime?
-  createdAt DateTime               @default(now())
+  createdAt DateTime              @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   city City @relation(fields: [cityId], references: [id], onDelete: Cascade)

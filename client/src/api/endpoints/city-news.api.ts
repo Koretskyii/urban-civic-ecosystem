@@ -33,8 +33,8 @@ export const cityNewsApi = {
   getCityNewsById: (cityId: string, newsId: string) => {
     return apiClient.get<News>(API_ROUTES.news.detail(cityId, newsId));
   },
-  createCityNews: (cityId: string, payload: CreateNewsPayload) => {
-    return apiClient.post<News>(API_ROUTES.news.all(cityId), payload);
+  createCityNews: (cityId: string, formData: FormData) => {
+    return apiClient.postFormData<News>(API_ROUTES.news.all(cityId), formData);
   },
   updateCityNews: (
     cityId: string,
@@ -50,5 +50,12 @@ export const cityNewsApi = {
     return apiClient.delete<{ success: boolean; deleted: boolean }>(
       API_ROUTES.news.detail(cityId, newsId),
     );
+  },
+  buildCreateNewsFormData: (payload: CreateNewsPayload, files: File[] = []) => {
+    const formData = new FormData();
+    formData.set('title', payload.title);
+    formData.set('content', payload.content);
+    files.forEach((file) => formData.append('files', file));
+    return formData;
   },
 };

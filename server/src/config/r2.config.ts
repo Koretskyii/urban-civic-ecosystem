@@ -16,7 +16,7 @@ export const r2Config = registerAs('r2', () => {
     bucketName,
     endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
     publicBaseUrl:
-      process.env.CLOUDFLARE_R2_PUBLIC_BASE_URL ||
+      process.env.CLOUDFARE_R2_PUBLIC_URL ||
       (accountId && bucketName
         ? `https://${accountId}.r2.cloudflarestorage.com/${bucketName}`
         : ''),

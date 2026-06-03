@@ -3,6 +3,7 @@ import { NewsService } from './news.service';
 
 import { PrismaService } from '@/prisma/prisma.service';
 import { RbacService } from '@/modules/rbac/rbac.service';
+import { R2StorageService } from '@/modules/r2/r2.service';
 
 describe('NewsService', () => {
   let service: NewsService;
@@ -13,6 +14,7 @@ describe('NewsService', () => {
         NewsService,
         { provide: PrismaService, useValue: {} },
         { provide: RbacService, useValue: {} },
+        { provide: R2StorageService, useValue: {} },
       ],
     }).compile();
 

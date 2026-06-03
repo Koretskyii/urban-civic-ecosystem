@@ -41,10 +41,15 @@ export function useCreateNews() {
     mutationFn: ({
       cityId,
       payload,
+      files,
     }: {
       cityId: string;
       payload: CreateNewsPayload;
-    }) => cityNewsApi.createCityNews(cityId, payload),
+      files?: File[];
+    }) => {
+      const formData = cityNewsApi.buildCreateNewsFormData(payload, files);
+      return cityNewsApi.createCityNews(cityId, formData);
+    },
     onSuccess: async (_data, variables) => {
       await invalidateNewsQueries(queryClient, variables.cityId);
     },
