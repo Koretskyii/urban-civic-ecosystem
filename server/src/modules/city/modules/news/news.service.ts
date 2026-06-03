@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import crypto from 'node:crypto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateNewsDto, GetNewsQueryDto, UpdateNewsDto } from './dto';
 import { RbacService } from '@/modules/rbac/rbac.service';
@@ -28,9 +29,15 @@ export class NewsService {
   ) {
     await this.ensureCityMembership(cityId, userId);
 
-    return this.prisma.$transaction(async (tx) => {
+    const newsId = crypto.randomUUID();
+    const uploadedFiles = files?.length
+      ? await this.uploadCityNewsAttachments(cityId, newsId, files)
+      : [];
+
+    const newsWithAttachments = await this.prisma.$transaction(async (tx) => {
       const news = await tx.generalNews.create({
         data: {
+          id: newsId,
           cityId,
           publisherId: userId,
           title: dto.title.trim(),
@@ -38,40 +45,22 @@ export class NewsService {
         },
       });
 
-      if (files?.length) {
-        const uploadedFiles = await Promise.all(
-          files.map(async (file) => {
-            const uploaded =
-              await this.r2StorageService.uploadCityNewsAttachment({
-                cityId,
-                newsId: news.id,
-                fileName: file.originalname,
-                mimeType: file.mimetype,
-                buffer: file.buffer,
-              });
-            return {
-              fileName: file.originalname,
-              mimeType: file.mimetype,
-              url: uploaded.url,
-            };
-          }),
-        );
-
+      if (uploadedFiles.length) {
         await tx.attachment.createMany({
           data: uploadedFiles.map((attachment) => ({
             fileName: attachment.fileName,
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: 'NEWS_ATTACHMENT',
-            entityId: news.id,
+            entityId: newsId,
             entityType: 'NEWS',
-            newsId: news.id,
+            newsId,
           })),
         });
       }
 
       const newsWithAttachments = await tx.generalNews.findUniqueOrThrow({
-        where: { id: news.id },
+        where: { id: newsId },
         select: {
           id: true,
           publisherId: true,
@@ -87,11 +76,11 @@ export class NewsService {
       await tx.domainEventOutbox.create({
         data: {
           aggregateType: 'news',
-          aggregateId: news.id,
+          aggregateId: newsId,
           eventType: DOMAIN_EVENT_TYPES.NEWS_CREATED,
           payload: buildNewsEventPayload({
             cityId,
-            newsId: news.id,
+            newsId,
             publisherId: userId,
             title: news.title,
           }),
@@ -99,6 +88,8 @@ export class NewsService {
       });
       return newsWithAttachments;
     });
+
+    return this.withPublicAttachmentUrls(newsWithAttachments);
   }
 
   async getCityNews(cityId: string, userId: string, query: GetNewsQueryDto) {
@@ -112,7 +103,7 @@ export class NewsService {
 
     const trimmedSearch = query.search?.trim();
 
-    return this.prisma.generalNews.findMany({
+    const news = await this.prisma.generalNews.findMany({
       where: {
         cityId,
         ...(includeDeleted ? {} : { deletedAt: null }),
@@ -149,6 +140,8 @@ export class NewsService {
         createdAt: 'desc',
       },
     });
+
+    return news.map((item) => this.withPublicAttachmentUrls(item));
   }
 
   async getCityNewsById(cityId: string, newsId: string, userId: string) {
@@ -177,7 +170,7 @@ export class NewsService {
       throw new NotFoundException('News not found');
     }
 
-    return news;
+    return this.withPublicAttachmentUrls(news);
   }
 
   async updateCityNews(
@@ -333,5 +326,38 @@ export class NewsService {
       cityId,
       PERMISSIONS_KEYS.NEWS_MANAGE,
     );
+  }
+
+  private async uploadCityNewsAttachments(
+    cityId: string,
+    newsId: string,
+    files: Express.Multer.File[],
+  ) {
+    return Promise.all(
+      files.map(async (file) => {
+        const uploaded = await this.r2StorageService.uploadCityNewsAttachment({
+          cityId,
+          newsId,
+          fileName: file.originalname,
+          mimeType: file.mimetype,
+          buffer: file.buffer,
+        });
+
+        return {
+          fileName: file.originalname,
+          mimeType: file.mimetype,
+          url: uploaded.url,
+        };
+      }),
+    );
+  }
+
+  private withPublicAttachmentUrls<
+    T extends { attachments?: Array<{ url: string }> | null },
+  >(news: T) {
+    news.attachments?.forEach((attachment) => {
+      attachment.url = this.r2StorageService.toPublicUrl(attachment.url);
+    });
+    return news;
   }
 }

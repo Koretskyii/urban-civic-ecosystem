@@ -65,6 +65,14 @@ export interface News {
   updatedAt: string;
   deletedAt?: string | null;
   publishedAt?: string | null;
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    mimeType?: string | null;
+    url: string;
+    type?: string | null;
+    uploadedAt: string;
+  }>;
 }
 
 export interface NewsListQuery {

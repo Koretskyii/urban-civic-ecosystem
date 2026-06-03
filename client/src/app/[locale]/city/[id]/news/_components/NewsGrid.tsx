@@ -13,7 +13,9 @@ import { useTranslations } from 'next-intl';
 import { FormEvent, useMemo, useState } from 'react';
 import { Newspaper } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { News } from '@/types';
+import { FileUpload } from '@/components/ui/file-upload';
+import { FilePreviewList } from '@/components/ui/file-preview-list';
+import type { Attachment, News } from '@/types';
 
 interface NewsGridProps {
   cityId: string;
@@ -26,6 +28,7 @@ export default function NewsGrid(props: NewsGridProps) {
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
+  const [newFiles, setNewFiles] = useState<File[]>([]);
   const [editingNewsId, setEditingNewsId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [editingContent, setEditingContent] = useState('');
@@ -80,9 +83,11 @@ export default function NewsGrid(props: NewsGridProps) {
       await createNewsMutation.mutateAsync({
         cityId,
         payload: { title, content },
+        files: newFiles,
       });
       setNewTitle('');
       setNewContent('');
+      setNewFiles([]);
     } catch {
       setFormError(t('news.createError'));
     }
@@ -179,6 +184,12 @@ export default function NewsGrid(props: NewsGridProps) {
                 rows={4}
                 className="rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
               />
+              <FileUpload
+                value={newFiles}
+                onChange={setNewFiles}
+                maxFiles={5}
+                disabled={createNewsMutation.isPending}
+              />
               <div className="flex justify-end">
                 <button
                   type="submit"
@@ -245,6 +256,13 @@ export default function NewsGrid(props: NewsGridProps) {
                 <p className="mb-2 flex-1 text-sm text-[var(--muted-foreground)]">
                   {n.content}
                 </p>
+                {n.attachments && n.attachments.length > 0 ? (
+                  <div className="mb-2">
+                    <FilePreviewList
+                      attachments={n.attachments as Attachment[]}
+                    />
+                  </div>
+                ) : null}
                 <div className="my-1 h-px bg-black/10" />
                 <p className="text-xs font-medium text-[var(--primary-light)]">
                   {n.deletedAt
