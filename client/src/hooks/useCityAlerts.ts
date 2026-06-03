@@ -29,11 +29,17 @@ const invalidateAlertQueries = async (
   await Promise.all(tasks);
 };
 
-export function useCityAlerts(cityId: string, query?: AlertListQuery) {
+export function useCityAlerts(
+  cityId: string,
+  query?: AlertListQuery,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+
   return useQuery({
     queryKey: queryKeys.alerts.list(cityId, query),
     queryFn: () => cityAlertsApi.getCityAlerts(cityId, query),
-    enabled: !!cityId,
+    enabled: enabled && !!cityId,
     placeholderData: (previousData) => previousData,
   });
 }
@@ -43,6 +49,20 @@ export function useCityAlertTypes(cityId: string) {
     queryKey: queryKeys.alerts.types(cityId),
     queryFn: () => cityAlertsApi.getCityAlertTypes(cityId),
     enabled: !!cityId,
+  });
+}
+
+export function useCityAlertDetail(
+  cityId: string,
+  alertId: string,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+
+  return useQuery({
+    queryKey: queryKeys.alerts.detail(cityId, alertId),
+    queryFn: () => cityAlertsApi.getCityAlertById(cityId, alertId),
+    enabled: enabled && Boolean(cityId && alertId),
   });
 }
 

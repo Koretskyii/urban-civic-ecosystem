@@ -16,11 +16,14 @@ import type { GetCityRequestsQuery } from '@/types';
 export function useCityRequestsList(
   cityId: string,
   query?: GetCityRequestsQuery,
+  options?: { enabled?: boolean },
 ) {
+  const enabled = options?.enabled ?? true;
+
   return useQuery({
     queryKey: queryKeys.cityRequests.list(cityId, query),
     queryFn: () => cityRequestsApi.getRequests(cityId, query),
-    enabled: Boolean(cityId),
+    enabled: Boolean(cityId && enabled),
   });
 }
 

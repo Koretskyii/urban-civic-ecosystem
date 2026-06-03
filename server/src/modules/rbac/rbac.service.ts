@@ -4,6 +4,13 @@ import { ROLES } from './constants/roles.const';
 
 export type PermissionsByCity = Record<string, string[]>;
 
+const ROLE_PRIORITY = [
+  ROLES.ADMIN,
+  ROLES.MUNICIPALITY,
+  ROLES.ORGANIZER,
+  ROLES.CITIZEN,
+] as const;
+
 @Injectable()
 export class RbacService {
   constructor(private readonly prisma: PrismaService) {}
@@ -17,6 +24,21 @@ export class RbacService {
     return userRoles
       .map((userRole) => userRole.role?.name)
       .filter((roleName): roleName is string => Boolean(roleName));
+  }
+
+  async getUserPrimaryRole(
+    userId: string,
+    cityId: string,
+  ): Promise<string | null> {
+    const roleNames = await this.getUserRoleNames(userId, cityId);
+
+    for (const role of ROLE_PRIORITY) {
+      if (roleNames.includes(role)) {
+        return role;
+      }
+    }
+
+    return roleNames[0] ?? null;
   }
 
   async getUserPermissions(userId: string, cityId: string): Promise<string[]> {

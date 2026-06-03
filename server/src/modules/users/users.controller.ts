@@ -23,6 +23,7 @@ import {
 
 type PermissionsResponse = {
   permissions: string[];
+  role: string | null;
 };
 
 @ApiTags('Users')
@@ -52,6 +53,11 @@ export class UsersController {
           items: { type: 'string' },
           example: ['news:create', 'news:update', 'news:manage'],
         },
+        role: {
+          type: 'string',
+          nullable: true,
+          example: 'citizen',
+        },
       },
     },
   })
@@ -69,10 +75,11 @@ export class UsersController {
       throw new BadRequestException(ERROR_MESSAGES.CITY_ID_MISSING);
     }
 
-    const permissions = await this.rbacService.getUserPermissions(
-      user.id,
-      cityId,
-    );
-    return { permissions };
+    const [permissions, role] = await Promise.all([
+      this.rbacService.getUserPermissions(user.id, cityId),
+      this.rbacService.getUserPrimaryRole(user.id, cityId),
+    ]);
+
+    return { permissions, role };
   }
 }

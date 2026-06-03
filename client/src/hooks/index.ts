@@ -9,12 +9,14 @@ export {
 export { useCities, useCityById, useJoinCity } from './useCities';
 export {
   useCityNews,
+  useCityNewsDetail,
   useCreateNews,
   useUpdateNews,
   useDeleteNews,
 } from './useCityNews';
 export {
   useCityAlerts,
+  useCityAlertDetail,
   useCityAlertTypes,
   useCreateAlert,
   useUpdateAlert,

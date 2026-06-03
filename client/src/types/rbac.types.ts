@@ -117,4 +117,5 @@ export type RoleKey = 'admin' | 'citizen' | 'organizer' | 'municipality';
 
 export interface GetPermissionsResponse {
   permissions: PermissionKey[];
+  role: RoleKey | null;
 }
