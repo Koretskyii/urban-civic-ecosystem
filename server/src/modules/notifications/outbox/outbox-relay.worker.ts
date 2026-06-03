@@ -10,16 +10,25 @@ import { NotificationsService } from '../notifications.service';
 export class OutboxRelayWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(OutboxRelayWorker.name);
   private timer: NodeJS.Timeout | null = null;
+  private relayTickRunning = false;
 
   constructor(private readonly notificationsService: NotificationsService) {}
 
   private async runRelayTick(batchSize: number) {
+    if (this.relayTickRunning) {
+      this.logger.warn('Previous outbox relay tick is still running; skipping');
+      return;
+    }
+
+    this.relayTickRunning = true;
     try {
       await this.notificationsService.relayPending(batchSize);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unknown relay error';
       this.logger.error(`Outbox relay tick failed: ${message}`);
+    } finally {
+      this.relayTickRunning = false;
     }
   }
 
