@@ -3,6 +3,7 @@ import {
   AlertListQuery,
   AlertType,
   CreateAlertPayload,
+  PaginatedResponse,
   UpdateAlertPayload,
 } from '@/types';
 import { apiClient } from '..';
@@ -26,6 +27,21 @@ const buildAlertsQuery = (query?: AlertListQuery) => {
   if (query.severity) {
     params.set('severity', query.severity);
   }
+  if (query.alertTypeId) {
+    params.set('alertTypeId', query.alertTypeId);
+  }
+  if (query.limit !== undefined) {
+    params.set('limit', String(query.limit));
+  }
+  if (query.cursor) {
+    params.set('cursor', query.cursor);
+  }
+  if (query.sortBy) {
+    params.set('sortBy', query.sortBy);
+  }
+  if (query.sortOrder) {
+    params.set('sortOrder', query.sortOrder);
+  }
 
   const queryString = params.toString();
   return queryString ? `?${queryString}` : '';
@@ -33,7 +49,7 @@ const buildAlertsQuery = (query?: AlertListQuery) => {
 
 export const cityAlertsApi = {
   getCityAlerts: (cityId: string, query?: AlertListQuery) => {
-    return apiClient.get<Alert[]>(
+    return apiClient.get<PaginatedResponse<Alert>>(
       `${API_ROUTES.alerts.all(cityId)}${buildAlertsQuery(query)}`,
     );
   },

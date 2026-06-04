@@ -14,6 +14,7 @@ import type {
   CityRequestReport,
   Department,
   GetCityRequestsQuery,
+  PaginatedResponse,
 } from '@/types';
 
 function buildListQuery(query?: GetCityRequestsQuery) {
@@ -24,6 +25,13 @@ function buildListQuery(query?: GetCityRequestsQuery) {
   if (query.scope) params.set('scope', query.scope);
   if (query.status) params.set('status', query.status);
   if (query.departmentId) params.set('departmentId', query.departmentId);
+  if (query.priority !== undefined)
+    params.set('priority', String(query.priority));
+  if (query.search) params.set('search', query.search);
+  if (query.limit !== undefined) params.set('limit', String(query.limit));
+  if (query.cursor) params.set('cursor', query.cursor);
+  if (query.sortBy) params.set('sortBy', query.sortBy);
+  if (query.sortOrder) params.set('sortOrder', query.sortOrder);
 
   const queryString = params.toString();
   return queryString ? `?${queryString}` : '';
@@ -37,7 +45,7 @@ export const cityRequestsApi = {
     ),
 
   getRequests: (cityId: string, query?: GetCityRequestsQuery) =>
-    apiClient.get<CityRequestListItem[]>(
+    apiClient.get<PaginatedResponse<CityRequestListItem>>(
       `${API_ROUTES.cityRequests.all(cityId)}${buildListQuery(query)}`,
     ),
 

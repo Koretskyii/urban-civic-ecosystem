@@ -34,6 +34,14 @@ export const en = {
     unknownUser: 'Unknown user',
     guest: 'Guest',
     loadMore: 'Load more',
+    viewModes: {
+      citizen: 'Citizen mode',
+      manage: 'Manage mode',
+    },
+    sortDirections: {
+      asc: 'Asc',
+      desc: 'Desc',
+    },
   },
   citySearch: {
     title: 'Select your city from the list',
@@ -62,7 +70,7 @@ export const en = {
     problemComingSoon: 'Problem report — coming soon',
   },
   cityProblem: {
-    title: 'City Problem Workspace',
+    title: 'City Requests Workspace',
     createTitle: 'Create problem request',
     listTitle: 'City requests',
     detailTitle: 'Request detail',
@@ -86,6 +94,17 @@ export const en = {
       filterDepartment: 'Filter by department',
       filterPriority: 'Filter by priority',
     },
+    statuses: {
+      OPEN: 'Open',
+      IN_PROGRESS: 'In progress',
+      RESOLVED: 'Resolved',
+      REJECTED: 'Rejected',
+    },
+    reportTypes: {
+      PROGRESS: 'Progress',
+      RESOLUTION: 'Resolution',
+      REJECTION: 'Rejection',
+    },
     actions: {
       create: 'Create request',
       creating: 'Creating...',
@@ -105,6 +124,29 @@ export const en = {
       controlsTitle: 'Municipality controls',
       reportTextRequiredHint:
         'Resolution and rejection reports must include report text.',
+      searchPlaceholder: 'Search requests',
+      sortBy: 'Sort by',
+      sortOrder: 'Sort order',
+      filters: {
+        allStatuses: 'All statuses',
+        allDepartments: 'All departments',
+        allPriorities: 'All priorities',
+        noDepartments: 'No departments',
+      },
+      sortFields: {
+        createdAt: 'Created',
+        updatedAt: 'Updated',
+        priority: 'Priority',
+        status: 'Status',
+      },
+      table: {
+        title: 'Title',
+        citizen: 'Citizen',
+        status: 'Status',
+        priority: 'Priority',
+        department: 'Department',
+        created: 'Created',
+      },
     },
     map: {
       title: 'Problem location',
@@ -310,6 +352,21 @@ export const en = {
       title: 'Title',
       content: 'Content',
     },
+    filters: {
+      sortFields: {
+        createdAt: 'Created',
+        updatedAt: 'Updated',
+        title: 'Title',
+      },
+    },
+    table: {
+      title: 'Title',
+      created: 'Created',
+      updated: 'Updated',
+      deleted: 'Deleted',
+      files: 'Files',
+      actions: 'Actions',
+    },
     actions: {
       create: 'Create',
       creating: 'Creating...',
@@ -355,6 +412,13 @@ export const en = {
     },
     filters: {
       allSeverity: 'All severities',
+      allTypes: 'All types',
+      sortFields: {
+        severity: 'Severity',
+        createdAt: 'Created',
+        expiresAt: 'Expires',
+        title: 'Title',
+      },
     },
     severity: {
       CRITICAL: 'Critical',
@@ -384,6 +448,16 @@ export const en = {
       plus30Days: '+30 days',
       noExpiry: 'No expiry',
       clearExpiry: 'Clear',
+    },
+    table: {
+      title: 'Title',
+      type: 'Type',
+      severity: 'Severity',
+      expires: 'Expires',
+      status: 'Status',
+      created: 'Created',
+      actions: 'Actions',
+      active: 'Active',
     },
     detail: {
       backToAlerts: 'Back to alerts',

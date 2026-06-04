@@ -25,7 +25,7 @@ import {
   Newspaper,
   Users,
 } from 'lucide-react';
-import type { CityRequestListItem } from '@/types';
+import type { Alert, CityRequestListItem, News } from '@/types';
 import { AsyncListState } from './components/AsyncListState/AsyncListState';
 import { AlertPreview } from './components/AlertPreview/AlertPreview';
 import { ContentCard } from './components/ContentCard/ContentCard';
@@ -221,7 +221,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
             errorText={t('news.loadError')}
           >
             <div className="grid gap-3 md:grid-cols-2">
-              {latestNews.map((item) => (
+              {latestNews.map((item: News) => (
                 <NewsPreview
                   key={item.id}
                   item={item}
@@ -250,7 +250,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
             errorText={t('alerts.loadError')}
           >
             <div className="space-y-2">
-              {activeAlerts.map((item) => (
+              {activeAlerts.map((item: Alert) => (
                 <AlertPreview
                   key={item.id}
                   item={item}
@@ -280,7 +280,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
             errorText={t('cityProblem.loadError')}
           >
             <div className="space-y-2">
-              {latestRequests.map((item) => (
+              {latestRequests.map((item: CityRequestListItem) => (
                 <RequestPreview
                   key={item.id}
                   item={item}

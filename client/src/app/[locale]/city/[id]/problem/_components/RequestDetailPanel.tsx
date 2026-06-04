@@ -57,6 +57,8 @@ interface RequestDetailPanelProps {
   municipalityError: string;
 }
 
+const DEPARTMENT_PLACEHOLDER = '__department_placeholder__';
+
 // Remove AttachmentLinks since we use FilePreviewList
 
 export function RequestDetailPanel(props: RequestDetailPanelProps) {
@@ -107,7 +109,13 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
     isCreatingReport || (isReportTextRequired && isReportTextEmpty);
 
   return (
-    <div className="min-h-[420px] flex-[2] rounded-lg border border-black/10 bg-white p-3">
+    <div
+      className={
+        viewMode === 'municipality'
+          ? 'flex-[2] rounded-lg border border-black/10 bg-white p-3'
+          : 'min-h-[420px] flex-[2] rounded-lg border border-black/10 bg-white p-3'
+      }
+    >
       <h3 className="mb-2 text-xl">{t('cityProblem.detailTitle')}</h3>
       {!activeRequestId ? (
         <p className="text-sm">{t('cityProblem.selectPrompt')}</p>
@@ -203,8 +211,12 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
 
                 <div className="grid gap-2 md:grid-cols-[1fr_auto]">
                   <Select
-                    value={selectedDepartmentId || undefined}
-                    onValueChange={onSelectedDepartmentIdChange}
+                    value={selectedDepartmentId || DEPARTMENT_PLACEHOLDER}
+                    onValueChange={(value) => {
+                      if (value !== DEPARTMENT_PLACEHOLDER) {
+                        onSelectedDepartmentIdChange(value);
+                      }
+                    }}
                   >
                     <SelectTrigger className="h-10">
                       <SelectValue
@@ -212,6 +224,9 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                       />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value={DEPARTMENT_PLACEHOLDER} disabled>
+                        {t('cityProblem.fields.department')}
+                      </SelectItem>
                       {departments.map((department) => (
                         <SelectItem key={department.id} value={department.id}>
                           {department.name}
@@ -242,7 +257,7 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                     <SelectContent>
                       {EDITABLE_STATUS_OPTIONS.map((status) => (
                         <SelectItem key={status} value={status}>
-                          {status}
+                          {t(`cityProblem.statuses.${status}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -275,7 +290,7 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
                     <SelectContent>
                       {REPORT_TYPE_OPTIONS.map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type}
+                          {t(`cityProblem.reportTypes.${type}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>

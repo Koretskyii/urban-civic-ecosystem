@@ -12,6 +12,9 @@ import type { Prisma } from '@/generated/prisma/client';
 import { buildAlertEventPayload } from '@/modules/notifications/domain/domain-event.factory';
 import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 
+const DEFAULT_PAGE_SIZE = 40;
+const MAX_PAGE_SIZE = 100;
+
 @Injectable()
 export class AlertsService {
   constructor(
@@ -69,6 +72,18 @@ export class AlertsService {
     const includeDeleted = query.includeDeleted === true;
     const onlyActive = query.onlyActive !== false;
     const now = new Date();
+    const take = Math.min(query.limit ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+    const sortBy = query.sortBy ?? 'severity';
+    const sortOrder = query.sortOrder ?? 'asc';
+    const orderBy: Prisma.AlertOrderByWithRelationInput[] = [
+      { [sortBy]: sortOrder },
+      ...(sortBy === 'createdAt'
+        ? []
+        : ([
+            { createdAt: 'desc' },
+          ] satisfies Prisma.AlertOrderByWithRelationInput[])),
+      { id: sortOrder },
+    ];
 
     if (includeDeleted && !canManageAlerts) {
       throw new ForbiddenException('You cannot request deleted alerts');
@@ -102,16 +117,27 @@ export class AlertsService {
       });
     }
 
-    return this.prisma.alert.findMany({
+    const alerts = await this.prisma.alert.findMany({
       where: {
         cityId,
         ...(includeDeleted ? {} : { deletedAt: null }),
         ...(query.severity ? { severity: query.severity } : {}),
+        ...(query.alertTypeId ? { alertTypeId: query.alertTypeId } : {}),
         ...(andConditions.length > 0 ? { AND: andConditions } : {}),
       },
       select: this.alertSelect(),
-      orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
+      orderBy,
+      take: take + 1,
+      ...(query.cursor ? { skip: 1, cursor: { id: query.cursor } } : {}),
     });
+
+    const hasNextPage = alerts.length > take;
+    const items = hasNextPage ? alerts.slice(0, take) : alerts;
+
+    return {
+      items,
+      nextCursor: hasNextPage ? items[items.length - 1]?.id : null,
+    };
   }
 
   async getAlertTypes(cityId: string, userId: string) {

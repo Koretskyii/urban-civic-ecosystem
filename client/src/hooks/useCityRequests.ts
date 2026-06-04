@@ -1,6 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { cityRequestsApi } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import {
@@ -23,6 +28,29 @@ export function useCityRequestsList(
   return useQuery({
     queryKey: queryKeys.cityRequests.list(cityId, query),
     queryFn: () => cityRequestsApi.getRequests(cityId, query),
+    enabled: Boolean(cityId && enabled),
+    placeholderData: (previousData) => previousData,
+    select: (page) => page.items,
+  });
+}
+
+export function useInfiniteCityRequestsList(
+  cityId: string,
+  query?: GetCityRequestsQuery,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+  const baseQuery = { limit: 40, ...query };
+
+  return useInfiniteQuery({
+    queryKey: queryKeys.cityRequests.list(cityId, baseQuery),
+    queryFn: ({ pageParam }) =>
+      cityRequestsApi.getRequests(cityId, {
+        ...baseQuery,
+        cursor: pageParam,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: Boolean(cityId && enabled),
   });
 }
