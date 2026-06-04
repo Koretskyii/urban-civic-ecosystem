@@ -36,7 +36,7 @@ const NAV_ITEMS = [
   { key: 'projects', path: '/projects', icon: <GitBranch size={18} /> },
   {
     key: 'problem',
-    path: '/problem',
+    path: '/city-requests',
     icon: <TriangleAlert size={18} />,
     accent: true,
   },

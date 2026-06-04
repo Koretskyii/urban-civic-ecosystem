@@ -1,6 +1,7 @@
 'use client';
 
 import { FilePreviewList } from '@/components/ui/file-preview-list';
+import { DebouncedSearchInput } from '@/components';
 import { useResponsiveVirtualColumns } from '@/hooks';
 import type { Attachment, News } from '@/types';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -8,6 +9,8 @@ import type { useTranslations } from 'next-intl';
 import { useRef } from 'react';
 
 type TranslationFn = ReturnType<typeof useTranslations>;
+
+const NEWS_GRID_BREAKPOINTS = [{ minWidth: 768, columns: 2 }] as const;
 
 interface CitizenNewsViewProps {
   news: News[];
@@ -31,10 +34,7 @@ export function CitizenNewsView(props: CitizenNewsViewProps) {
     onOpenNews,
     onLoadMore,
   } = props;
-  const columns = useResponsiveVirtualColumns(
-    [{ minWidth: 768, columns: 2 }],
-    1,
-  );
+  const columns = useResponsiveVirtualColumns(NEWS_GRID_BREAKPOINTS, 1);
   const rowCount = Math.ceil(news.length / columns);
   const scrollRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -48,10 +48,10 @@ export function CitizenNewsView(props: CitizenNewsViewProps) {
   return (
     <>
       <div className="mb-3">
-        <input
+        <DebouncedSearchInput
           placeholder={t('news.searchPlaceholder')}
           value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
+          onValueChange={onSearchChange}
           className="h-10 w-full rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
         />
       </div>

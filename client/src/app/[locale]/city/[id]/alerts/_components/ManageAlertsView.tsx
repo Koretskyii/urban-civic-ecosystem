@@ -1,6 +1,7 @@
 'use client';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { DebouncedSearchInput } from '@/components';
 import {
   Dialog,
   DialogContent,
@@ -249,9 +250,9 @@ export function ManageAlertsView(props: ManageAlertsViewProps) {
               </DialogContent>
             </Dialog>
           ) : null}
-          <input
+          <DebouncedSearchInput
             value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
+            onValueChange={onSearchChange}
             placeholder={t('alerts.searchPlaceholder')}
             className="h-10 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
           />

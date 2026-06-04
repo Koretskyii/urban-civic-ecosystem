@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { DebouncedSearchInput } from '@/components';
 import {
   PRIORITY_OPTIONS,
   STATUS_OPTIONS,
@@ -66,9 +67,9 @@ export function MunicipalityQueueHeader(props: MunicipalityQueueHeaderProps) {
           <span className="text-xs font-semibold text-[var(--muted-foreground)]">
             {t('cityProblem.municipality.searchPlaceholder')}
           </span>
-          <input
+          <DebouncedSearchInput
             value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
+            onValueChange={onSearchChange}
             placeholder={t('cityProblem.municipality.searchPlaceholder')}
             className="h-10 w-full rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
           />

@@ -2,7 +2,6 @@
 
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
 import { usePermission } from '@/hooks';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   useCreateNews,
   useDeleteNews,
@@ -11,7 +10,7 @@ import {
   useUpdateNews,
 } from '@/hooks';
 import { useTranslations } from 'next-intl';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useMemo, useState } from 'react';
 import { Newspaper } from 'lucide-react';
 import { useRouter } from '@/i18n/navigation';
 import { RoleModeSwitcher } from '@/components';
@@ -47,7 +46,6 @@ export default function NewsGrid(props: NewsGridProps) {
   const [editingTitle, setEditingTitle] = useState('');
   const [editingContent, setEditingContent] = useState('');
   const [formError, setFormError] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 450);
 
   const { can: canCreateNews, isLoading: isCreatePermissionLoading } =
     usePermission(PERMISSION_GROUPS.NEWS.CREATE, {
@@ -72,22 +70,16 @@ export default function NewsGrid(props: NewsGridProps) {
 
   const listQuery = useMemo(
     () => ({
-      search: debouncedSearch.trim() || undefined,
+      search: search.trim() || undefined,
       includeDeleted: isManageMode && canManageNews ? includeDeleted : false,
       sortBy,
       sortOrder,
     }),
-    [
-      debouncedSearch,
-      isManageMode,
-      canManageNews,
-      includeDeleted,
-      sortBy,
-      sortOrder,
-    ],
+    [search, isManageMode, canManageNews, includeDeleted, sortBy, sortOrder],
   );
 
   const newsQuery = useInfiniteCityNews(cityId, listQuery);
+  const fetchNextNewsPage = newsQuery.fetchNextPage;
   const news = useMemo(
     () => newsQuery.data?.pages.flatMap((page) => page.items) ?? [],
     [newsQuery.data],
@@ -100,6 +92,9 @@ export default function NewsGrid(props: NewsGridProps) {
     if (isManageMode && canManageNews) return news;
     return news.filter((item: News) => !item.deletedAt);
   }, [news, isManageMode, canManageNews]);
+  const loadMoreNews = useCallback(() => {
+    void fetchNextNewsPage();
+  }, [fetchNextNewsPage]);
 
   const onCreateNews = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -232,7 +227,7 @@ export default function NewsGrid(props: NewsGridProps) {
           onOpenNews={openNewsDetail}
           onStartEdit={startEdit}
           onDeleteNews={onDeleteNews}
-          onLoadMore={() => newsQuery.fetchNextPage()}
+          onLoadMore={loadMoreNews}
         />
       ) : (
         <CitizenNewsView
@@ -243,7 +238,7 @@ export default function NewsGrid(props: NewsGridProps) {
           t={t}
           onSearchChange={setSearch}
           onOpenNews={openNewsDetail}
-          onLoadMore={() => newsQuery.fetchNextPage()}
+          onLoadMore={loadMoreNews}
         />
       )}
 

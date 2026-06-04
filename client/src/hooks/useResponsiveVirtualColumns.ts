@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 export function useResponsiveVirtualColumns(
-  breakpoints: Array<{ minWidth: number; columns: number }>,
+  breakpoints: ReadonlyArray<{ minWidth: number; columns: number }>,
   defaultColumns = 1,
 ) {
   const [columns, setColumns] = useState(defaultColumns);

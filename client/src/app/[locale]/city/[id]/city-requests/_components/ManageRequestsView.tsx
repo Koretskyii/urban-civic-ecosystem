@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from 'react';
 import { MunicipalityQueueHeader } from './MunicipalityQueueHeader';
-import { RequestDetailPanel } from './RequestDetailPanel';
+import { RequestDetailPanel } from './RequestDetailPanel/RequestDetailPanel';
 import { RequestListPanel } from './RequestListPanel';
 
 interface ManageRequestsViewProps {

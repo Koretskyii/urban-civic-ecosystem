@@ -1,6 +1,7 @@
 'use client';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { DebouncedSearchInput } from '@/components';
 import {
   Dialog,
   DialogContent,
@@ -161,10 +162,10 @@ export function ManageNewsView(props: ManageNewsViewProps) {
               </DialogContent>
             </Dialog>
           ) : null}
-          <input
+          <DebouncedSearchInput
             placeholder={t('news.searchPlaceholder')}
             value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
+            onValueChange={onSearchChange}
             className="h-10 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/20"
           />
           {canManageNews ? (

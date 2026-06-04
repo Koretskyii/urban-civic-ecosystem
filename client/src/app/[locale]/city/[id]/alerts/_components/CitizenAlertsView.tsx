@@ -1,6 +1,7 @@
 'use client';
 
 import { useResponsiveVirtualColumns } from '@/hooks';
+import { DebouncedSearchInput } from '@/components';
 import type { Alert, AlertSeverity } from '@/types';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { useTranslations } from 'next-intl';
@@ -18,6 +19,11 @@ import {
 } from '@/components/ui/select';
 
 type TranslationFn = ReturnType<typeof useTranslations>;
+
+const ALERTS_GRID_BREAKPOINTS = [
+  { minWidth: 1280, columns: 3 },
+  { minWidth: 768, columns: 2 },
+] as const;
 
 interface CitizenAlertsViewProps {
   alerts: Alert[];
@@ -49,13 +55,7 @@ export function CitizenAlertsView(props: CitizenAlertsViewProps) {
     onOpenAlert,
     onLoadMore,
   } = props;
-  const columns = useResponsiveVirtualColumns(
-    [
-      { minWidth: 1280, columns: 3 },
-      { minWidth: 768, columns: 2 },
-    ],
-    1,
-  );
+  const columns = useResponsiveVirtualColumns(ALERTS_GRID_BREAKPOINTS, 1);
   const rowCount = Math.ceil(alerts.length / columns);
   const scrollRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -69,9 +69,9 @@ export function CitizenAlertsView(props: CitizenAlertsViewProps) {
   return (
     <>
       <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center">
-        <input
+        <DebouncedSearchInput
           value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
+          onValueChange={onSearchChange}
           placeholder={t('alerts.searchPlaceholder')}
           className="h-10 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
         />

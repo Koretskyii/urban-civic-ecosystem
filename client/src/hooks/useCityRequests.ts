@@ -52,6 +52,7 @@ export function useInfiniteCityRequestsList(
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: Boolean(cityId && enabled),
+    placeholderData: (previousData) => previousData,
   });
 }
 

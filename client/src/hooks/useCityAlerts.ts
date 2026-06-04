@@ -68,6 +68,7 @@ export function useInfiniteCityAlerts(
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: enabled && !!cityId,
+    placeholderData: (previousData) => previousData,
   });
 }
 

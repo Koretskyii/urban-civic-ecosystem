@@ -27,7 +27,12 @@ import {
   normalizeCoordinate,
   validateCoordinates,
 } from '@/features/city-requests';
-import type { CityRequestStatus, ReportType } from '@/types';
+import type {
+  CityRequestMessage,
+  CityRequestStatus,
+  Department,
+  ReportType,
+} from '@/types';
 import { CitizenRequestsView } from './CitizenRequestsView';
 import { ManageRequestsView } from './ManageRequestsView';
 import { isForbiddenError } from '@/features/city-requests/helpers/errors.helpers';
@@ -41,6 +46,9 @@ type CreateRequestErrorKey =
   | 'required'
   | 'coordinatesInvalid'
   | 'coordinatesOutOfRange';
+
+const EMPTY_MESSAGES: CityRequestMessage[] = [];
+const EMPTY_DEPARTMENTS: Department[] = [];
 
 const isUsableCityCenter = (lat: unknown, lng: unknown): boolean => {
   if (typeof lat !== 'number' || typeof lng !== 'number') return false;
@@ -95,22 +103,38 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     uiMode === 'manage' ? 'municipality' : 'citizen';
   const debouncedSearch = useDebouncedValue(search, 450);
 
-  const requestsQuery = useInfiniteCityRequestsList(cityId, {
-    scope: 'all',
-    search: debouncedSearch.trim() || undefined,
-    status:
-      uiMode === 'manage' && filterStatus !== 'ALL' ? filterStatus : undefined,
-    departmentId:
-      uiMode === 'manage' && filterDepartmentId !== 'ALL'
-        ? filterDepartmentId
-        : undefined,
-    priority:
-      uiMode === 'manage' && filterPriority !== 'ALL'
-        ? Number(filterPriority)
-        : undefined,
-    sortBy,
-    sortOrder,
-  });
+  const requestListQuery = useMemo(
+    () => ({
+      scope: 'all' as const,
+      search: debouncedSearch.trim() || undefined,
+      status:
+        uiMode === 'manage' && filterStatus !== 'ALL'
+          ? filterStatus
+          : undefined,
+      departmentId:
+        uiMode === 'manage' && filterDepartmentId !== 'ALL'
+          ? filterDepartmentId
+          : undefined,
+      priority:
+        uiMode === 'manage' && filterPriority !== 'ALL'
+          ? Number(filterPriority)
+          : undefined,
+      sortBy,
+      sortOrder,
+    }),
+    [
+      debouncedSearch,
+      uiMode,
+      filterStatus,
+      filterDepartmentId,
+      filterPriority,
+      sortBy,
+      sortOrder,
+    ],
+  );
+
+  const requestsQuery = useInfiniteCityRequestsList(cityId, requestListQuery);
+  const fetchNextRequestsPage = requestsQuery.fetchNextPage;
 
   const requests = useMemo(() => {
     return requestsQuery.data?.pages.flatMap((page) => page.items) ?? [];
@@ -333,6 +357,9 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     setNextStatus('IN_PROGRESS');
     setMunicipalityError('');
   }, []);
+  const loadMoreRequests = useCallback(() => {
+    void fetchNextRequestsPage();
+  }, [fetchNextRequestsPage]);
 
   const requestListKey = `${viewMode}-${filterStatus}-${filterDepartmentId}-${filterPriority}`;
   const requestListPanelProps = {
@@ -340,7 +367,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     isLoading: requestsQuery.isLoading,
     hasNextPage: requestsQuery.hasNextPage,
     isFetchingNextPage: requestsQuery.isFetchingNextPage,
-    onLoadMore: () => requestsQuery.fetchNextPage(),
+    onLoadMore: loadMoreRequests,
     viewMode,
     activeRequestId,
     onSelect: onSelectRequest,
@@ -353,13 +380,14 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     activeRequestId,
     isLoading: detailQuery.isLoading,
     detail: detailQuery.data,
-    messages: messagesQuery.data ?? detailQuery.data?.chat?.messages ?? [],
+    messages:
+      messagesQuery.data ?? detailQuery.data?.chat?.messages ?? EMPTY_MESSAGES,
     messageValue: message,
     onMessageChange: setMessage,
     onSendMessage,
     isSendingMessage: createMessageMutation.isPending,
     isMessageError: createMessageMutation.isError,
-    departments: departmentsQuery.data ?? [],
+    departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
     selectedDepartmentId,
     onSelectedDepartmentIdChange: setSelectedDepartmentId,
     onAssignDepartment,
@@ -443,7 +471,7 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
             search,
             sortBy,
             sortOrder,
-            departments: departmentsQuery.data ?? [],
+            departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
             isDepartmentsLoading: departmentsQuery.isLoading,
             onFilterStatusChange: setFilterStatus,
             onFilterDepartmentChange: setFilterDepartmentId,

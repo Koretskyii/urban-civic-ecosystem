@@ -138,7 +138,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
     });
   };
   const openRequest = (requestId: string) => {
-    router.push(`${baseRoute}/problem?requestId=${requestId}`);
+    router.push(`${baseRoute}/city-requests?requestId=${requestId}`);
   };
 
   if (isCityLoading || isRbacLoading || !city) {
@@ -181,7 +181,9 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
                 </Button>
               ) : (
                 <>
-                  <Button onClick={() => router.push(`${baseRoute}/problem`)}>
+                  <Button
+                    onClick={() => router.push(`${baseRoute}/city-requests`)}
+                  >
                     <ClipboardList size={16} className="mr-2" />
                     {t('cityHome.actions.reportProblem')}
                   </Button>
@@ -268,7 +270,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
           description={t('cityHome.latestRequests.description')}
           icon={<ClipboardList size={18} />}
           actionLabel={t('cityHome.actions.openRequests')}
-          onAction={() => router.push(`${baseRoute}/problem`)}
+          onAction={() => router.push(`${baseRoute}/city-requests`)}
         >
           <AsyncListState
             enabled={contentEnabled}
@@ -297,7 +299,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
           description={t('cityHome.requestsMap.description')}
           icon={<MapPinned size={18} />}
           actionLabel={t('cityHome.actions.openRequests')}
-          onAction={() => router.push(`${baseRoute}/problem`)}
+          onAction={() => router.push(`${baseRoute}/city-requests`)}
         >
           <AsyncListState
             enabled={contentEnabled}

@@ -10,8 +10,7 @@ import {
   useRoleUiMode,
   useUpdateAlert,
 } from '@/hooks';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import type { Alert, AlertType, AlertSeverity } from '@/types';
@@ -50,6 +49,8 @@ interface AlertsListProps {
   cityId: string;
 }
 
+const EMPTY_ALERT_TYPES: AlertType[] = [];
+
 export default function AlertsList(props: AlertsListProps) {
   const t = useTranslations();
   const { cityId } = props;
@@ -84,7 +85,6 @@ export default function AlertsList(props: AlertsListProps) {
   const [editingContent, setEditingContent] = useState('');
   const [formError, setFormError] = useState('');
 
-  const debouncedSearch = useDebouncedValue(search, 450);
   const { can: canCreateAlert, isLoading: isCreatePermissionLoading } =
     usePermission(PERMISSION_GROUPS.ALERT.CREATE, {
       cityId,
@@ -118,7 +118,7 @@ export default function AlertsList(props: AlertsListProps) {
 
   const listQuery = useMemo(
     () => ({
-      search: debouncedSearch.trim() || undefined,
+      search: search.trim() || undefined,
       includeDeleted: effectiveCanManageAlert ? includeDeleted : false,
       onlyActive: effectiveCanManageAlert ? onlyActive : false,
       severity:
@@ -130,7 +130,7 @@ export default function AlertsList(props: AlertsListProps) {
       sortOrder,
     }),
     [
-      debouncedSearch,
+      search,
       effectiveCanManageAlert,
       includeDeleted,
       onlyActive,
@@ -142,11 +142,13 @@ export default function AlertsList(props: AlertsListProps) {
   );
 
   const alertsQuery = useInfiniteCityAlerts(cityId, listQuery);
+  const fetchNextAlertsPage = alertsQuery.fetchNextPage;
   const alerts = useMemo(
     () => alertsQuery.data?.pages.flatMap((page) => page.items) ?? [],
     [alertsQuery.data],
   );
   const { data: alertTypes } = useCityAlertTypes(cityId);
+  const safeAlertTypes = alertTypes ?? EMPTY_ALERT_TYPES;
   const createAlertMutation = useCreateAlert();
   const updateAlertMutation = useUpdateAlert();
   const deleteAlertMutation = useDeleteAlert();
@@ -156,6 +158,9 @@ export default function AlertsList(props: AlertsListProps) {
       : alerts.filter((item: Alert) => !item.deletedAt);
     return sortAlertsByPriority(filtered);
   }, [alerts, effectiveCanManageAlert]);
+  const loadMoreAlerts = useCallback(() => {
+    void fetchNextAlertsPage();
+  }, [fetchNextAlertsPage]);
 
   const translateAlertTypeName = (name: string) => {
     const translationKey = ALERT_TYPE_TRANSLATION_KEYS[name];
@@ -290,7 +295,7 @@ export default function AlertsList(props: AlertsListProps) {
       {isManageMode ? (
         <ManageAlertsView
           alerts={visibleAlerts}
-          alertTypes={alertTypes ?? []}
+          alertTypes={safeAlertTypes}
           search={search}
           includeDeleted={includeDeleted}
           onlyActive={onlyActive}
@@ -330,7 +335,7 @@ export default function AlertsList(props: AlertsListProps) {
           onOpenAlert={openAlertDetail}
           onStartEdit={startEdit}
           onDeleteAlert={onDeleteAlert}
-          onLoadMore={() => alertsQuery.fetchNextPage()}
+          onLoadMore={loadMoreAlerts}
         />
       ) : (
         <CitizenAlertsView
@@ -344,7 +349,7 @@ export default function AlertsList(props: AlertsListProps) {
           onSearchChange={setSearch}
           onSeverityFilterChange={setSeverityFilter}
           onOpenAlert={openAlertDetail}
-          onLoadMore={() => alertsQuery.fetchNextPage()}
+          onLoadMore={loadMoreAlerts}
         />
       )}
 
@@ -374,7 +379,7 @@ export default function AlertsList(props: AlertsListProps) {
                 <SelectItem value={ALERT_TYPE_PLACEHOLDER} disabled>
                   {t('alerts.fields.type')}
                 </SelectItem>
-                {(alertTypes ?? []).map((type: AlertType) => (
+                {safeAlertTypes.map((type: AlertType) => (
                   <SelectItem key={type.id} value={type.id}>
                     {translateAlertTypeName(type.name)}
                   </SelectItem>

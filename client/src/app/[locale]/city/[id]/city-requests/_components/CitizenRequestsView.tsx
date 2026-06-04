@@ -2,7 +2,7 @@
 
 import type { ComponentProps, FormEvent } from 'react';
 import { CitizenRequestForm } from './CitizenRequestForm';
-import { RequestDetailPanel } from './RequestDetailPanel';
+import { RequestDetailPanel } from './RequestDetailPanel/RequestDetailPanel';
 import { RequestListPanel } from './RequestListPanel';
 
 interface CitizenRequestsViewProps {

@@ -12,6 +12,7 @@ export function useRoleUiMode(canManage: boolean, isPermissionLoading = false) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
   const paramMode = searchParams.get('uiMode');
   const mode = useMemo<RoleUiMode>(() => {
     if (isPermissionLoading) return 'citizen';
@@ -22,7 +23,7 @@ export function useRoleUiMode(canManage: boolean, isPermissionLoading = false) {
 
   const replaceModeParam = useCallback(
     (nextMode: RoleUiMode) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParamsString);
       if (nextMode === 'citizen') {
         params.delete('uiMode');
       } else {
@@ -33,7 +34,7 @@ export function useRoleUiMode(canManage: boolean, isPermissionLoading = false) {
         scroll: false,
       });
     },
-    [pathname, router, searchParams],
+    [pathname, router, searchParamsString],
   );
 
   const setMode = useCallback(
