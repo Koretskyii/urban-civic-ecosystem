@@ -10,6 +10,7 @@ import { RbacService } from '@/modules/rbac/rbac.service';
 import { R2StorageService } from '@/modules/r2/r2.service';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { ReportType, RequestStatus } from '@/generated/prisma/enums';
+import type { Prisma } from '@/generated/prisma/client';
 import {
   AssignCityRequestDto,
   CityRequestScope,
@@ -23,6 +24,9 @@ import {
   CITY_REQUESTS_CONSTANTS,
   CITY_REQUESTS_ERRORS,
 } from './city-requests.constants';
+
+const DEFAULT_PAGE_SIZE = 40;
+const MAX_PAGE_SIZE = 100;
 
 @Injectable()
 export class CityRequestsService {
@@ -103,6 +107,21 @@ export class CityRequestsService {
     query: GetCityRequestsQueryDto,
   ) {
     await this.ensureCityMembership(cityId, userId);
+    const requestedScope = query.scope ?? CityRequestScope.ALL;
+
+    const trimmedSearch = query.search?.trim();
+    const take = Math.min(query.limit ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = query.sortOrder ?? 'desc';
+    const orderBy: Prisma.CityRequestOrderByWithRelationInput[] = [
+      { [sortBy]: sortOrder },
+      ...(sortBy === 'createdAt'
+        ? []
+        : ([
+            { createdAt: 'desc' },
+          ] satisfies Prisma.CityRequestOrderByWithRelationInput[])),
+      { id: sortOrder },
+    ];
 
     const where = {
       cityId,
@@ -110,10 +129,35 @@ export class CityRequestsService {
       ...(query.departmentId
         ? { assignedDepartmentId: query.departmentId }
         : {}),
-      ...(query.scope === CityRequestScope.MINE ? { userId } : {}),
-    };
+      ...(query.priority !== undefined ? { priority: query.priority } : {}),
+      ...(requestedScope === CityRequestScope.MINE ? { userId } : {}),
+      ...(trimmedSearch
+        ? {
+            OR: [
+              {
+                title: {
+                  contains: trimmedSearch,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                description: {
+                  contains: trimmedSearch,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                address: {
+                  contains: trimmedSearch,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          }
+        : {}),
+    } satisfies Prisma.CityRequestWhereInput;
 
-    return this.prisma.cityRequest.findMany({
+    const requests = await this.prisma.cityRequest.findMany({
       where,
       select: {
         id: true,
@@ -139,8 +183,18 @@ export class CityRequestsService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy,
+      take: take + 1,
+      ...(query.cursor ? { skip: 1, cursor: { id: query.cursor } } : {}),
     });
+
+    const hasNextPage = requests.length > take;
+    const items = hasNextPage ? requests.slice(0, take) : requests;
+
+    return {
+      items,
+      nextCursor: hasNextPage ? items[items.length - 1]?.id : null,
+    };
   }
 
   async getRequestDetail(cityId: string, requestId: string, userId: string) {

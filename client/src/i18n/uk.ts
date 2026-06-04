@@ -34,6 +34,14 @@ export const uk = {
     unknownUser: 'Невідомий користувач',
     guest: 'Гість',
     loadMore: 'Показати ще',
+    viewModes: {
+      citizen: 'Режим мешканця',
+      manage: 'Режим керування',
+    },
+    sortDirections: {
+      asc: 'За зростанням',
+      desc: 'За спаданням',
+    },
   },
   citySearch: {
     title: 'Оберіть своє місто з переліку',
@@ -62,7 +70,7 @@ export const uk = {
     problemComingSoon: 'Реєстрація проблеми — coming soon',
   },
   cityProblem: {
-    title: 'Робоча зона міських проблем',
+    title: 'Робоча зона міських звернень',
     createTitle: 'Створити звернення про проблему',
     listTitle: 'Звернення міста',
     detailTitle: 'Деталі звернення',
@@ -86,6 +94,17 @@ export const uk = {
       filterDepartment: 'Фільтр за департаментом',
       filterPriority: 'Фільтр за пріоритетом',
     },
+    statuses: {
+      OPEN: 'Відкрите',
+      IN_PROGRESS: 'В роботі',
+      RESOLVED: 'Вирішене',
+      REJECTED: 'Відхилене',
+    },
+    reportTypes: {
+      PROGRESS: 'Прогрес',
+      RESOLUTION: 'Рішення',
+      REJECTION: 'Відмова',
+    },
     actions: {
       create: 'Створити звернення',
       creating: 'Створення...',
@@ -106,6 +125,29 @@ export const uk = {
       controlsTitle: 'Інструменти муніципалітету',
       reportTextRequiredHint:
         'Для звітів RESOLUTION/REJECTION потрібно заповнити текст звіту.',
+      searchPlaceholder: 'Пошук звернень',
+      sortBy: 'Сортувати за',
+      sortOrder: 'Напрям сортування',
+      filters: {
+        allStatuses: 'Усі статуси',
+        allDepartments: 'Усі департаменти',
+        allPriorities: 'Усі пріоритети',
+        noDepartments: 'Департаментів немає',
+      },
+      sortFields: {
+        createdAt: 'Створено',
+        updatedAt: 'Оновлено',
+        priority: 'Пріоритет',
+        status: 'Статус',
+      },
+      table: {
+        title: 'Заголовок',
+        citizen: 'Мешканець',
+        status: 'Статус',
+        priority: 'Пріоритет',
+        department: 'Департамент',
+        created: 'Створено',
+      },
     },
     map: {
       title: 'Локація проблеми',
@@ -113,7 +155,7 @@ export const uk = {
       previewTitle: 'Попередній перегляд локації',
       previewHint: 'Перегляд маркера для обраного звернення.',
     },
-    timelineTitle: 'Таймлайн звернення',
+    timelineTitle: 'Хід розгляду звернення',
     timelineEmpty: 'Звітів поки немає.',
     timelineNoDescription: 'Опис звіту відсутній.',
     attachmentsTitle: 'Вкладення звернення',
@@ -305,7 +347,7 @@ export const uk = {
     editTitle: 'Редагувати новину',
     searchLabel: 'Пошук',
     searchPlaceholder: 'Пошук за заголовком або текстом',
-    includeDeleted: 'Показувати видалені',
+    includeDeleted: 'Видалені',
     deletedLabel: 'Видалено',
     formValidation: 'Заголовок і текст мають містити щонайменше 3 символи.',
     createError: 'Не вдалося створити новину.',
@@ -314,6 +356,21 @@ export const uk = {
     fields: {
       title: 'Заголовок',
       content: 'Текст',
+    },
+    filters: {
+      sortFields: {
+        createdAt: 'Створено',
+        updatedAt: 'Оновлено',
+        title: 'Заголовок',
+      },
+    },
+    table: {
+      title: 'Заголовок',
+      created: 'Створено',
+      updated: 'Оновлено',
+      deleted: 'Видалено',
+      files: 'Файли',
+      actions: 'Дії',
     },
     actions: {
       create: 'Створити',
@@ -340,8 +397,8 @@ export const uk = {
     editTitle: 'Редагувати оголошення',
     searchLabel: 'Пошук',
     searchPlaceholder: 'Пошук за заголовком або текстом',
-    includeDeleted: 'Показувати видалені',
-    onlyActive: 'Лише актуальні',
+    includeDeleted: 'Видалені',
+    onlyActive: 'Актуальні',
     previewAsCitizen: 'Показувати як citizen',
     deletedLabel: 'Видалено',
     noExpiry: 'Безстроково',
@@ -360,6 +417,13 @@ export const uk = {
     },
     filters: {
       allSeverity: 'Усі рівні',
+      allTypes: 'Усі типи',
+      sortFields: {
+        severity: 'Важливість',
+        createdAt: 'Створено',
+        expiresAt: 'Актуально до',
+        title: 'Заголовок',
+      },
     },
     severity: {
       CRITICAL: 'Критично',
@@ -389,6 +453,16 @@ export const uk = {
       plus30Days: '+30 днів',
       noExpiry: 'Безстроково',
       clearExpiry: 'Очистити',
+    },
+    table: {
+      title: 'Заголовок',
+      type: 'Тип',
+      severity: 'Важливість',
+      expires: 'Актуально до',
+      status: 'Статус',
+      created: 'Створено',
+      actions: 'Дії',
+      active: 'Активне',
     },
     detail: {
       backToAlerts: 'До оголошень',

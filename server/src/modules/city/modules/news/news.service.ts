@@ -12,6 +12,10 @@ import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 import { buildNewsEventPayload } from '@/modules/notifications/domain/domain-event.factory';
 import { R2StorageService } from '@/modules/r2/r2.service';
+import type { Prisma } from '@/generated/prisma/client';
+
+const DEFAULT_PAGE_SIZE = 40;
+const MAX_PAGE_SIZE = 100;
 
 @Injectable()
 export class NewsService {
@@ -102,6 +106,13 @@ export class NewsService {
     }
 
     const trimmedSearch = query.search?.trim();
+    const take = Math.min(query.limit ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = query.sortOrder ?? 'desc';
+    const orderBy: Prisma.GeneralNewsOrderByWithRelationInput[] = [
+      { [sortBy]: sortOrder },
+      { id: sortOrder },
+    ];
 
     const news = await this.prisma.generalNews.findMany({
       where: {
@@ -136,12 +147,20 @@ export class NewsService {
         deletedAt: true,
         attachments: true,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy,
+      take: take + 1,
+      ...(query.cursor ? { skip: 1, cursor: { id: query.cursor } } : {}),
     });
 
-    return news.map((item) => this.withPublicAttachmentUrls(item));
+    const hasNextPage = news.length > take;
+    const items = (hasNextPage ? news.slice(0, take) : news).map((item) =>
+      this.withPublicAttachmentUrls(item),
+    );
+
+    return {
+      items,
+      nextCursor: hasNextPage ? items[items.length - 1]?.id : null,
+    };
   }
 
   async getCityNewsById(cityId: string, newsId: string, userId: string) {

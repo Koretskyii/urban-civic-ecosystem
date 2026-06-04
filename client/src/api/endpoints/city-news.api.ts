@@ -2,6 +2,7 @@ import {
   CreateNewsPayload,
   News,
   NewsListQuery,
+  PaginatedResponse,
   UpdateNewsPayload,
 } from '@/types';
 import { apiClient } from '..';
@@ -19,6 +20,18 @@ const buildNewsQuery = (query?: NewsListQuery) => {
   if (query.search) {
     params.set('search', query.search);
   }
+  if (query.limit !== undefined) {
+    params.set('limit', String(query.limit));
+  }
+  if (query.cursor) {
+    params.set('cursor', query.cursor);
+  }
+  if (query.sortBy) {
+    params.set('sortBy', query.sortBy);
+  }
+  if (query.sortOrder) {
+    params.set('sortOrder', query.sortOrder);
+  }
 
   const queryString = params.toString();
   return queryString ? `?${queryString}` : '';
@@ -26,7 +39,7 @@ const buildNewsQuery = (query?: NewsListQuery) => {
 
 export const cityNewsApi = {
   getCityNews: (cityId: string, query?: NewsListQuery) => {
-    return apiClient.get<News[]>(
+    return apiClient.get<PaginatedResponse<News>>(
       `${API_ROUTES.news.all(cityId)}${buildNewsQuery(query)}`,
     );
   },

@@ -1,7 +1,12 @@
 import { queryKeys } from '@/api';
 import { cityNewsApi } from '@/api/endpoints/city-news.api';
 import { CreateNewsPayload, NewsListQuery, UpdateNewsPayload } from '@/types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 export const invalidateNewsQueries = async (
   queryClient: ReturnType<typeof useQueryClient>,
@@ -35,6 +40,29 @@ export function useCityNews(
   return useQuery({
     queryKey: queryKeys.news.list(cityId, query),
     queryFn: () => cityNewsApi.getCityNews(cityId, query),
+    enabled: enabled && !!cityId,
+    placeholderData: (previousData) => previousData,
+    select: (page) => page.items,
+  });
+}
+
+export function useInfiniteCityNews(
+  cityId: string,
+  query?: NewsListQuery,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+  const baseQuery = { limit: 40, ...query };
+
+  return useInfiniteQuery({
+    queryKey: queryKeys.news.list(cityId, baseQuery),
+    queryFn: ({ pageParam }) =>
+      cityNewsApi.getCityNews(cityId, {
+        ...baseQuery,
+        cursor: pageParam,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: enabled && !!cityId,
     placeholderData: (previousData) => previousData,
   });

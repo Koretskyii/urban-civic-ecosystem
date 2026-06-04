@@ -9,6 +9,7 @@ export {
 export { useCities, useCityById, useJoinCity } from './useCities';
 export {
   useCityNews,
+  useInfiniteCityNews,
   useCityNewsDetail,
   useCreateNews,
   useUpdateNews,
@@ -16,6 +17,7 @@ export {
 } from './useCityNews';
 export {
   useCityAlerts,
+  useInfiniteCityAlerts,
   useCityAlertDetail,
   useCityAlertTypes,
   useCreateAlert,
@@ -29,6 +31,7 @@ export {
   useCityRequestDetail,
   useCityRequestMessages,
   useCityRequestsList,
+  useInfiniteCityRequestsList,
   useCreateCityRequest,
   useCreateCityRequestMessage,
   useCreateCityRequestReport,
@@ -53,3 +56,5 @@ export {
 } from './usePermission';
 export { useProtectedRoute } from './useProtectedRoute';
 export { useDebouncedValue } from './useDebouncedValue';
+export { useRoleUiMode, type RoleUiMode } from './useRoleUiMode';
+export { useResponsiveVirtualColumns } from './useResponsiveVirtualColumns';

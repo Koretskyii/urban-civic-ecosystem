@@ -5,7 +5,12 @@ import {
   CreateAlertPayload,
   UpdateAlertPayload,
 } from '@/types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 const invalidateAlertQueries = async (
   queryClient: ReturnType<typeof useQueryClient>,
@@ -39,6 +44,29 @@ export function useCityAlerts(
   return useQuery({
     queryKey: queryKeys.alerts.list(cityId, query),
     queryFn: () => cityAlertsApi.getCityAlerts(cityId, query),
+    enabled: enabled && !!cityId,
+    placeholderData: (previousData) => previousData,
+    select: (page) => page.items,
+  });
+}
+
+export function useInfiniteCityAlerts(
+  cityId: string,
+  query?: AlertListQuery,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+  const baseQuery = { limit: 40, ...query };
+
+  return useInfiniteQuery({
+    queryKey: queryKeys.alerts.list(cityId, baseQuery),
+    queryFn: ({ pageParam }) =>
+      cityAlertsApi.getCityAlerts(cityId, {
+        ...baseQuery,
+        cursor: pageParam,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: enabled && !!cityId,
     placeholderData: (previousData) => previousData,
   });

@@ -20,6 +20,7 @@ describe('CityRequestsService', () => {
     },
     department: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
   };
 
@@ -250,5 +251,37 @@ describe('CityRequestsService', () => {
       service.getRequestDetail('city-1', 'request-1', 'citizen-2'),
     ).resolves.toEqual(requestDetail);
     expect(mockRbacService.hasPermission).not.toHaveBeenCalled();
+  });
+
+  it('getDepartments should return active departments without mutating department state', async () => {
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'manager-1',
+      cityId: 'city-1',
+    });
+    mockPrismaService.department.findMany.mockResolvedValue([
+      {
+        id: 'dep-1',
+        name: 'ЖКГ та комунальні служби',
+        type: 'UTILITIES',
+        description: 'Utilities',
+      },
+    ]);
+
+    await expect(
+      service.getDepartments('city-1', 'manager-1'),
+    ).resolves.toEqual([
+      {
+        id: 'dep-1',
+        name: 'ЖКГ та комунальні служби',
+        type: 'UTILITIES',
+        description: 'Utilities',
+      },
+    ]);
+
+    expect(mockPrismaService.department.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { cityId: 'city-1', isActive: true },
+      }),
+    );
   });
 });

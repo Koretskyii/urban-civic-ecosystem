@@ -104,6 +104,12 @@ export type GetCityRequestsQuery = {
   scope?: CityRequestScope;
   status?: CityRequestStatus;
   departmentId?: string;
+  priority?: number;
+  search?: string;
+  limit?: number;
+  cursor?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'priority' | 'status';
+  sortOrder?: 'asc' | 'desc';
 };
 
 export type CityRequestRealtimeEvent =

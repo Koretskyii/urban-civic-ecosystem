@@ -25,7 +25,7 @@ import {
   Newspaper,
   Users,
 } from 'lucide-react';
-import type { CityRequestListItem } from '@/types';
+import type { Alert, CityRequestListItem, News } from '@/types';
 import { AsyncListState } from './components/AsyncListState/AsyncListState';
 import { AlertPreview } from './components/AlertPreview/AlertPreview';
 import { ContentCard } from './components/ContentCard/ContentCard';
@@ -138,7 +138,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
     });
   };
   const openRequest = (requestId: string) => {
-    router.push(`${baseRoute}/problem?requestId=${requestId}`);
+    router.push(`${baseRoute}/city-requests?requestId=${requestId}`);
   };
 
   if (isCityLoading || isRbacLoading || !city) {
@@ -181,7 +181,9 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
                 </Button>
               ) : (
                 <>
-                  <Button onClick={() => router.push(`${baseRoute}/problem`)}>
+                  <Button
+                    onClick={() => router.push(`${baseRoute}/city-requests`)}
+                  >
                     <ClipboardList size={16} className="mr-2" />
                     {t('cityHome.actions.reportProblem')}
                   </Button>
@@ -221,7 +223,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
             errorText={t('news.loadError')}
           >
             <div className="grid gap-3 md:grid-cols-2">
-              {latestNews.map((item) => (
+              {latestNews.map((item: News) => (
                 <NewsPreview
                   key={item.id}
                   item={item}
@@ -250,7 +252,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
             errorText={t('alerts.loadError')}
           >
             <div className="space-y-2">
-              {activeAlerts.map((item) => (
+              {activeAlerts.map((item: Alert) => (
                 <AlertPreview
                   key={item.id}
                   item={item}
@@ -268,7 +270,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
           description={t('cityHome.latestRequests.description')}
           icon={<ClipboardList size={18} />}
           actionLabel={t('cityHome.actions.openRequests')}
-          onAction={() => router.push(`${baseRoute}/problem`)}
+          onAction={() => router.push(`${baseRoute}/city-requests`)}
         >
           <AsyncListState
             enabled={contentEnabled}
@@ -280,7 +282,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
             errorText={t('cityProblem.loadError')}
           >
             <div className="space-y-2">
-              {latestRequests.map((item) => (
+              {latestRequests.map((item: CityRequestListItem) => (
                 <RequestPreview
                   key={item.id}
                   item={item}
@@ -297,7 +299,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
           description={t('cityHome.requestsMap.description')}
           icon={<MapPinned size={18} />}
           actionLabel={t('cityHome.actions.openRequests')}
-          onAction={() => router.push(`${baseRoute}/problem`)}
+          onAction={() => router.push(`${baseRoute}/city-requests`)}
         >
           <AsyncListState
             enabled={contentEnabled}

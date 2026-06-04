@@ -1,4 +1,13 @@
-import type { AlertSeverity, GetCityRequestsQuery } from '@/types';
+import type {
+  AlertListQuery,
+  GetCityRequestsQuery,
+  NewsListQuery,
+} from '@/types';
+import {
+  CITY_ALERTS_DEFAULT_FILTER_FIELDS,
+  CITY_NEWS_DEFAULT_FILTER_FIELDS,
+  CITY_REQUESTS_DEFAULT_FILTER_FIELDS,
+} from './api.constants';
 
 export const queryKeys = {
   auth: {
@@ -28,9 +37,14 @@ export const queryKeys = {
         'city-requests',
         cityId,
         'list',
-        query?.scope ?? 'all',
-        query?.status ?? 'all-statuses',
-        query?.departmentId ?? 'all-departments',
+        query?.scope ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.scope,
+        query?.status ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.status,
+        query?.departmentId ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.departmentId,
+        query?.priority ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.priority,
+        query?.search ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.search,
+        query?.limit ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.limit,
+        query?.sortBy ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.sortBy,
+        query?.sortOrder ?? CITY_REQUESTS_DEFAULT_FILTER_FIELDS.sortOrder,
       ] as const,
     detail: (cityId: string, requestId: string) =>
       ['city-requests', cityId, 'detail', requestId] as const,
@@ -69,16 +83,17 @@ export const queryKeys = {
 
   news: {
     all: (cityId: string) => ['news', cityId] as const,
-    list: (
-      cityId: string,
-      filters?: { includeDeleted?: boolean; search?: string },
-    ) =>
+    list: (cityId: string, filters?: NewsListQuery) =>
       [
         'news',
         cityId,
         'list',
-        filters?.includeDeleted ?? false,
-        filters?.search ?? '',
+        filters?.includeDeleted ??
+          CITY_NEWS_DEFAULT_FILTER_FIELDS.includeDeleted,
+        filters?.search ?? CITY_NEWS_DEFAULT_FILTER_FIELDS.search,
+        filters?.limit ?? CITY_NEWS_DEFAULT_FILTER_FIELDS.limit,
+        filters?.sortBy ?? CITY_NEWS_DEFAULT_FILTER_FIELDS.sortBy,
+        filters?.sortOrder ?? CITY_NEWS_DEFAULT_FILTER_FIELDS.sortOrder,
       ] as const,
     detail: (cityId: string, newsId: string) =>
       ['news', cityId, 'detail', newsId] as const,
@@ -86,23 +101,20 @@ export const queryKeys = {
 
   alerts: {
     all: (cityId: string) => ['alerts', cityId] as const,
-    list: (
-      cityId: string,
-      filters?: {
-        includeDeleted?: boolean;
-        search?: string;
-        severity?: AlertSeverity;
-        onlyActive?: boolean;
-      },
-    ) =>
+    list: (cityId: string, filters?: AlertListQuery) =>
       [
         'alerts',
         cityId,
         'list',
-        filters?.includeDeleted ?? false,
-        filters?.onlyActive ?? true,
-        filters?.severity ?? '',
-        filters?.search ?? '',
+        filters?.includeDeleted ??
+          CITY_ALERTS_DEFAULT_FILTER_FIELDS.includeDeleted,
+        filters?.onlyActive ?? CITY_ALERTS_DEFAULT_FILTER_FIELDS.onlyActive,
+        filters?.severity ?? CITY_ALERTS_DEFAULT_FILTER_FIELDS.severity,
+        filters?.alertTypeId ?? CITY_ALERTS_DEFAULT_FILTER_FIELDS.alertTypeId,
+        filters?.search ?? CITY_ALERTS_DEFAULT_FILTER_FIELDS.search,
+        filters?.limit ?? CITY_ALERTS_DEFAULT_FILTER_FIELDS.limit,
+        filters?.sortBy ?? CITY_ALERTS_DEFAULT_FILTER_FIELDS.sortBy,
+        filters?.sortOrder ?? CITY_ALERTS_DEFAULT_FILTER_FIELDS.sortOrder,
       ] as const,
     detail: (cityId: string, alertId: string) =>
       ['alerts', cityId, 'detail', alertId] as const,

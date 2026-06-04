@@ -4,32 +4,37 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   usePermission,
   useCityRequestDetail,
   useCityRequestMessages,
   useCityById,
   useCityRequestRealtime,
-  useCityRequestsList,
   useCityDepartments,
   useAssignCityRequestDepartment,
   useCreateCityRequest,
   useCreateCityRequestMessage,
   useCreateCityRequestReport,
+  useInfiniteCityRequestsList,
   useUpdateCityRequestStatus,
+  useRoleUiMode,
 } from '@/hooks';
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
+import { RoleModeSwitcher } from '@/components';
 import {
   DEFAULT_CITY_MAP_CENTER,
   normalizeCoordinate,
   validateCoordinates,
 } from '@/features/city-requests';
-import type { CityRequestStatus, ReportType } from '@/types';
-import { CitizenRequestForm } from './CitizenRequestForm';
-import { MunicipalityQueueHeader } from './MunicipalityQueueHeader';
-import { ProblemModeSwitcher } from './ProblemModeSwitcher';
-import { RequestDetailPanel } from './RequestDetailPanel';
-import { RequestListPanel } from './RequestListPanel';
+import type {
+  CityRequestMessage,
+  CityRequestStatus,
+  Department,
+  ReportType,
+} from '@/types';
+import { CitizenRequestsView } from './CitizenRequestsView';
+import { ManageRequestsView } from './ManageRequestsView';
 import { isForbiddenError } from '@/features/city-requests/helpers/errors.helpers';
 
 interface ProblemWorkspaceProps {
@@ -41,6 +46,9 @@ type CreateRequestErrorKey =
   | 'required'
   | 'coordinatesInvalid'
   | 'coordinatesOutOfRange';
+
+const EMPTY_MESSAGES: CityRequestMessage[] = [];
+const EMPTY_DEPARTMENTS: Department[] = [];
 
 const isUsableCityCenter = (lat: unknown, lng: unknown): boolean => {
   if (typeof lat !== 'number' || typeof lng !== 'number') return false;
@@ -65,9 +73,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const [message, setMessage] = useState('');
   const [createRequestError, setCreateRequestError] =
     useState<CreateRequestErrorKey>('');
-  const [viewMode, setViewMode] = useState<'citizen' | 'municipality'>(
-    'citizen',
-  );
   const [filterStatus, setFilterStatus] = useState<CityRequestStatus | 'ALL'>(
     'ALL',
   );
@@ -75,6 +80,11 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     'ALL',
   );
   const [filterPriority, setFilterPriority] = useState<'ALL' | string>('ALL');
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<
+    'createdAt' | 'updatedAt' | 'priority' | 'status'
+  >('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedDepartmentId, setSelectedDepartmentId] = useState('');
   const [nextStatus, setNextStatus] =
     useState<CityRequestStatus>('IN_PROGRESS');
@@ -85,27 +95,50 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
 
   const { can: canManageRequests, isLoading: isPermissionLoading } =
     usePermission(PERMISSION_GROUPS.CITY_REQUEST.MANAGE, { cityId });
+  const { mode: uiMode, setMode: setUiMode } = useRoleUiMode(
+    canManageRequests,
+    isPermissionLoading,
+  );
+  const viewMode: 'citizen' | 'municipality' =
+    uiMode === 'manage' ? 'municipality' : 'citizen';
+  const debouncedSearch = useDebouncedValue(search, 450);
 
-  const requestsQuery = useCityRequestsList(cityId, {
-    scope: 'all',
-    status:
-      viewMode === 'municipality' && filterStatus !== 'ALL'
-        ? filterStatus
-        : undefined,
-    departmentId:
-      viewMode === 'municipality' && filterDepartmentId !== 'ALL'
-        ? filterDepartmentId
-        : undefined,
-  });
+  const requestListQuery = useMemo(
+    () => ({
+      scope: 'all' as const,
+      search: debouncedSearch.trim() || undefined,
+      status:
+        uiMode === 'manage' && filterStatus !== 'ALL'
+          ? filterStatus
+          : undefined,
+      departmentId:
+        uiMode === 'manage' && filterDepartmentId !== 'ALL'
+          ? filterDepartmentId
+          : undefined,
+      priority:
+        uiMode === 'manage' && filterPriority !== 'ALL'
+          ? Number(filterPriority)
+          : undefined,
+      sortBy,
+      sortOrder,
+    }),
+    [
+      debouncedSearch,
+      uiMode,
+      filterStatus,
+      filterDepartmentId,
+      filterPriority,
+      sortBy,
+      sortOrder,
+    ],
+  );
+
+  const requestsQuery = useInfiniteCityRequestsList(cityId, requestListQuery);
+  const fetchNextRequestsPage = requestsQuery.fetchNextPage;
 
   const requests = useMemo(() => {
-    const baseRequests = requestsQuery.data ?? [];
-    if (viewMode !== 'municipality' || filterPriority === 'ALL')
-      return baseRequests;
-    return baseRequests.filter(
-      (request) => String(request.priority) === filterPriority,
-    );
-  }, [requestsQuery.data, viewMode, filterPriority]);
+    return requestsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  }, [requestsQuery.data]);
 
   const activeRequestId = selectedRequestId || requests[0]?.id || '';
   const cityQuery = useCityById(cityId);
@@ -324,104 +357,136 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     setNextStatus('IN_PROGRESS');
     setMunicipalityError('');
   }, []);
+  const loadMoreRequests = useCallback(() => {
+    void fetchNextRequestsPage();
+  }, [fetchNextRequestsPage]);
+
+  const requestListKey = `${viewMode}-${filterStatus}-${filterDepartmentId}-${filterPriority}`;
+  const requestListPanelProps = {
+    requests,
+    isLoading: requestsQuery.isLoading,
+    hasNextPage: requestsQuery.hasNextPage,
+    isFetchingNextPage: requestsQuery.isFetchingNextPage,
+    onLoadMore: loadMoreRequests,
+    viewMode,
+    activeRequestId,
+    onSelect: onSelectRequest,
+  };
+
+  const requestDetailPanelProps = {
+    cityId,
+    viewMode,
+    canManageRequests,
+    activeRequestId,
+    isLoading: detailQuery.isLoading,
+    detail: detailQuery.data,
+    messages:
+      messagesQuery.data ?? detailQuery.data?.chat?.messages ?? EMPTY_MESSAGES,
+    messageValue: message,
+    onMessageChange: setMessage,
+    onSendMessage,
+    isSendingMessage: createMessageMutation.isPending,
+    isMessageError: createMessageMutation.isError,
+    departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
+    selectedDepartmentId,
+    onSelectedDepartmentIdChange: setSelectedDepartmentId,
+    onAssignDepartment,
+    isAssigning: assignDepartmentMutation.isPending,
+    nextStatus,
+    onNextStatusChange: setNextStatus,
+    onUpdateStatus,
+    isUpdatingStatus: updateStatusMutation.isPending,
+    reportType,
+    onReportTypeChange: setReportType,
+    reportText,
+    onReportTextChange: setReportText,
+    reportFiles,
+    onReportFilesChange: setReportFiles,
+    onCreateReport,
+    isCreatingReport: createReportMutation.isPending,
+    municipalityError,
+  };
 
   return (
-    <div className="space-y-3">
+    <div
+      className={
+        viewMode === 'municipality'
+          ? 'flex min-h-[calc(100dvh-8rem)] flex-col gap-3'
+          : 'space-y-3'
+      }
+    >
       <h2 className="text-3xl">{t('cityProblem.title')}</h2>
-      <ProblemModeSwitcher
-        value={viewMode}
-        canManageRequests={canManageRequests}
+      <RoleModeSwitcher
+        value={uiMode}
+        canManage={canManageRequests}
         isPermissionLoading={isPermissionLoading}
-        onChange={(value: 'citizen' | 'municipality') => setViewMode(value)}
+        citizenLabel={t('cityProblem.viewModes.citizen')}
+        manageLabel={t('cityProblem.viewModes.municipality')}
+        onChange={setUiMode}
       />
 
       {viewMode === 'citizen' ? (
-        <CitizenRequestForm
-          title={title}
-          description={description}
-          lat={resolvedLat}
-          lng={resolvedLng}
-          defaultCenter={effectiveDefaultCenter}
-          formError={formError}
-          hasCoordinateError={hasCoordinateError}
-          isSubmitting={createRequestMutation.isPending}
-          isError={createRequestMutation.isError}
-          onTitleChange={(value: string) => {
-            setTitle(value);
-            setCreateRequestError('');
+        <CitizenRequestsView
+          form={{
+            title,
+            description,
+            lat: resolvedLat,
+            lng: resolvedLng,
+            defaultCenter: effectiveDefaultCenter,
+            formError,
+            hasCoordinateError,
+            isSubmitting: createRequestMutation.isPending,
+            isError: createRequestMutation.isError,
+            onTitleChange: (value: string) => {
+              setTitle(value);
+              setCreateRequestError('');
+            },
+            onDescriptionChange: (value: string) => {
+              setDescription(value);
+              setCreateRequestError('');
+            },
+            onLatChange: (value: string) => {
+              setLat(value);
+              setCreateRequestError('');
+            },
+            onLngChange: (value: string) => {
+              setLng(value);
+              setCreateRequestError('');
+            },
+            files: requestFiles,
+            onFilesChange: setRequestFiles,
+            onSubmit: onCreateRequest,
           }}
-          onDescriptionChange={(value: string) => {
-            setDescription(value);
-            setCreateRequestError('');
-          }}
-          onLatChange={(value: string) => {
-            setLat(value);
-            setCreateRequestError('');
-          }}
-          onLngChange={(value: string) => {
-            setLng(value);
-            setCreateRequestError('');
-          }}
-          files={requestFiles}
-          onFilesChange={setRequestFiles}
-          onSubmit={onCreateRequest}
+          listPanel={requestListPanelProps}
+          listKey={requestListKey}
+          detailPanel={requestDetailPanelProps}
+          search={search}
+          onSearchChange={setSearch}
+          onCreateRequest={onCreateRequest}
         />
       ) : (
-        <MunicipalityQueueHeader
-          filterStatus={filterStatus}
-          filterDepartmentId={filterDepartmentId}
-          filterPriority={filterPriority}
-          departments={departmentsQuery.data ?? []}
-          onFilterStatusChange={setFilterStatus}
-          onFilterDepartmentChange={setFilterDepartmentId}
-          onFilterPriorityChange={setFilterPriority}
+        <ManageRequestsView
+          header={{
+            filterStatus,
+            filterDepartmentId,
+            filterPriority,
+            search,
+            sortBy,
+            sortOrder,
+            departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
+            isDepartmentsLoading: departmentsQuery.isLoading,
+            onFilterStatusChange: setFilterStatus,
+            onFilterDepartmentChange: setFilterDepartmentId,
+            onFilterPriorityChange: setFilterPriority,
+            onSearchChange: setSearch,
+            onSortByChange: setSortBy,
+            onSortOrderChange: setSortOrder,
+          }}
+          listPanel={requestListPanelProps}
+          listKey={requestListKey}
+          detailPanel={requestDetailPanelProps}
         />
       )}
-
-      <div className="flex flex-col gap-3 lg:flex-row">
-        <RequestListPanel
-          key={`${viewMode}-${filterStatus}-${filterDepartmentId}-${filterPriority}`}
-          requests={requests}
-          isLoading={requestsQuery.isLoading}
-          viewMode={viewMode}
-          activeRequestId={activeRequestId}
-          onSelect={onSelectRequest}
-        />
-        <RequestDetailPanel
-          cityId={cityId}
-          viewMode={viewMode}
-          canManageRequests={canManageRequests}
-          activeRequestId={activeRequestId}
-          isLoading={detailQuery.isLoading}
-          detail={detailQuery.data}
-          messages={
-            messagesQuery.data ?? detailQuery.data?.chat?.messages ?? []
-          }
-          messageValue={message}
-          onMessageChange={setMessage}
-          onSendMessage={onSendMessage}
-          isSendingMessage={createMessageMutation.isPending}
-          isMessageError={createMessageMutation.isError}
-          departments={departmentsQuery.data ?? []}
-          selectedDepartmentId={selectedDepartmentId}
-          onSelectedDepartmentIdChange={setSelectedDepartmentId}
-          onAssignDepartment={onAssignDepartment}
-          isAssigning={assignDepartmentMutation.isPending}
-          nextStatus={nextStatus}
-          onNextStatusChange={setNextStatus}
-          onUpdateStatus={onUpdateStatus}
-          isUpdatingStatus={updateStatusMutation.isPending}
-          reportType={reportType}
-          onReportTypeChange={setReportType}
-          reportText={reportText}
-          onReportTextChange={setReportText}
-          reportFiles={reportFiles}
-          onReportFilesChange={setReportFiles}
-          onCreateReport={onCreateReport}
-          isCreatingReport={createReportMutation.isPending}
-          municipalityError={municipalityError}
-        />
-      </div>
     </div>
   );
 }

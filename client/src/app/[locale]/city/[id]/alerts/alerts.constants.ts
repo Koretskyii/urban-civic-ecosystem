@@ -1,5 +1,7 @@
 import type { AlertSeverity } from '@/types';
 
+export const ALERT_TYPE_PLACEHOLDER = '__alert_type_placeholder__';
+
 export const ALERT_SEVERITY_OPTIONS: AlertSeverity[] = [
   'CRITICAL',
   'HIGH',

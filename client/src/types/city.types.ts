@@ -7,6 +7,11 @@ export interface City {
   centerLng?: number | null;
 }
 
+export interface PaginatedResponse<T> {
+  items: T[];
+  nextCursor?: string | null;
+}
+
 export interface Alert {
   id: string;
   cityId: string;
@@ -37,7 +42,12 @@ export interface AlertListQuery {
   includeDeleted?: boolean;
   search?: string;
   severity?: AlertSeverity;
+  alertTypeId?: string;
   onlyActive?: boolean;
+  limit?: number;
+  cursor?: string;
+  sortBy?: 'severity' | 'createdAt' | 'expiresAt' | 'title';
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface CreateAlertPayload {
@@ -78,6 +88,10 @@ export interface News {
 export interface NewsListQuery {
   includeDeleted?: boolean;
   search?: string;
+  limit?: number;
+  cursor?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'title';
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface CreateNewsPayload {
