@@ -460,6 +460,8 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
           listPanel={requestListPanelProps}
           listKey={requestListKey}
           detailPanel={requestDetailPanelProps}
+          search={search}
+          onSearchChange={setSearch}
           onCreateRequest={onCreateRequest}
         />
       ) : (
