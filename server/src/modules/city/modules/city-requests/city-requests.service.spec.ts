@@ -19,10 +19,8 @@ describe('CityRequestsService', () => {
       update: jest.fn(),
     },
     department: {
-      createMany: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
-      updateMany: jest.fn(),
     },
   };
 
@@ -255,13 +253,11 @@ describe('CityRequestsService', () => {
     expect(mockRbacService.hasPermission).not.toHaveBeenCalled();
   });
 
-  it('getDepartments should sync default departments before returning active departments', async () => {
+  it('getDepartments should return active departments without mutating department state', async () => {
     mockPrismaService.userCity.findUnique.mockResolvedValue({
       userId: 'manager-1',
       cityId: 'city-1',
     });
-    mockPrismaService.department.createMany.mockResolvedValue({ count: 6 });
-    mockPrismaService.department.updateMany.mockResolvedValue({ count: 6 });
     mockPrismaService.department.findMany.mockResolvedValue([
       {
         id: 'dep-1',
@@ -282,16 +278,6 @@ describe('CityRequestsService', () => {
       },
     ]);
 
-    expect(mockPrismaService.department.createMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        skipDuplicates: true,
-      }),
-    );
-    expect(mockPrismaService.department.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: { isActive: true },
-      }),
-    );
     expect(mockPrismaService.department.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { cityId: 'city-1', isActive: true },

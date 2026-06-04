@@ -11,7 +11,6 @@ import { R2StorageService } from '@/modules/r2/r2.service';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { ReportType, RequestStatus } from '@/generated/prisma/enums';
 import type { Prisma } from '@/generated/prisma/client';
-import { DEFAULT_CITY_DEPARTMENTS } from '@/shared/constants/departments.const';
 import {
   AssignCityRequestDto,
   CityRequestScope,
@@ -459,7 +458,6 @@ export class CityRequestsService {
 
   async getDepartments(cityId: string, userId: string) {
     await this.ensureCityMembership(cityId, userId);
-    await this.ensureDefaultDepartments(cityId);
 
     return this.prisma.department.findMany({
       where: { cityId, isActive: true },
@@ -470,28 +468,6 @@ export class CityRequestsService {
         description: true,
       },
       orderBy: { name: 'asc' },
-    });
-  }
-
-  private async ensureDefaultDepartments(cityId: string) {
-    await this.prisma.department.createMany({
-      data: DEFAULT_CITY_DEPARTMENTS.map((department) => ({
-        cityId,
-        ...department,
-      })),
-      skipDuplicates: true,
-    });
-
-    await this.prisma.department.updateMany({
-      where: {
-        cityId,
-        type: {
-          in: DEFAULT_CITY_DEPARTMENTS.map((department) => department.type),
-        },
-      },
-      data: {
-        isActive: true,
-      },
     });
   }
 
