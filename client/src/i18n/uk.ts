@@ -183,7 +183,6 @@ export const uk = {
       alerts: 'Оголошення',
       posts: 'Пости',
       community: "Ком'юніті",
-      members: 'Учасники',
       adminSettings: 'Налаштування адміна',
       projects: 'Проєкти',
       problem: 'Реєстрація проблеми',

@@ -181,7 +181,6 @@ export const en = {
       alerts: 'Announcements',
       posts: 'Posts',
       community: 'Community',
-      members: 'Members',
       adminSettings: 'Admin settings',
       projects: 'Projects',
       problem: 'Report a problem',
