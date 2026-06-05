@@ -17,6 +17,8 @@ const PERMISSION_REQUIRED_ROUTES: Array<{
   pathPrefix: string;
   permission: string;
 }> = [];
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3001';
 
 const decodeToken = (token: string): TokenPayload | null => {
   try {
@@ -49,7 +51,52 @@ const getLocalePrefix = (pathname: string): string => {
   return `/${defaultLocale}`;
 };
 
-export default function middleware(request: NextRequest) {
+const getCityIdFromPathname = (pathname: string): string | null => {
+  const [, section, cityId] = pathname.split('/');
+
+  if (section !== 'city' || !cityId) {
+    return null;
+  }
+
+  return cityId;
+};
+
+const isCityBannedPath = (pathname: string, cityId: string): boolean =>
+  pathname === `/city/${cityId}/banned`;
+
+const isUserBlockedInCity = async (
+  request: NextRequest,
+  cityId: string,
+): Promise<boolean> => {
+  const accessToken = request.cookies.get('access_token')?.value;
+
+  if (!accessToken) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/users/me/permissions?cityId=${encodeURIComponent(cityId)}`,
+      {
+        headers: {
+          Cookie: `access_token=${accessToken}`,
+        },
+        cache: 'no-store',
+      },
+    );
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = (await response.json()) as { isBlocked?: boolean };
+    return data.isBlocked === true;
+  } catch {
+    return false;
+  }
+};
+
+export default async function middleware(request: NextRequest) {
   const localePrefix = getLocalePrefix(request.nextUrl.pathname);
   const pathname = stripLocalePrefix(request.nextUrl.pathname);
   const token = request.cookies.get('access_token')?.value;
@@ -63,6 +110,17 @@ export default function middleware(request: NextRequest) {
   if (requiresAuth && !isAuthenticated) {
     return NextResponse.redirect(
       new URL(`${localePrefix}/user/auth`, request.url),
+    );
+  }
+
+  const cityId = getCityIdFromPathname(pathname);
+  if (
+    cityId &&
+    !isCityBannedPath(pathname, cityId) &&
+    (await isUserBlockedInCity(request, cityId))
+  ) {
+    return NextResponse.redirect(
+      new URL(`${localePrefix}/city/${cityId}/banned`, request.url),
     );
   }
 
