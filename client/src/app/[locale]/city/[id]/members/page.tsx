@@ -1,4 +1,4 @@
-import MembersView from './_components/MembersView';
+import { redirect } from 'next/navigation';
 
 interface MembersPageProps {
   params: Promise<{ id: string }>;
@@ -7,5 +7,5 @@ interface MembersPageProps {
 export default async function MembersPage({ params }: MembersPageProps) {
   const { id: cityId } = await params;
 
-  return <MembersView cityId={cityId} />;
+  redirect(`/city/${cityId}/admin-settings?section=members`);
 }
