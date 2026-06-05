@@ -107,6 +107,8 @@ export const uk = {
     },
     actions: {
       create: 'Створити звернення',
+      newRequest: 'Нове звернення',
+      hideCreateForm: 'Сховати форму',
       creating: 'Створення...',
       send: 'Надіслати',
       assign: 'Призначити',
@@ -118,9 +120,6 @@ export const uk = {
       municipality: 'Режим муніципалітету',
     },
     municipality: {
-      queueTitle: 'Черга муніципалітету',
-      queueHint:
-        'Використовуйте цю чергу для опрацювання звернень і координації служб.',
       listTitle: 'Усі міські звернення',
       controlsTitle: 'Інструменти муніципалітету',
       reportTextRequiredHint:

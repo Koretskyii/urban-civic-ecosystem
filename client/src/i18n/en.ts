@@ -107,6 +107,8 @@ export const en = {
     },
     actions: {
       create: 'Create request',
+      newRequest: 'New request',
+      hideCreateForm: 'Hide form',
       creating: 'Creating...',
       send: 'Send',
       assign: 'Assign',
@@ -118,8 +120,6 @@ export const en = {
       municipality: 'Municipality view',
     },
     municipality: {
-      queueTitle: 'Municipality queue',
-      queueHint: 'Use this queue to process requests and coordinate services.',
       listTitle: 'All city requests',
       controlsTitle: 'Municipality controls',
       reportTextRequiredHint:
