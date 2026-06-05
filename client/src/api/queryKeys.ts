@@ -2,10 +2,12 @@ import type {
   AlertListQuery,
   GetCityRequestsQuery,
   NewsListQuery,
+  CityMembersListQuery,
 } from '@/types';
 import {
   CITY_ALERTS_DEFAULT_FILTER_FIELDS,
   CITY_NEWS_DEFAULT_FILTER_FIELDS,
+  CITY_MEMBERS_DEFAULT_FILTER_FIELDS,
   CITY_REQUESTS_DEFAULT_FILTER_FIELDS,
 } from './api.constants';
 
@@ -56,7 +58,18 @@ export const queryKeys = {
 
   cityMembers: {
     all: (cityId: string) => ['city-members', cityId] as const,
-    list: (cityId: string) => ['city-members', cityId, 'list'] as const,
+    list: (cityId: string, filters?: CityMembersListQuery) =>
+      [
+        'city-members',
+        cityId,
+        'list',
+        filters?.search ?? CITY_MEMBERS_DEFAULT_FILTER_FIELDS.search,
+        filters?.role ?? CITY_MEMBERS_DEFAULT_FILTER_FIELDS.role,
+        filters?.limit ?? CITY_MEMBERS_DEFAULT_FILTER_FIELDS.limit,
+        filters?.page ?? CITY_MEMBERS_DEFAULT_FILTER_FIELDS.page,
+        filters?.sortBy ?? CITY_MEMBERS_DEFAULT_FILTER_FIELDS.sortBy,
+        filters?.sortOrder ?? CITY_MEMBERS_DEFAULT_FILTER_FIELDS.sortOrder,
+      ] as const,
   },
 
   projects: {

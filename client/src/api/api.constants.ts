@@ -27,3 +27,12 @@ export const CITY_ALERTS_DEFAULT_FILTER_FIELDS = {
   sortBy: 'severity',
   sortOrder: 'asc',
 } as const;
+
+export const CITY_MEMBERS_DEFAULT_FILTER_FIELDS = {
+  search: '',
+  role: 'all-roles',
+  limit: 'default-limit',
+  page: 'default-page',
+  sortBy: 'joinedAt',
+  sortOrder: 'asc',
+} as const;

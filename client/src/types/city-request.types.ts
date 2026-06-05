@@ -10,7 +10,15 @@ export type Department = {
   name: string;
   type: string;
   description?: string | null;
+  isDefault: boolean;
 };
+
+export type CreateDepartmentPayload = {
+  name: string;
+  description?: string;
+};
+
+export type UpdateDepartmentPayload = Partial<CreateDepartmentPayload>;
 
 export type Attachment = {
   id: string;
