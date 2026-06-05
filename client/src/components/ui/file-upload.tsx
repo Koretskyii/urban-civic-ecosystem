@@ -27,7 +27,10 @@ export function FileUpload({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      const combined = [...value, ...newFiles].slice(0, maxFiles);
+      const combined =
+        maxFiles === 1
+          ? newFiles.slice(0, 1)
+          : [...value, ...newFiles].slice(0, maxFiles);
       onChange(combined);
     }
 
@@ -56,7 +59,7 @@ export function FileUpload({
           type="file"
           ref={inputRef}
           className="hidden"
-          multiple
+          multiple={maxFiles > 1}
           accept={accept}
           disabled={disabled}
           onChange={handleFileChange}

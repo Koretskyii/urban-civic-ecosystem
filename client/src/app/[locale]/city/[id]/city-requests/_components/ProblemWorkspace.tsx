@@ -7,17 +7,9 @@ import { useRouter } from '@/i18n/navigation';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   usePermission,
-  useCityRequestDetail,
-  useCityRequestMessages,
   useCityById,
-  useCityRequestRealtime,
-  useCityDepartments,
-  useAssignCityRequestDepartment,
   useCreateCityRequest,
-  useCreateCityRequestMessage,
-  useCreateCityRequestReport,
   useInfiniteCityRequestsList,
-  useUpdateCityRequestStatus,
   useRoleUiMode,
 } from '@/hooks';
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
@@ -27,15 +19,11 @@ import {
   normalizeCoordinate,
   validateCoordinates,
 } from '@/features/city-requests';
-import type {
-  CityRequestMessage,
-  CityRequestStatus,
-  Department,
-  ReportType,
-} from '@/types';
+import type { CityRequestStatus, Department } from '@/types';
 import { CitizenRequestsView } from './CitizenRequestsView';
 import { ManageRequestsView } from './ManageRequestsView';
 import { isForbiddenError } from '@/features/city-requests/helpers/errors.helpers';
+import { useCityRequestDetailController } from './useCityRequestDetailController';
 
 interface ProblemWorkspaceProps {
   cityId: string;
@@ -45,9 +33,10 @@ type CreateRequestErrorKey =
   | ''
   | 'required'
   | 'coordinatesInvalid'
-  | 'coordinatesOutOfRange';
+  | 'coordinatesOutOfRange'
+  | 'tooManyAttachments'
+  | 'invalidAttachmentType';
 
-const EMPTY_MESSAGES: CityRequestMessage[] = [];
 const EMPTY_DEPARTMENTS: Department[] = [];
 
 const isUsableCityCenter = (lat: unknown, lng: unknown): boolean => {
@@ -70,7 +59,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [requestFiles, setRequestFiles] = useState<File[]>([]);
-  const [message, setMessage] = useState('');
   const [createRequestError, setCreateRequestError] =
     useState<CreateRequestErrorKey>('');
   const [filterStatus, setFilterStatus] = useState<CityRequestStatus | 'ALL'>(
@@ -85,14 +73,6 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     'createdAt' | 'updatedAt' | 'priority' | 'status'
   >('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState('');
-  const [nextStatus, setNextStatus] =
-    useState<CityRequestStatus>('IN_PROGRESS');
-  const [reportType, setReportType] = useState<ReportType>('PROGRESS');
-  const [reportText, setReportText] = useState('');
-  const [reportFiles, setReportFiles] = useState<File[]>([]);
-  const [municipalityError, setMunicipalityError] = useState('');
-
   const { can: canManageRequests, isLoading: isPermissionLoading } =
     usePermission(PERMISSION_GROUPS.CITY_REQUEST.MANAGE, { cityId });
   const { mode: uiMode, setMode: setUiMode } = useRoleUiMode(
@@ -157,21 +137,15 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   const resolvedLat = lat.trim() ? lat : fallbackLat;
   const resolvedLng = lng.trim() ? lng : fallbackLng;
 
-  const detailQuery = useCityRequestDetail(cityId, activeRequestId);
-  const messagesQuery = useCityRequestMessages(cityId, activeRequestId);
-  const departmentsQuery = useCityDepartments(cityId);
-
-  useCityRequestRealtime({
+  const requestDetailController = useCityRequestDetailController({
     cityId,
     requestId: activeRequestId,
-    enabled: Boolean(activeRequestId),
+    canManageRequests,
+    viewMode,
   });
+  const { resetControls } = requestDetailController;
 
   const createRequestMutation = useCreateCityRequest();
-  const createMessageMutation = useCreateCityRequestMessage();
-  const assignDepartmentMutation = useAssignCityRequestDepartment();
-  const updateStatusMutation = useUpdateCityRequestStatus();
-  const createReportMutation = useCreateCityRequestReport();
   const formError = createRequestError
     ? t(`cityProblem.errors.${createRequestError}`)
     : '';
@@ -182,21 +156,11 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   useEffect(() => {
     if (
       isForbiddenError(requestsQuery.error) ||
-      isForbiddenError(cityQuery.error) ||
-      isForbiddenError(detailQuery.error) ||
-      isForbiddenError(messagesQuery.error) ||
-      isForbiddenError(departmentsQuery.error)
+      isForbiddenError(cityQuery.error)
     ) {
       router.replace('/forbidden');
     }
-  }, [
-    requestsQuery.error,
-    cityQuery.error,
-    detailQuery.error,
-    messagesQuery.error,
-    departmentsQuery.error,
-    router,
-  ]);
+  }, [requestsQuery.error, cityQuery.error, router]);
 
   const onCreateRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -216,6 +180,14 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
             ? 'coordinatesInvalid'
             : 'coordinatesOutOfRange',
         );
+        return;
+      }
+      if (requestFiles.length > 1) {
+        setCreateRequestError('tooManyAttachments');
+        return;
+      }
+      if (requestFiles.some((file) => !file.type.startsWith('image/'))) {
+        setCreateRequestError('invalidAttachmentType');
         return;
       }
       setLat(coordinateValidation.normalizedLat);
@@ -242,112 +214,13 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     }
   };
 
-  const onSendMessage = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!activeRequestId || !message.trim()) return;
-    try {
-      await createMessageMutation.mutateAsync({
-        cityId,
-        requestId: activeRequestId,
-        content: message.trim(),
-      });
-      setMessage('');
-    } catch (error) {
-      if (isForbiddenError(error)) router.replace('/forbidden');
-      return;
-    }
-  };
-
-  const onAssignDepartment = async () => {
-    if (!activeRequestId || !selectedDepartmentId) {
-      setMunicipalityError(t('cityProblem.errors.departmentRequired'));
-      return;
-    }
-    setMunicipalityError('');
-    try {
-      await assignDepartmentMutation.mutateAsync({
-        cityId,
-        requestId: activeRequestId,
-        departmentId: selectedDepartmentId,
-      });
-    } catch (error) {
-      if (isForbiddenError(error)) {
-        router.replace('/forbidden');
-        return;
-      }
-      setMunicipalityError(t('cityProblem.loadError'));
-      return;
-    }
-  };
-
-  const onUpdateStatus = async () => {
-    if (!activeRequestId) return;
-    if (nextStatus === 'RESOLVED' || nextStatus === 'REJECTED') {
-      setMunicipalityError(t('cityProblem.errors.useReportForFinalStatus'));
-      return;
-    }
-    setMunicipalityError('');
-    try {
-      await updateStatusMutation.mutateAsync({
-        cityId,
-        requestId: activeRequestId,
-        status: nextStatus,
-      });
-    } catch (error) {
-      if (isForbiddenError(error)) {
-        router.replace('/forbidden');
-        return;
-      }
-      setMunicipalityError(t('cityProblem.loadError'));
-      return;
-    }
-  };
-
-  const onCreateReport = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!activeRequestId) return;
-    if (
-      (reportType === 'RESOLUTION' || reportType === 'REJECTION') &&
-      !reportText.trim()
-    ) {
-      setMunicipalityError(t('cityProblem.errors.reportTextRequired'));
-      return;
-    }
-    setMunicipalityError('');
-    try {
-      await createReportMutation.mutateAsync({
-        cityId,
-        requestId: activeRequestId,
-        payload: {
-          type: reportType,
-          status:
-            reportType === 'RESOLUTION'
-              ? 'RESOLVED'
-              : reportType === 'REJECTION'
-                ? 'REJECTED'
-                : undefined,
-          description: reportText.trim() || undefined,
-        },
-        files: reportFiles,
-      });
-      setReportText('');
-      setReportFiles([]);
-    } catch (error) {
-      if (isForbiddenError(error)) {
-        router.replace('/forbidden');
-        return;
-      }
-      setMunicipalityError(t('cityProblem.loadError'));
-      return;
-    }
-  };
-
-  const onSelectRequest = useCallback((requestId: string) => {
-    setSelectedRequestId(requestId);
-    setSelectedDepartmentId('');
-    setNextStatus('IN_PROGRESS');
-    setMunicipalityError('');
-  }, []);
+  const onSelectRequest = useCallback(
+    (requestId: string) => {
+      resetControls();
+      setSelectedRequestId(requestId);
+    },
+    [resetControls],
+  );
   const loadMoreRequests = useCallback(() => {
     void fetchNextRequestsPage();
   }, [fetchNextRequestsPage]);
@@ -368,8 +241,8 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     search,
     sortBy,
     sortOrder,
-    departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
-    isDepartmentsLoading: departmentsQuery.isLoading,
+    departments: requestDetailController.departments ?? EMPTY_DEPARTMENTS,
+    isDepartmentsLoading: requestDetailController.departmentsQuery.isLoading,
     onFilterStatusChange: setFilterStatus,
     onFilterDepartmentChange: setFilterDepartmentId,
     onFilterPriorityChange: setFilterPriority,
@@ -389,37 +262,8 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
   };
 
   const requestDetailPanelProps = {
-    cityId,
-    viewMode,
-    canManageRequests,
-    activeRequestId,
-    isLoading: detailQuery.isLoading,
-    detail: detailQuery.data,
-    messages:
-      messagesQuery.data ?? detailQuery.data?.chat?.messages ?? EMPTY_MESSAGES,
-    messageValue: message,
-    onMessageChange: setMessage,
-    onSendMessage,
-    isSendingMessage: createMessageMutation.isPending,
-    isMessageError: createMessageMutation.isError,
-    departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
-    selectedDepartmentId,
-    onSelectedDepartmentIdChange: setSelectedDepartmentId,
-    onAssignDepartment,
-    isAssigning: assignDepartmentMutation.isPending,
-    nextStatus,
-    onNextStatusChange: setNextStatus,
-    onUpdateStatus,
-    isUpdatingStatus: updateStatusMutation.isPending,
-    reportType,
-    onReportTypeChange: setReportType,
-    reportText,
-    onReportTextChange: setReportText,
-    reportFiles,
-    onReportFilesChange: setReportFiles,
-    onCreateReport,
-    isCreatingReport: createReportMutation.isPending,
-    municipalityError,
+    ...requestDetailController.detailPanelProps,
+    showFullPageAction: true,
   };
 
   return (

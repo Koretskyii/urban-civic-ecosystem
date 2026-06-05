@@ -46,6 +46,9 @@ interface MunicipalityRequestControlsProps {
   isReportTextRequired: boolean;
   isReportTextEmpty: boolean;
   createReportDisabled: boolean;
+  hasFinalReport: boolean;
+  canCreateProgressReport: boolean;
+  canCreateFinalReport: boolean;
   translateStatus: (status: CityRequestStatus) => string;
   translateReportType: (type: ReportType) => string;
 }
@@ -86,6 +89,9 @@ export function MunicipalityRequestControls(
     isReportTextRequired,
     isReportTextEmpty,
     createReportDisabled,
+    hasFinalReport,
+    canCreateProgressReport,
+    canCreateFinalReport,
     translateStatus,
     translateReportType,
   } = props;
@@ -176,7 +182,15 @@ export function MunicipalityRequestControls(
             </SelectTrigger>
             <SelectContent>
               {REPORT_TYPE_OPTIONS.map((type) => (
-                <SelectItem key={type} value={type}>
+                <SelectItem
+                  key={type}
+                  value={type}
+                  disabled={
+                    (type === 'PROGRESS' && !canCreateProgressReport) ||
+                    ((type === 'RESOLUTION' || type === 'REJECTION') &&
+                      (hasFinalReport || !canCreateFinalReport))
+                  }
+                >
                   {translateReportType(type)}
                 </SelectItem>
               ))}
@@ -202,7 +216,7 @@ export function MunicipalityRequestControls(
           <FileUpload
             value={reportFiles}
             onChange={onReportFilesChange}
-            maxFiles={5}
+            maxFiles={1}
             disabled={isCreatingReport}
           />
           <button

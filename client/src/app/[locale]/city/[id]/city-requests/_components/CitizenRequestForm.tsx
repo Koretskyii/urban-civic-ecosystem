@@ -111,7 +111,8 @@ export function CitizenRequestForm(props: CitizenRequestFormProps) {
         <FileUpload
           value={files}
           onChange={onFilesChange}
-          maxFiles={5}
+          maxFiles={1}
+          accept="image/*"
           disabled={isSubmitting}
         />
         <Button type="submit" disabled={isSubmitting}>

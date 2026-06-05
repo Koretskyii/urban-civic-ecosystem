@@ -2,6 +2,10 @@
 
 import type { FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { ArrowRight } from 'lucide-react';
+import { useRouter } from '@/i18n/navigation';
+import { Button } from '@/components/ui/button';
+import { getCityRequestReportFlowState } from '@/features/city-requests';
 import type {
   CityRequestDetail,
   CityRequestMessage,
@@ -46,11 +50,14 @@ interface RequestDetailPanelProps {
   onCreateReport: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   isCreatingReport: boolean;
   municipalityError: string;
+  showFullPageAction?: boolean;
 }
 
 export function RequestDetailPanel(props: RequestDetailPanelProps) {
   const t = useTranslations();
+  const router = useRouter();
   const {
+    cityId,
     viewMode,
     canManageRequests,
     activeRequestId,
@@ -80,20 +87,37 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
     onCreateReport,
     isCreatingReport,
     municipalityError,
+    showFullPageAction = false,
   } = props;
 
   const isFinalStatus = nextStatus === 'RESOLVED' || nextStatus === 'REJECTED';
-  const isReportTextRequired =
-    reportType === 'RESOLUTION' || reportType === 'REJECTION';
-  const isReportTextEmpty = reportText.trim().length === 0;
-  const isResolvedOrRejected =
-    detail?.status === 'RESOLVED' || detail?.status === 'REJECTED';
+  const {
+    isReportTextRequired,
+    isReportTextEmpty,
+    isResolvedOrRejected,
+    hasFinalReport,
+    canCreateProgressReport,
+    canCreateFinalReport,
+    isProgressReportUnavailable,
+    isFinalReportUnavailable,
+    hasTooManyReportAttachments,
+  } = getCityRequestReportFlowState({
+    detail,
+    reportType,
+    reportText,
+    reportFiles,
+  });
   const assignDisabled =
     isAssigning || !selectedDepartmentId || isResolvedOrRejected;
   const statusUpdateDisabled =
     isUpdatingStatus || isFinalStatus || isResolvedOrRejected;
   const createReportDisabled =
-    isCreatingReport || (isReportTextRequired && isReportTextEmpty);
+    isCreatingReport ||
+    isResolvedOrRejected ||
+    isProgressReportUnavailable ||
+    isFinalReportUnavailable ||
+    hasTooManyReportAttachments ||
+    (isReportTextRequired && isReportTextEmpty);
 
   return (
     <div
@@ -103,7 +127,23 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
           : 'min-h-[420px] flex-[2] rounded-lg border border-black/10 bg-white p-3'
       }
     >
-      <h3 className="mb-2 text-xl">{t('cityProblem.detailTitle')}</h3>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-xl">{t('cityProblem.detailTitle')}</h3>
+        {showFullPageAction && activeRequestId ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              router.push(`/city/${cityId}/city-requests/${activeRequestId}`)
+            }
+            className="gap-2"
+          >
+            {t('cityProblem.actions.openFullPage')}
+            <ArrowRight size={15} className="ml-1" />
+          </Button>
+        ) : null}
+      </div>
       {!activeRequestId ? (
         <p className="text-sm">{t('cityProblem.selectPrompt')}</p>
       ) : isLoading ? (
@@ -166,6 +206,9 @@ export function RequestDetailPanel(props: RequestDetailPanelProps) {
               isReportTextRequired={isReportTextRequired}
               isReportTextEmpty={isReportTextEmpty}
               createReportDisabled={createReportDisabled}
+              hasFinalReport={hasFinalReport}
+              canCreateProgressReport={canCreateProgressReport}
+              canCreateFinalReport={canCreateFinalReport}
               translateStatus={(status) => t(`cityProblem.statuses.${status}`)}
               translateReportType={(type) =>
                 t(`cityProblem.reportTypes.${type}`)

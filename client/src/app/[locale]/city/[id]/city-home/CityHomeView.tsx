@@ -138,7 +138,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
     });
   };
   const openRequest = (requestId: string) => {
-    router.push(`${baseRoute}/city-requests?requestId=${requestId}`);
+    router.push(`${baseRoute}/city-requests/${requestId}`);
   };
 
   if (isCityLoading || isRbacLoading || !city) {

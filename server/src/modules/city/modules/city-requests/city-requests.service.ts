@@ -44,6 +44,21 @@ export class CityRequestsService {
   ) {
     await this.ensureCityMembership(cityId, userId);
 
+    if (
+      (files?.length ?? 0) >
+      CITY_REQUESTS_CONSTANTS.LIMITS.REQUEST_ATTACHMENTS_MAX
+    ) {
+      throw new BadRequestException(
+        CITY_REQUESTS_ERRORS.TOO_MANY_REQUEST_ATTACHMENTS,
+      );
+    }
+
+    if (files?.some((file) => !file.mimetype?.startsWith('image/'))) {
+      throw new BadRequestException(
+        CITY_REQUESTS_ERRORS.INVALID_REQUEST_ATTACHMENT_TYPE,
+      );
+    }
+
     const requestId = crypto.randomUUID();
     const attachments = files?.length
       ? await this.uploadRequestAttachments(cityId, requestId, files)
@@ -322,7 +337,53 @@ export class CityRequestsService {
   ) {
     await this.ensureManagePermission(cityId, userId);
 
-    await this.getCityRequestOrThrow(cityId, requestId);
+    const request = await this.prisma.cityRequest.findFirst({
+      where: { id: requestId, cityId },
+      include: {
+        reports: {
+          select: {
+            type: true,
+          },
+        },
+      },
+    });
+
+    if (!request) {
+      throw new NotFoundException(CITY_REQUESTS_ERRORS.REQUEST_NOT_FOUND);
+    }
+
+    if (
+      (files?.length ?? 0) >
+      CITY_REQUESTS_CONSTANTS.LIMITS.REPORT_ATTACHMENTS_MAX
+    ) {
+      throw new BadRequestException(
+        CITY_REQUESTS_ERRORS.TOO_MANY_REPORT_ATTACHMENTS,
+      );
+    }
+
+    const isProgressReport = dto.type === ReportType.PROGRESS;
+    const isFinalReport =
+      dto.type === ReportType.RESOLUTION || dto.type === ReportType.REJECTION;
+    const hasFinalReport = request.reports.some(
+      (report) =>
+        report.type === ReportType.RESOLUTION ||
+        report.type === ReportType.REJECTION,
+    );
+    const isRequestFinal =
+      request.status === RequestStatus.RESOLVED ||
+      request.status === RequestStatus.REJECTED;
+
+    if (isProgressReport && request.status !== RequestStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        CITY_REQUESTS_ERRORS.PROGRESS_REPORT_REQUIRES_IN_PROGRESS,
+      );
+    }
+
+    if (isFinalReport && (hasFinalReport || isRequestFinal)) {
+      throw new BadRequestException(
+        CITY_REQUESTS_ERRORS.FINAL_REPORT_ALREADY_EXISTS,
+      );
+    }
 
     if (
       (dto.type === ReportType.RESOLUTION ||
@@ -333,6 +394,13 @@ export class CityRequestsService {
         CITY_REQUESTS_ERRORS.RESOLUTION_REJECTION_REQUIRES_DESCRIPTION,
       );
     }
+
+    const reportStatus =
+      dto.type === ReportType.RESOLUTION
+        ? RequestStatus.RESOLVED
+        : dto.type === ReportType.REJECTION
+          ? RequestStatus.REJECTED
+          : undefined;
 
     const reportId = crypto.randomUUID();
     const uploaded = files?.length
@@ -346,7 +414,7 @@ export class CityRequestsService {
           cityRequestId: requestId,
           authorId: userId,
           type: dto.type,
-          status: dto.status,
+          status: reportStatus,
           description: dto.description,
         },
       });
@@ -365,14 +433,14 @@ export class CityRequestsService {
         });
       }
 
-      if (dto.status) {
+      if (reportStatus) {
         await tx.cityRequest.update({
           where: { id: requestId },
           data: {
-            status: dto.status,
+            status: reportStatus,
             resolvedAt:
-              dto.status === RequestStatus.RESOLVED ||
-              dto.status === RequestStatus.REJECTED
+              reportStatus === RequestStatus.RESOLVED ||
+              reportStatus === RequestStatus.REJECTED
                 ? new Date()
                 : null,
           },

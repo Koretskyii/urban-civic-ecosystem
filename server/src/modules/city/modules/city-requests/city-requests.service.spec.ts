@@ -124,6 +124,77 @@ describe('CityRequestsService', () => {
     expect(txMock.attachment.createMany).toHaveBeenCalled();
   });
 
+  it('createRequest should reject more than one request attachment', async () => {
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'user-1',
+      cityId: 'city-1',
+    });
+
+    const files = [
+      {
+        originalname: 'photo-1.jpg',
+        mimetype: 'image/jpeg',
+        buffer: Buffer.from('file-1'),
+      },
+      {
+        originalname: 'photo-2.jpg',
+        mimetype: 'image/jpeg',
+        buffer: Buffer.from('file-2'),
+      },
+    ] as Express.Multer.File[];
+
+    await expect(
+      service.createRequest(
+        'city-1',
+        'user-1',
+        {
+          title: 'Broken streetlight',
+          locationLat: 50.45,
+          locationLng: 30.52,
+        },
+        files,
+      ),
+    ).rejects.toThrow('Only one attachment can be added to a city request');
+
+    expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+    expect(
+      mockR2StorageService.uploadCityRequestAttachment,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('createRequest should reject non-image request attachment', async () => {
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'user-1',
+      cityId: 'city-1',
+    });
+
+    const files = [
+      {
+        originalname: 'document.pdf',
+        mimetype: 'application/pdf',
+        buffer: Buffer.from('file'),
+      },
+    ] as Express.Multer.File[];
+
+    await expect(
+      service.createRequest(
+        'city-1',
+        'user-1',
+        {
+          title: 'Broken streetlight',
+          locationLat: 50.45,
+          locationLng: 30.52,
+        },
+        files,
+      ),
+    ).rejects.toThrow('Only image attachments can be added to a city request');
+
+    expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+    expect(
+      mockR2StorageService.uploadCityRequestAttachment,
+    ).not.toHaveBeenCalled();
+  });
+
   it('assignDepartment should update OPEN request to IN_PROGRESS', async () => {
     mockPrismaService.userCity.findUnique.mockResolvedValue({
       userId: 'manager-1',
@@ -165,6 +236,7 @@ describe('CityRequestsService', () => {
       id: 'request-1',
       cityId: 'city-1',
       status: RequestStatus.IN_PROGRESS,
+      reports: [],
     });
 
     const txMock = {
@@ -224,6 +296,101 @@ describe('CityRequestsService', () => {
     };
     expect(updateRequestCall.data.status).toBe(RequestStatus.RESOLVED);
     expect(updateRequestCall.data.resolvedAt).toBeInstanceOf(Date);
+  });
+
+  it('createReport should reject progress report unless request is in progress', async () => {
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'manager-1',
+      cityId: 'city-1',
+    });
+    mockRbacService.hasPermission.mockResolvedValue(true);
+    mockPrismaService.cityRequest.findFirst.mockResolvedValue({
+      id: 'request-1',
+      cityId: 'city-1',
+      status: RequestStatus.OPEN,
+      reports: [],
+    });
+
+    await expect(
+      service.createReport('city-1', 'request-1', 'manager-1', {
+        type: ReportType.PROGRESS,
+        description: 'Started review.',
+      }),
+    ).rejects.toThrow(
+      'Progress report can be created only for in-progress city requests',
+    );
+
+    expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('createReport should reject second final report', async () => {
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'manager-1',
+      cityId: 'city-1',
+    });
+    mockRbacService.hasPermission.mockResolvedValue(true);
+    mockPrismaService.cityRequest.findFirst.mockResolvedValue({
+      id: 'request-1',
+      cityId: 'city-1',
+      status: RequestStatus.RESOLVED,
+      reports: [{ type: ReportType.RESOLUTION }],
+    });
+
+    await expect(
+      service.createReport('city-1', 'request-1', 'manager-1', {
+        type: ReportType.REJECTION,
+        description: 'Rejecting after resolution should not be possible.',
+      }),
+    ).rejects.toThrow('Final report already exists for this city request');
+
+    expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('createReport should reject more than one report attachment', async () => {
+    mockPrismaService.userCity.findUnique.mockResolvedValue({
+      userId: 'manager-1',
+      cityId: 'city-1',
+    });
+    mockRbacService.hasPermission.mockResolvedValue(true);
+    mockPrismaService.cityRequest.findFirst.mockResolvedValue({
+      id: 'request-1',
+      cityId: 'city-1',
+      status: RequestStatus.IN_PROGRESS,
+      reports: [],
+    });
+
+    const files = [
+      {
+        originalname: 'photo-1.jpg',
+        mimetype: 'image/jpeg',
+        buffer: Buffer.from('file-1'),
+      },
+      {
+        originalname: 'photo-2.jpg',
+        mimetype: 'image/jpeg',
+        buffer: Buffer.from('file-2'),
+      },
+    ] as Express.Multer.File[];
+
+    await expect(
+      service.createReport(
+        'city-1',
+        'request-1',
+        'manager-1',
+        {
+          type: ReportType.PROGRESS,
+          description: 'Progress update.',
+        },
+        files,
+      ),
+    ).rejects.toThrow(
+      'Only one attachment can be added to a city request report',
+    );
+
+    expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+    expect(
+      mockR2StorageService.uploadCityRequestAttachment,
+    ).not.toHaveBeenCalled();
   });
 
   it('getRequestDetail should allow city members to view another citizen request', async () => {

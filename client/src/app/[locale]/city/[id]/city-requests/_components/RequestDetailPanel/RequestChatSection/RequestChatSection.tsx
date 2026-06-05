@@ -14,6 +14,7 @@ interface RequestChatSectionProps {
   messageFailedLabel: string;
   messagePlaceholder: string;
   sendLabel: string;
+  showTitle?: boolean;
 }
 
 export function RequestChatSection(props: RequestChatSectionProps) {
@@ -28,11 +29,12 @@ export function RequestChatSection(props: RequestChatSectionProps) {
     messageFailedLabel,
     messagePlaceholder,
     sendLabel,
+    showTitle = true,
   } = props;
 
   return (
     <>
-      <p className="text-base font-semibold">{title}</p>
+      {showTitle ? <p className="text-base font-semibold">{title}</p> : null}
       {isMessageError ? (
         <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
           {messageFailedLabel}
