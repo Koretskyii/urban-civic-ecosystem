@@ -16,6 +16,12 @@ export class RbacService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getUserRoleNames(userId: string, cityId: string): Promise<string[]> {
+    const membership = await this.getCityMembershipStatus(userId, cityId);
+
+    if (!membership || membership.isBlocked) {
+      return [];
+    }
+
     const userRoles = await this.prisma.userRole.findMany({
       where: { userId, role: { cityId } },
       select: { role: { select: { name: true } } },
@@ -57,8 +63,22 @@ export class RbacService {
   }
 
   async getUserPermissionsGlobal(userId: string): Promise<string[]> {
+    const activeMemberships = await this.prisma.userCity.findMany({
+      where: {
+        userId,
+        isBlocked: false,
+      },
+      select: {
+        cityId: true,
+      },
+    });
+    const activeCityIds = activeMemberships.map((item) => item.cityId);
+    if (activeCityIds.length === 0) {
+      return [];
+    }
+
     const userRoles = await this.prisma.userRole.findMany({
-      where: { userId },
+      where: { userId, role: { cityId: { in: activeCityIds } } },
       select: { role: { select: { name: true } } },
     });
     const roleNames = Array.from(
@@ -82,8 +102,22 @@ export class RbacService {
   }
 
   async getUserPermissionsByCity(userId: string): Promise<PermissionsByCity> {
+    const activeMemberships = await this.prisma.userCity.findMany({
+      where: {
+        userId,
+        isBlocked: false,
+      },
+      select: {
+        cityId: true,
+      },
+    });
+    const activeCityIds = activeMemberships.map((item) => item.cityId);
+    if (activeCityIds.length === 0) {
+      return {};
+    }
+
     const userRoles = await this.prisma.userRole.findMany({
-      where: { userId },
+      where: { userId, role: { cityId: { in: activeCityIds } } },
       select: {
         role: {
           select: {
@@ -150,6 +184,25 @@ export class RbacService {
     });
 
     return match != null;
+  }
+
+  async isUserBlockedInCity(userId: string, cityId: string): Promise<boolean> {
+    const membership = await this.getCityMembershipStatus(userId, cityId);
+    return Boolean(membership?.isBlocked);
+  }
+
+  private async getCityMembershipStatus(userId: string, cityId: string) {
+    return this.prisma.userCity.findUnique({
+      where: {
+        userId_cityId: {
+          userId,
+          cityId,
+        },
+      },
+      select: {
+        isBlocked: true,
+      },
+    });
   }
 
   /**

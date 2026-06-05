@@ -17,6 +17,8 @@ export type {
   NewsListQuery,
   UpdateNewsPayload,
   CityMember,
+  CityMembersListQuery,
+  CityMemberSortBy,
   Alert,
   News,
   Post,
@@ -48,6 +50,8 @@ export type {
   CityRequestScope,
   CityRequestStatus,
   Department,
+  CreateDepartmentPayload,
   GetCityRequestsQuery,
+  UpdateDepartmentPayload,
   ReportType,
 } from './city-request.types';

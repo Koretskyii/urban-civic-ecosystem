@@ -182,6 +182,7 @@ export const en = {
       posts: 'Posts',
       community: 'Community',
       members: 'Members',
+      adminSettings: 'Admin settings',
       projects: 'Projects',
       problem: 'Report a problem',
     },
@@ -195,7 +196,14 @@ export const en = {
     loadError: 'Failed to load city members.',
     updateErrorFallback: 'Failed to update member role.',
     roleLabel: 'Role',
-    save: 'Save role',
+    statusLabel: 'Status',
+    active: 'Active',
+    blocked: 'Blocked',
+    block: 'Block',
+    unblock: 'Unblock',
+    adminBlockDisabled: 'Admins cannot be blocked.',
+    blockStatusUpdateError: 'Failed to update member block status.',
+    save: 'Save',
     saving: 'Saving...',
     joinedAt: 'Joined at',
     roles: {
@@ -203,6 +211,68 @@ export const en = {
       municipality: 'Municipality',
       organizer: 'Organizer',
       citizen: 'Citizen',
+    },
+  },
+  adminSettings: {
+    title: 'Admin settings',
+    subtitle:
+      'Manage the city environment, roles, departments, and public city data.',
+    membersTotal: '{count} members',
+    searchMembers: 'Search members',
+    allRoles: 'All roles',
+    name: 'Name',
+    email: 'Email',
+    region: 'Region',
+    actions: 'Actions',
+    noDepartments: 'No departments found.',
+    cityProfile: {
+      subtitle:
+        'General city information and the evidence document used to register this municipal workspace.',
+      domain: 'Municipality domain',
+      createdAt: 'Created at',
+      updatedAt: 'Updated at',
+      notProvided: 'Not provided',
+      verificationDocumentTitle: 'Municipality evidence document',
+      verificationDocumentHelp:
+        'The official document uploaded during city creation to confirm that this workspace represents the relevant municipality.',
+      noVerificationDocument: 'No verification document was uploaded.',
+      loadError: 'Failed to load city profile.',
+    },
+    departments: {
+      subtitle:
+        'Default departments are locked. Custom departments can be added for this city and used in request assignment.',
+      namePlaceholder: 'Department name',
+      descriptionPlaceholder: 'Description',
+      type: 'Type',
+      description: 'Description',
+      origin: 'Origin',
+      create: 'Add department',
+      creating: 'Adding...',
+      edit: 'Edit',
+      delete: 'Delete',
+      save: 'Save',
+      cancel: 'Cancel',
+      locked: 'Locked',
+      defaultBadge: 'Default',
+      customBadge: 'Custom',
+      nameRequired: 'Department name is required.',
+      createError: 'Failed to create department.',
+      updateError: 'Failed to update department.',
+      deleteError: 'Failed to delete department.',
+    },
+    sections: {
+      members: 'Members',
+      departments: 'Departments',
+      'city-profile': 'City profile',
+      'roles-permissions': 'Roles & permissions',
+    },
+    roleDescriptions: {
+      admin: 'Full access to city administration and role management.',
+      municipality:
+        'Processes city requests and coordinates municipal updates.',
+      organizer:
+        'Publishes community initiatives, projects, and public content.',
+      citizen: 'Creates requests and participates in the city community.',
     },
   },
   cityHome: {
@@ -550,5 +620,15 @@ export const en = {
     description: 'You do not have permission to view this page.',
     goHome: 'Go home',
     goBack: 'Go back',
+  },
+  banned: {
+    eyebrow: 'Access blocked',
+    title: 'You are blocked in this city',
+    thisCity: 'this city',
+    description:
+      'Your access to {city} has been blocked by a city administrator.',
+    nextStep:
+      'If you believe this is a mistake, contact the city administration or platform support.',
+    goHome: 'Go home',
   },
 };

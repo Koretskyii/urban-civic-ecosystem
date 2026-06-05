@@ -6,7 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { cityRequestsApi } from '@/api/endpoints';
+import { cityDepartmentsApi, cityRequestsApi } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import {
   invalidateCityRequestQueries,
@@ -16,7 +16,11 @@ import {
   type CreateReportInput,
   type UpdateStatusInput,
 } from '@/features/city-requests';
-import type { GetCityRequestsQuery } from '@/types';
+import type {
+  CreateDepartmentPayload,
+  GetCityRequestsQuery,
+  UpdateDepartmentPayload,
+} from '@/types';
 
 export function useCityRequestsList(
   cityId: string,
@@ -75,8 +79,68 @@ export function useCityRequestMessages(cityId: string, requestId: string) {
 export function useCityDepartments(cityId: string) {
   return useQuery({
     queryKey: queryKeys.cityRequests.departments(cityId),
-    queryFn: () => cityRequestsApi.getDepartments(cityId),
+    queryFn: () => cityDepartmentsApi.getDepartments(cityId),
     enabled: Boolean(cityId),
+  });
+}
+
+export function useCreateCityDepartment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      cityId,
+      payload,
+    }: {
+      cityId: string;
+      payload: CreateDepartmentPayload;
+    }) => cityDepartmentsApi.createDepartment(cityId, payload),
+    onSuccess: (_created, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.cityRequests.departments(variables.cityId),
+      });
+    },
+  });
+}
+
+export function useUpdateCityDepartment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      cityId,
+      departmentId,
+      payload,
+    }: {
+      cityId: string;
+      departmentId: string;
+      payload: UpdateDepartmentPayload;
+    }) => cityDepartmentsApi.updateDepartment(cityId, departmentId, payload),
+    onSuccess: (_updated, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.cityRequests.departments(variables.cityId),
+      });
+    },
+  });
+}
+
+export function useDeleteCityDepartment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      cityId,
+      departmentId,
+    }: {
+      cityId: string;
+      departmentId: string;
+    }) => cityDepartmentsApi.deleteDepartment(cityId, departmentId),
+    onSuccess: (_deleted, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.cityRequests.departments(variables.cityId),
+      });
+      invalidateCityRequestQueries(queryClient, variables.cityId);
+    },
   });
 }
 

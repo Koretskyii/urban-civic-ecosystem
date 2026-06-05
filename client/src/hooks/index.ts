@@ -24,10 +24,18 @@ export {
   useUpdateAlert,
   useDeleteAlert,
 } from './useCityAlerts';
-export { useCityMembers, useUpdateCityMemberRole } from './useCityMembers';
+export {
+  useCityMembers,
+  useInfiniteCityMembers,
+  useUpdateCityMemberBlockStatus,
+  useUpdateCityMemberRole,
+} from './useCityMembers';
 export {
   useAssignCityRequestDepartment,
   useCityDepartments,
+  useCreateCityDepartment,
+  useDeleteCityDepartment,
+  useUpdateCityDepartment,
   useCityRequestDetail,
   useCityRequestMessages,
   useCityRequestsList,

@@ -136,12 +136,16 @@ model UserCity {
   userId String
   cityId String
 
-  joinedAt DateTime @default(now())
+  joinedAt    DateTime  @default(now())
+  isBlocked   Boolean   @default(false)
+  blockedAt   DateTime?
+  blockedById String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
 
   @@id([userId, cityId])
+  @@index([cityId, isBlocked])
 }
 
 //////////////////// RBAC ////////////////////
@@ -225,6 +229,7 @@ model Department {
   type        String
   description String?
   isActive    Boolean @default(true)
+  isDefault   Boolean @default(false)
 
   city         City          @relation(fields: [cityId], references: [id], onDelete: Cascade)
   cityRequests CityRequest[]

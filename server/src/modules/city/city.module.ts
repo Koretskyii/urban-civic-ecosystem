@@ -9,6 +9,7 @@ import { PostsModule } from './modules/posts/posts.module';
 import { CommunityModule } from './modules/community/community.module';
 import { CityRequestsModule } from './modules/city-requests/city-requests.module';
 import { CityMembersModule } from './modules/city-members/city-members.module';
+import { CityDepartmentsModule } from './modules/city-departments/city-departments.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CityMembersModule } from './modules/city-members/city-members.module';
     CommunityModule,
     CityRequestsModule,
     CityMembersModule,
+    CityDepartmentsModule,
   ],
   controllers: [CityController],
   providers: [CityService],

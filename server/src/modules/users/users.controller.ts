@@ -24,6 +24,7 @@ import {
 type PermissionsResponse = {
   permissions: string[];
   role: string | null;
+  isBlocked: boolean;
 };
 
 @ApiTags('Users')
@@ -75,11 +76,12 @@ export class UsersController {
       throw new BadRequestException(ERROR_MESSAGES.CITY_ID_MISSING);
     }
 
-    const [permissions, role] = await Promise.all([
+    const [permissions, role, isBlocked] = await Promise.all([
       this.rbacService.getUserPermissions(user.id, cityId),
       this.rbacService.getUserPrimaryRole(user.id, cityId),
+      this.rbacService.isUserBlockedInCity(user.id, cityId),
     ]);
 
-    return { permissions, role };
+    return { permissions, role, isBlocked };
   }
 }

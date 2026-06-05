@@ -1,4 +1,5 @@
 import { apiClient } from '../client';
+import { cityDepartmentsApi } from './city-departments.api';
 import { API_ROUTES } from '../routes';
 import type {
   AssignDepartmentPayload,
@@ -12,7 +13,6 @@ import type {
   CityRequestListItem,
   CityRequestMessage,
   CityRequestReport,
-  Department,
   GetCityRequestsQuery,
   PaginatedResponse,
 } from '@/types';
@@ -80,8 +80,7 @@ export const cityRequestsApi = {
       formData,
     ),
 
-  getDepartments: (cityId: string) =>
-    apiClient.get<Department[]>(API_ROUTES.departments.all(cityId)),
+  getDepartments: (cityId: string) => cityDepartmentsApi.getDepartments(cityId),
 
   createMessage: (
     cityId: string,

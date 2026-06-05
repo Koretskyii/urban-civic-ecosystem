@@ -1,7 +1,11 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
 import { CityInitData } from '@/types/city.types';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  BadRequestException,
+} from '@nestjs/common';
 import * as dns from 'dns';
 import { promisify } from 'util';
 import { R2StorageService } from '../r2/r2.service';
@@ -113,25 +117,55 @@ export class CityService {
   }
 
   async getCityById(id: string) {
-    const city = await this.prisma.city.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        region: true,
-        centerLat: true,
-        centerLng: true,
-        cityDomain: {
-          select: { domainName: true },
+    const [city, verificationDocument] = await Promise.all([
+      this.prisma.city.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          region: true,
+          centerLat: true,
+          centerLng: true,
+          createdAt: true,
+          updatedAt: true,
+          cityDomain: {
+            select: { domainName: true },
+          },
         },
-      },
-    });
+      }),
+      this.prisma.attachment.findFirst({
+        where: {
+          entityId: id,
+          entityType: 'CITY_VERIFICATION',
+        },
+        select: {
+          id: true,
+          fileName: true,
+          mimeType: true,
+          url: true,
+          type: true,
+          uploadedAt: true,
+        },
+        orderBy: {
+          uploadedAt: 'desc',
+        },
+      }),
+    ]);
 
     if (!city) {
       throw new BadRequestException(CITY_ERRORS.CITY_NOT_FOUND);
     }
 
-    return city;
+    return {
+      ...city,
+      domain: city.cityDomain?.domainName ?? null,
+      verificationDocument: verificationDocument
+        ? {
+            ...verificationDocument,
+            url: this.r2StorageService.toPublicUrl(verificationDocument.url),
+          }
+        : null,
+    };
   }
 
   async joinCity(cityId: string, userId: string) {
@@ -153,6 +187,10 @@ export class CityService {
     });
 
     if (existingMembership) {
+      if (existingMembership.isBlocked) {
+        throw new ForbiddenException('User is blocked in this city');
+      }
+
       return { success: true, message: 'Already joined' };
     }
 
@@ -471,6 +509,7 @@ export class CityService {
     await txWithDepartmentDelegate.department.createMany({
       data: DEFAULT_CITY_DEPARTMENTS.map((department) => ({
         cityId,
+        isDefault: true,
         ...department,
       })),
       skipDuplicates: true,

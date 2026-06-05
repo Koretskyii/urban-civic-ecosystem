@@ -23,6 +23,10 @@ export const API_ROUTES = {
     all: (cityId: string): string => `/city/${cityId}/members`,
     role: (cityId: string, userId: string): string =>
       `/city/${cityId}/members/${userId}/role`,
+    block: (cityId: string, userId: string): string =>
+      `/city/${cityId}/members/${userId}/block`,
+    unblock: (cityId: string, userId: string): string =>
+      `/city/${cityId}/members/${userId}/unblock`,
   },
   alerts: {
     all: (cityId: string): string => `/city/${cityId}/alerts`,
@@ -63,5 +67,7 @@ export const API_ROUTES = {
   },
   departments: {
     all: (cityId: string): string => `/city/${cityId}/departments`,
+    detail: (cityId: string, departmentId: string): string =>
+      `/city/${cityId}/departments/${departmentId}`,
   },
 } as const;

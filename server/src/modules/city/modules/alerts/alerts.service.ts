@@ -362,10 +362,11 @@ export class AlertsService {
       },
       select: {
         userId: true,
+        isBlocked: true,
       },
     });
 
-    if (!membership) {
+    if (!membership || membership.isBlocked) {
       throw new ForbiddenException('User is not a member of this city');
     }
   }

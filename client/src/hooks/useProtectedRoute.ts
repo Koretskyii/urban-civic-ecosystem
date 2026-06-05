@@ -25,16 +25,26 @@ export const useProtectedRoute = ({
   enabled = true,
 }: UseProtectedRouteOptions) => {
   const router = useRouter();
-  const { hasPermission, isLoading, error } = useRBAC({ cityId, enabled });
+  const { hasPermission, isBlocked, isLoading, error } = useRBAC({
+    cityId,
+    enabled,
+  });
   const hasAccess = hasPermission(requiredPermissions);
 
   useEffect(() => {
-    if (isLoading || hasAccess) return;
+    if (isLoading) return;
+
+    if (isBlocked) {
+      router.replace(`/city/${cityId}/banned`);
+      return;
+    }
+
+    if (hasAccess) return;
 
     if (error || !hasAccess) {
       router.replace(redirectTo);
     }
-  }, [error, hasAccess, isLoading, redirectTo, router]);
+  }, [cityId, error, hasAccess, isBlocked, isLoading, redirectTo, router]);
 
-  return { isLoading, hasAccess };
+  return { isLoading, hasAccess: hasAccess && !isBlocked };
 };

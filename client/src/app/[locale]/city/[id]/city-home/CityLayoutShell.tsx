@@ -1,18 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { useCityById, useCityMembers, usePermission } from '@/hooks';
-import { useAuthStore } from '@/store';
+import { useCityById, usePermission, usePermissions } from '@/hooks';
 import { useTranslations } from 'next-intl';
-import { PERMISSION_GROUPS } from '@/constants/rbac.const';
+import {
+  inferRoleFromPermissions,
+  PERMISSION_GROUPS,
+} from '@/constants/rbac.const';
 import {
   House,
   Newspaper,
   Bell,
   FileText,
   Users,
-  Shield,
+  Settings,
   GitBranch,
   TriangleAlert,
   Building2,
@@ -32,13 +34,17 @@ const NAV_ITEMS = [
   { key: 'alerts', path: '/alerts', icon: <Bell size={18} /> },
   { key: 'posts', path: '/posts', icon: <FileText size={18} /> },
   { key: 'community', path: '/community', icon: <Users size={18} /> },
-  { key: 'members', path: '/members', icon: <Shield size={18} /> },
   { key: 'projects', path: '/projects', icon: <GitBranch size={18} /> },
   {
     key: 'problem',
     path: '/city-requests',
     icon: <TriangleAlert size={18} />,
     accent: true,
+  },
+  {
+    key: 'adminSettings',
+    path: '/admin-settings',
+    icon: <Settings size={18} />,
   },
 ];
 
@@ -48,21 +54,30 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
   const { can: canManageRoles } = usePermission(PERMISSION_GROUPS.ROLE.MANAGE, {
     cityId,
   });
+  const { permissions, isBlocked } = usePermissions({ cityId });
   const { data: city, isLoading } = useCityById(cityId);
-  const currentUserId = useAuthStore((state) => state.user?.id);
-  const { data: members } = useCityMembers(cityId, { enabled: canManageRoles });
   const pathname = usePathname();
   const router = useRouter();
   const baseRoute = `/city/${cityId}`;
+  const bannedRoute = `${baseRoute}/banned`;
   const [collapsed, setCollapsed] = useState(false);
 
   const width = collapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
-  const myCityRole = members?.find(
-    (member) => member.userId === currentUserId,
-  )?.role;
+  const myCityRole = inferRoleFromPermissions(permissions);
   const visibleNavItems = NAV_ITEMS.filter(
-    (item) => item.key !== 'members' || canManageRoles,
+    (item) => item.key !== 'adminSettings' || canManageRoles,
   );
+  const isBannedPage = pathname === bannedRoute;
+
+  useEffect(() => {
+    if (isBlocked && !isBannedPage) {
+      router.replace(bannedRoute);
+    }
+  }, [bannedRoute, isBannedPage, isBlocked, router]);
+
+  if (isBlocked && !isBannedPage) {
+    return <div className="min-h-[80vh] bg-white" />;
+  }
 
   return (
     <div className="flex h-full min-h-[80vh] flex-1">

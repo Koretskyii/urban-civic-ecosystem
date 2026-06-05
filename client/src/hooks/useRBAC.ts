@@ -45,6 +45,7 @@ export const useRBAC = ({ cityId, enabled = true }: UseRBACOptions) => {
     () => ({
       permissions,
       role: data?.role ?? null,
+      isBlocked: data?.isBlocked ?? false,
       hasPermission,
       hasAllPermissions,
       isLoading,
@@ -54,6 +55,7 @@ export const useRBAC = ({ cityId, enabled = true }: UseRBACOptions) => {
     [
       permissions,
       data?.role,
+      data?.isBlocked,
       hasPermission,
       hasAllPermissions,
       isLoading,

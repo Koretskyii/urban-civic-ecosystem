@@ -34,7 +34,7 @@ export default function MembersView({ cityId }: MembersViewProps) {
   const [draftRoles, setDraftRoles] = useState<Record<string, RoleKey>>({});
   const [rowError, setRowError] = useState<Record<string, string>>({});
 
-  const members = membersQuery.data ?? [];
+  const members = membersQuery.data?.items ?? [];
   const pendingUserId = useMemo(() => {
     const variables = updateRoleMutation.variables;
     if (!variables) return '';

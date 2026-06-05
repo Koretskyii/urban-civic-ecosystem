@@ -21,6 +21,7 @@ export class InAppNotificationService {
     const members = await this.prisma.userCity.findMany({
       where: {
         cityId,
+        isBlocked: false,
         ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
       },
       select: { userId: true },

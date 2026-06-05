@@ -2,14 +2,31 @@ export interface City {
   id: string;
   name: string;
   region: string;
-  domain: string;
+  domain?: string | null;
+  cityDomain?: {
+    domainName: string;
+  } | null;
   centerLat?: number | null;
   centerLng?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+  verificationDocument?: {
+    id: string;
+    fileName: string;
+    mimeType?: string | null;
+    url: string;
+    type?: string | null;
+    uploadedAt: string;
+  } | null;
 }
 
 export interface PaginatedResponse<T> {
   items: T[];
   nextCursor?: string | null;
+  nextPage?: number | null;
+  page?: number;
+  limit?: number;
+  total?: number;
 }
 
 export interface Alert {
@@ -150,5 +167,19 @@ export interface CityMember {
   name: string;
   email: string;
   joinedAt: string;
+  isBlocked: boolean;
+  blockedAt?: string | null;
+  blockedById?: string | null;
   role: 'admin' | 'citizen' | 'organizer' | 'municipality';
+}
+
+export type CityMemberSortBy = 'name' | 'email' | 'joinedAt';
+
+export interface CityMembersListQuery {
+  search?: string;
+  role?: CityMember['role'];
+  limit?: number;
+  page?: number;
+  sortBy?: CityMemberSortBy;
+  sortOrder?: 'asc' | 'desc';
 }

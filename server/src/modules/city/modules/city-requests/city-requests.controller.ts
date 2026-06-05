@@ -186,14 +186,6 @@ export class CityRequestsController {
     return this.cityRequestsService.getMessages(cityId, requestId, req.user.id);
   }
 
-  @Get('departments')
-  async getDepartments(
-    @Param('cityId') cityId: string,
-    @Req() req: RequestWithUser,
-  ) {
-    return this.cityRequestsService.getDepartments(cityId, req.user.id);
-  }
-
   private buildRealtimeEnvelope(requestId: string, payload: unknown) {
     // REST endpoints are source of truth; websocket events carry lightweight change notifications.
     return {

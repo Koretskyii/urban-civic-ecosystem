@@ -500,9 +500,12 @@ export class CityRequestsService {
           cityId,
         },
       },
+      select: {
+        isBlocked: true,
+      },
     });
 
-    if (!membership) {
+    if (!membership || membership.isBlocked) {
       throw new ForbiddenException(CITY_REQUESTS_ERRORS.USER_NOT_CITY_MEMBER);
     }
   }
