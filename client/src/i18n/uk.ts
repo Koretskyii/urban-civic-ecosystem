@@ -95,7 +95,7 @@ export const uk = {
       filterPriority: 'Фільтр за пріоритетом',
     },
     statuses: {
-      OPEN: 'Відкрите',
+      OPEN: 'Нове',
       IN_PROGRESS: 'В роботі',
       RESOLVED: 'Вирішене',
       REJECTED: 'Відхилене',
@@ -114,6 +114,8 @@ export const uk = {
       assign: 'Призначити',
       updateStatus: 'Оновити статус',
       createReport: 'Створити звіт',
+      openFullPage: 'Відкрити',
+      backToRequests: 'Назад до звернень',
     },
     viewModes: {
       citizen: 'Режим мешканця',
@@ -164,6 +166,10 @@ export const uk = {
       coordinatesInvalid: 'Координати мають бути коректними числами.',
       coordinatesOutOfRange:
         'Координати поза допустимим діапазоном (lat: -90..90, lng: -180..180).',
+      tooManyAttachments:
+        'До одного звернення можна додати лише одне вкладення.',
+      invalidAttachmentType:
+        'До звернення можна додавати лише фото у підтримуваних форматах.',
       createFailed: 'Не вдалося створити звернення.',
       messageFailed: 'Не вдалося надіслати повідомлення.',
       departmentRequired: 'Потрібно обрати департамент.',
@@ -171,6 +177,12 @@ export const uk = {
         'Для статусів RESOLVED/REJECTED використовуйте створення звіту.',
       reportTextRequired:
         'Звіт для RESOLUTION/REJECTION має містити текст опису.',
+      progressReportRequiresInProgress:
+        'Прогрес можна створити лише для звернення зі статусом "В роботі".',
+      finalReportAlreadyExists:
+        'Фінальний звіт для цього звернення вже створено.',
+      tooManyReportAttachments:
+        'До одного звіту можна додати лише одне вкладення.',
     },
   },
   cityNav: {
@@ -344,7 +356,7 @@ export const uk = {
     },
     requests: {
       status: {
-        OPEN: 'Відкрите',
+        OPEN: 'Нове',
         IN_PROGRESS: 'В роботі',
         RESOLVED: 'Вирішене',
         REJECTED: 'Відхилене',

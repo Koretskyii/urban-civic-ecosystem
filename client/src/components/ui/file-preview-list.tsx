@@ -2,13 +2,18 @@ import React from 'react';
 import Image from 'next/image';
 import { File as FileIcon, Download } from 'lucide-react';
 import type { Attachment } from '@/types';
+import { cn } from '@/lib/utils';
 import { Button } from './button';
 
 interface FilePreviewListProps {
   attachments: Attachment[];
+  imageVariant?: 'grid' | 'large';
 }
 
-export function FilePreviewList({ attachments }: FilePreviewListProps) {
+export function FilePreviewList({
+  attachments,
+  imageVariant = 'grid',
+}: FilePreviewListProps) {
   if (!attachments || attachments.length === 0) {
     return null;
   }
@@ -17,26 +22,47 @@ export function FilePreviewList({ attachments }: FilePreviewListProps) {
   const documents = attachments.filter(
     (a) => !a.mimeType?.startsWith('image/'),
   );
+  const isLargeImageVariant = imageVariant === 'large';
 
   return (
     <div className="space-y-4 w-full">
       {images.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div
+          className={cn(
+            isLargeImageVariant
+              ? 'space-y-3'
+              : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4',
+          )}
+        >
           {images.map((image) => (
             <a
               key={image.id}
               href={image.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block relative aspect-square rounded-md overflow-hidden border bg-muted"
+              className={cn(
+                'group relative overflow-hidden rounded-md border bg-muted',
+                isLargeImageVariant
+                  ? 'flex h-[clamp(260px,60vh,520px)] max-h-full w-full items-center justify-center'
+                  : 'block aspect-square',
+              )}
             >
               <Image
                 src={image.url}
                 alt={image.fileName}
                 fill
-                sizes="(min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+                sizes={
+                  isLargeImageVariant
+                    ? '(min-width: 1280px) 50vw, 100vw'
+                    : '(min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw'
+                }
                 unoptimized
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                className={cn(
+                  'transition-transform duration-300',
+                  isLargeImageVariant
+                    ? 'object-contain'
+                    : 'object-cover group-hover:scale-105',
+                )}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Download className="text-white h-6 w-6" />

@@ -95,7 +95,7 @@ export const en = {
       filterPriority: 'Filter by priority',
     },
     statuses: {
-      OPEN: 'Open',
+      OPEN: 'New',
       IN_PROGRESS: 'In progress',
       RESOLVED: 'Resolved',
       REJECTED: 'Rejected',
@@ -114,6 +114,8 @@ export const en = {
       assign: 'Assign',
       updateStatus: 'Update status',
       createReport: 'Create report',
+      openFullPage: 'Open',
+      backToRequests: 'Back to requests',
     },
     viewModes: {
       citizen: 'Citizen view',
@@ -164,12 +166,20 @@ export const en = {
       coordinatesInvalid: 'Coordinates must be valid numbers.',
       coordinatesOutOfRange:
         'Coordinates are out of range (lat: -90..90, lng: -180..180).',
+      tooManyAttachments: 'Only one attachment can be added to a request.',
+      invalidAttachmentType:
+        'Only photos in supported formats can be attached to a request.',
       createFailed: 'Failed to create request.',
       messageFailed: 'Failed to send message.',
       departmentRequired: 'Department selection is required.',
       useReportForFinalStatus:
         'Use report flow to set RESOLVED/REJECTED statuses.',
       reportTextRequired: 'Resolution/Rejection report must include text.',
+      progressReportRequiresInProgress:
+        'Progress report can be created only for requests in progress.',
+      finalReportAlreadyExists:
+        'A final report has already been created for this request.',
+      tooManyReportAttachments: 'Only one attachment can be added to a report.',
     },
   },
   cityNav: {
@@ -340,7 +350,7 @@ export const en = {
     },
     requests: {
       status: {
-        OPEN: 'Open',
+        OPEN: 'New',
         IN_PROGRESS: 'In progress',
         RESOLVED: 'Resolved',
         REJECTED: 'Rejected',

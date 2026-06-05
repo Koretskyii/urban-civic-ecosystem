@@ -8,9 +8,8 @@ export const STATUS_OPTIONS: Array<CityRequestStatus> = [
 ];
 
 export const EDITABLE_STATUS_OPTIONS: Array<CityRequestStatus> = [
+  'OPEN',
   'IN_PROGRESS',
-  'RESOLVED',
-  'REJECTED',
 ];
 
 export const REPORT_TYPE_OPTIONS: Array<ReportType> = [
