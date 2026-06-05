@@ -15,26 +15,27 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-interface MunicipalityQueueHeaderProps {
+type RequestSortBy = 'createdAt' | 'updatedAt' | 'priority' | 'status';
+type RequestSortOrder = 'asc' | 'desc';
+
+export interface RequestFiltersPanelProps {
   filterStatus: CityRequestStatus | 'ALL';
   filterDepartmentId: string;
   filterPriority: string;
   search: string;
-  sortBy: 'createdAt' | 'updatedAt' | 'priority' | 'status';
-  sortOrder: 'asc' | 'desc';
+  sortBy: RequestSortBy;
+  sortOrder: RequestSortOrder;
   departments: Department[];
   isDepartmentsLoading: boolean;
   onFilterStatusChange: (value: CityRequestStatus | 'ALL') => void;
   onFilterDepartmentChange: (value: string) => void;
   onFilterPriorityChange: (value: string) => void;
   onSearchChange: (value: string) => void;
-  onSortByChange: (
-    value: 'createdAt' | 'updatedAt' | 'priority' | 'status',
-  ) => void;
-  onSortOrderChange: (value: 'asc' | 'desc') => void;
+  onSortByChange: (value: RequestSortBy) => void;
+  onSortOrderChange: (value: RequestSortOrder) => void;
 }
 
-export function MunicipalityQueueHeader(props: MunicipalityQueueHeaderProps) {
+export function RequestFiltersPanel(props: RequestFiltersPanelProps) {
   const t = useTranslations();
   const {
     filterStatus,
@@ -55,14 +56,7 @@ export function MunicipalityQueueHeader(props: MunicipalityQueueHeaderProps) {
 
   return (
     <div className="rounded-lg border border-black/10 bg-white p-3">
-      <h3 className="mb-1 text-xl">
-        {t('cityProblem.municipality.queueTitle')}
-      </h3>
-      <p className="text-sm text-[var(--muted-foreground)]">
-        {t('cityProblem.municipality.queueHint')}
-      </p>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         <label className="space-y-1">
           <span className="text-xs font-semibold text-[var(--muted-foreground)]">
             {t('cityProblem.municipality.searchPlaceholder')}
@@ -165,11 +159,7 @@ export function MunicipalityQueueHeader(props: MunicipalityQueueHeaderProps) {
           </span>
           <Select
             value={sortBy}
-            onValueChange={(value) =>
-              onSortByChange(
-                value as 'createdAt' | 'updatedAt' | 'priority' | 'status',
-              )
-            }
+            onValueChange={(value) => onSortByChange(value as RequestSortBy)}
           >
             <SelectTrigger className="h-10">
               <SelectValue />
@@ -198,7 +188,7 @@ export function MunicipalityQueueHeader(props: MunicipalityQueueHeaderProps) {
           <Select
             value={sortOrder}
             onValueChange={(value) =>
-              onSortOrderChange(value as 'asc' | 'desc')
+              onSortOrderChange(value as RequestSortOrder)
             }
           >
             <SelectTrigger className="h-10 whitespace-nowrap">

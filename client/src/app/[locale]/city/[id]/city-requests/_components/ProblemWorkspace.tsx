@@ -107,24 +107,15 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     () => ({
       scope: 'all' as const,
       search: debouncedSearch.trim() || undefined,
-      status:
-        uiMode === 'manage' && filterStatus !== 'ALL'
-          ? filterStatus
-          : undefined,
+      status: filterStatus !== 'ALL' ? filterStatus : undefined,
       departmentId:
-        uiMode === 'manage' && filterDepartmentId !== 'ALL'
-          ? filterDepartmentId
-          : undefined,
-      priority:
-        uiMode === 'manage' && filterPriority !== 'ALL'
-          ? Number(filterPriority)
-          : undefined,
+        filterDepartmentId !== 'ALL' ? filterDepartmentId : undefined,
+      priority: filterPriority !== 'ALL' ? Number(filterPriority) : undefined,
       sortBy,
       sortOrder,
     }),
     [
       debouncedSearch,
-      uiMode,
       filterStatus,
       filterDepartmentId,
       filterPriority,
@@ -361,7 +352,31 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
     void fetchNextRequestsPage();
   }, [fetchNextRequestsPage]);
 
-  const requestListKey = `${viewMode}-${filterStatus}-${filterDepartmentId}-${filterPriority}`;
+  const requestListKey = [
+    viewMode,
+    filterStatus,
+    filterDepartmentId,
+    filterPriority,
+    sortBy,
+    sortOrder,
+    debouncedSearch,
+  ].join('-');
+  const requestFiltersProps = {
+    filterStatus,
+    filterDepartmentId,
+    filterPriority,
+    search,
+    sortBy,
+    sortOrder,
+    departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
+    isDepartmentsLoading: departmentsQuery.isLoading,
+    onFilterStatusChange: setFilterStatus,
+    onFilterDepartmentChange: setFilterDepartmentId,
+    onFilterPriorityChange: setFilterPriority,
+    onSearchChange: setSearch,
+    onSortByChange: setSortBy,
+    onSortOrderChange: setSortOrder,
+  };
   const requestListPanelProps = {
     requests,
     isLoading: requestsQuery.isLoading,
@@ -457,31 +472,15 @@ export default function ProblemWorkspace({ cityId }: ProblemWorkspaceProps) {
             onFilesChange: setRequestFiles,
             onSubmit: onCreateRequest,
           }}
+          filters={requestFiltersProps}
           listPanel={requestListPanelProps}
           listKey={requestListKey}
           detailPanel={requestDetailPanelProps}
-          search={search}
-          onSearchChange={setSearch}
           onCreateRequest={onCreateRequest}
         />
       ) : (
         <ManageRequestsView
-          header={{
-            filterStatus,
-            filterDepartmentId,
-            filterPriority,
-            search,
-            sortBy,
-            sortOrder,
-            departments: departmentsQuery.data ?? EMPTY_DEPARTMENTS,
-            isDepartmentsLoading: departmentsQuery.isLoading,
-            onFilterStatusChange: setFilterStatus,
-            onFilterDepartmentChange: setFilterDepartmentId,
-            onFilterPriorityChange: setFilterPriority,
-            onSearchChange: setSearch,
-            onSortByChange: setSortBy,
-            onSortOrderChange: setSortOrder,
-          }}
+          filters={requestFiltersProps}
           listPanel={requestListPanelProps}
           listKey={requestListKey}
           detailPanel={requestDetailPanelProps}
