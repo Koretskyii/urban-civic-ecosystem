@@ -1,7 +1,10 @@
+export type SystemRole = 'USER' | 'ADMIN';
+
 export type User = {
   id: string;
   name: string;
   email: string;
+  systemRole?: SystemRole;
   provider?: string;
   providerId?: string;
   createdAt?: string;

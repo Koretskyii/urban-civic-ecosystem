@@ -104,7 +104,13 @@ export class CityController {
   async initializeCity(
     @Body() data: CityInitData,
     @UploadedFile() document: Express.Multer.File,
+    @Req() req: Request,
   ) {
+    const user = req.user as User;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
     if (!document) {
       throw new BadRequestException(CITY_ERRORS.DOCUMENT_REQUIRED);
     }
@@ -125,7 +131,8 @@ export class CityController {
       throw new BadRequestException('centerLng must be between -180 and 180');
     }
 
-    return this.cityService.initializeCityEnvironment(
+    return this.cityService.createCityCreationRequest(
+      user.id,
       {
         ...data,
         centerLat,

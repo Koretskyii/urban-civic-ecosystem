@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { PrismaClient } from '@/generated/prisma/client';
+import { SystemRole } from '@/generated/prisma/enums';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { ROLES } from '@/modules/rbac/constants/roles.const';
 import {
@@ -31,6 +32,18 @@ const prismaWithDepartmentDelegate = prisma as PrismaClient & {
 
 const ROLE_NAMES = Object.values(ROLES);
 const ALERT_TYPE_NAMES = Object.values(ALERT_TYPES);
+const DEFAULT_SYSTEM_ADMIN_EMAILS = ['yuriykoretskiy999@gmail.com'];
+const SYSTEM_ADMIN_EMAILS = Array.from(
+  new Set(
+    [
+      ...DEFAULT_SYSTEM_ADMIN_EMAILS,
+      ...(process.env.SYSTEM_ADMIN_EMAILS ?? '')
+        .split(',')
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ].map((email) => email.toLowerCase()),
+  ),
+);
 
 function validateRbacConfig() {
   const configuredRoles = Object.keys(ROLE_PERMISSIONS);
@@ -301,6 +314,31 @@ async function seedDefaultDepartmentsForAllCities() {
   }
 }
 
+async function seedSystemAdmins() {
+  if (SYSTEM_ADMIN_EMAILS.length === 0) {
+    console.log('No system admin emails configured.');
+    return;
+  }
+
+  console.log('Seeding system admins...');
+
+  const result = await prisma.user.updateMany({
+    where: {
+      email: {
+        in: SYSTEM_ADMIN_EMAILS,
+        mode: 'insensitive',
+      },
+    },
+    data: {
+      systemRole: SystemRole.ADMIN,
+    },
+  });
+
+  console.log(
+    `OK ${result.count} users promoted to system admin (${SYSTEM_ADMIN_EMAILS.join(', ')}).`,
+  );
+}
+
 async function main() {
   validateRbacConfig();
   await seedPermissions();
@@ -308,6 +346,7 @@ async function main() {
   await seedRolesForAllCities();
   await seedDefaultAlertTypes();
   await seedDefaultDepartmentsForAllCities();
+  await seedSystemAdmins();
 }
 
 main()

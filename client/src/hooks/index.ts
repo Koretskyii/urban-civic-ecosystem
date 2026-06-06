@@ -6,6 +6,18 @@ export {
   useChangePassword,
 } from './useAuth';
 
+export {
+  useAdminCities,
+  useAdminCityCreationRequest,
+  useAdminCityCreationRequests,
+  useAdminUsers,
+  useApproveCityCreationRequest,
+  useDeleteAdminCity,
+  useRejectCityCreationRequest,
+  useUpdateAdminCity,
+  useUpdateUserSystemRole,
+} from './useAdmin';
+
 export { useCities, useCityById, useJoinCity } from './useCities';
 export {
   useCityNews,

@@ -1,4 +1,5 @@
 export { authApi } from './auth.api';
+export { adminApi } from './admin.api';
 export { cityApi } from './city.api';
 export { cityDepartmentsApi } from './city-departments.api';
 export { cityMembersApi } from './city-members.api';

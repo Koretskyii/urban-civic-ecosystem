@@ -1,6 +1,9 @@
+import type { SystemRole } from '@/generated/prisma/enums';
+
 export type User = {
   id: string;
   email?: string;
+  systemRole?: SystemRole;
 };
 
 export type GoogleProfile = {
@@ -13,6 +16,7 @@ export type JwtPayload = {
   sub: string;
   email: string;
   permissions?: string[];
+  systemRole?: SystemRole;
   iat?: number;
   exp?: number;
 };
