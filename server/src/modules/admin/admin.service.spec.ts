@@ -11,6 +11,22 @@ import {
 describe('AdminService', () => {
   let service: AdminService;
 
+  type CityCreationRequestUpdateArgs = {
+    where: { id: string };
+    data: {
+      status: CityCreationRequestStatus;
+      reviewedById: string;
+      reviewedAt: Date;
+      rejectionReason: null;
+    };
+    select: {
+      id: boolean;
+      status: boolean;
+      reviewedAt: boolean;
+      reviewedById: boolean;
+    };
+  };
+
   const tx = {
     cityCreationRequest: {
       findUnique: jest.fn(),
@@ -87,10 +103,12 @@ describe('AdminService', () => {
       name: 'Kyiv',
     });
 
-    const result = await service.approveCityCreationRequest(
-      'request-1',
-      'admin-1',
-    );
+    await expect(
+      service.approveCityCreationRequest('request-1', 'admin-1'),
+    ).resolves.toMatchObject({
+      success: true,
+      city: { id: 'city-1', name: 'Kyiv' },
+    });
 
     expect(mockCityService.provisionApprovedCity).toHaveBeenCalledWith(tx, {
       requesterId: 'user-1',
@@ -101,17 +119,27 @@ describe('AdminService', () => {
       domain: 'kyiv.example.com',
       verificationAttachmentId: 'attachment-1',
     });
-    expect(tx.cityCreationRequest.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'request-1' },
-        data: expect.objectContaining({
-          status: CityCreationRequestStatus.APPROVED,
-          reviewedById: 'admin-1',
-        }),
-      }),
-    );
-    expect(result.success).toBe(true);
-    expect(result.city).toEqual({ id: 'city-1', name: 'Kyiv' });
+    expect(tx.cityCreationRequest.update).toHaveBeenCalledTimes(1);
+    const [updateArgs] = tx.cityCreationRequest.update.mock.calls[0] as [
+      CityCreationRequestUpdateArgs,
+    ];
+
+    expect(updateArgs.data.reviewedAt).toBeInstanceOf(Date);
+    expect(updateArgs).toEqual({
+      where: { id: 'request-1' },
+      data: {
+        status: CityCreationRequestStatus.APPROVED,
+        reviewedById: 'admin-1',
+        reviewedAt: updateArgs.data.reviewedAt,
+        rejectionReason: null,
+      },
+      select: {
+        id: true,
+        status: true,
+        reviewedAt: true,
+        reviewedById: true,
+      },
+    });
   });
 
   it('rejects review changes for already reviewed requests', async () => {
