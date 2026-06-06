@@ -1,5 +1,6 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
+import { CityCreationRequestStatus } from '@/generated/prisma/enums';
 import { CityInitData } from '@/types/city.types';
 import {
   ForbiddenException,
@@ -35,6 +36,16 @@ interface PrepareNewCityParams {
   userId: string;
   cityId: string;
   cityName: string;
+}
+
+interface ProvisionApprovedCityParams {
+  requesterId: string;
+  name: string;
+  region: string;
+  centerLat?: number | null;
+  centerLng?: number | null;
+  domain?: string | null;
+  verificationAttachmentId?: string;
 }
 
 const resolveTxt = promisify(dns.resolveTxt);
@@ -98,6 +109,9 @@ export class CityService {
 
   async getAllCities() {
     return this.prisma.city.findMany({
+      where: {
+        deletedAt: null,
+      },
       select: {
         id: true,
         name: true,
@@ -118,8 +132,8 @@ export class CityService {
 
   async getCityById(id: string) {
     const [city, verificationDocument] = await Promise.all([
-      this.prisma.city.findUnique({
-        where: { id },
+      this.prisma.city.findFirst({
+        where: { id, deletedAt: null },
         select: {
           id: true,
           name: true,
@@ -169,8 +183,8 @@ export class CityService {
   }
 
   async joinCity(cityId: string, userId: string) {
-    const city = await this.prisma.city.findUnique({
-      where: { id: cityId },
+    const city = await this.prisma.city.findFirst({
+      where: { id: cityId, deletedAt: null },
     });
 
     if (!city) {
@@ -253,79 +267,94 @@ export class CityService {
     return { success: true, message: 'Successfully joined city' };
   }
 
-  async initializeCityEnvironment(
+  async createCityCreationRequest(
+    requesterId: string,
     data: CityInitData,
     document: Express.Multer.File,
   ) {
-    const { name, region, domain, userId, centerLat, centerLng } = data;
+    const { name, region, domain, centerLat, centerLng } = data;
+    const normalizedName = name?.trim().replace(/\s+/g, ' ');
+    const normalizedRegion = region?.trim().replace(/\s+/g, ' ');
+    const normalizedDomain = domain?.trim().toLowerCase();
 
-    if (!name || !region) {
+    if (!normalizedName || !normalizedRegion) {
       throw new BadRequestException(CITY_ERRORS.NAME_AND_REGION_REQUIRED);
-    }
-
-    if (!userId) {
-      throw new BadRequestException(CITY_ERRORS.USER_ID_REQUIRED);
     }
 
     const existingCity = await this.prisma.city.findFirst({
       where: {
-        name: { equals: name, mode: 'insensitive' },
-        region: { equals: region, mode: 'insensitive' },
+        deletedAt: null,
+        name: { equals: normalizedName, mode: 'insensitive' },
+        region: { equals: normalizedRegion, mode: 'insensitive' },
       },
     });
 
     if (existingCity) {
       throw new BadRequestException(
-        CITY_ERRORS.CITY_ALREADY_EXISTS(name, region),
+        CITY_ERRORS.CITY_ALREADY_EXISTS(normalizedName, normalizedRegion),
       );
     }
 
-    if (domain) {
-      const existingDomain = await this.prisma.cityDomain.findUnique({
-        where: { domainName: domain },
+    const existingPendingRequest =
+      await this.prisma.cityCreationRequest.findFirst({
+        where: {
+          status: CityCreationRequestStatus.PENDING,
+          name: { equals: normalizedName, mode: 'insensitive' },
+          region: { equals: normalizedRegion, mode: 'insensitive' },
+        },
       });
 
-      if (existingDomain) {
+    if (existingPendingRequest) {
+      throw new BadRequestException(
+        `City creation request for ${normalizedName}, ${normalizedRegion} is already pending review`,
+      );
+    }
+
+    if (normalizedDomain) {
+      const [existingDomain, existingDomainRequest] = await Promise.all([
+        this.prisma.cityDomain.findUnique({
+          where: { domainName: normalizedDomain },
+        }),
+        this.prisma.cityCreationRequest.findFirst({
+          where: {
+            status: CityCreationRequestStatus.PENDING,
+            domain: { equals: normalizedDomain, mode: 'insensitive' },
+          },
+        }),
+      ]);
+
+      if (existingDomain || existingDomainRequest) {
         throw new BadRequestException(
-          CITY_ERRORS.DOMAIN_ALREADY_REGISTERED(domain),
+          CITY_ERRORS.DOMAIN_ALREADY_REGISTERED(normalizedDomain),
         );
       }
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const cityData: CityTransactionData = {
-        name,
-        region,
-      };
-
-      if (typeof centerLat === 'number') {
-        cityData.centerLat = centerLat;
-      }
-
-      if (typeof centerLng === 'number') {
-        cityData.centerLng = centerLng;
-      }
-
-      if (domain && userId) {
-        cityData.cityDomain = {
-          create: {
-            domainName: domain,
-            token: this.tokenStore.get(domain) || '',
-            ownerId: userId,
-          },
-        };
-      }
-
-      const city = await tx.city.create({
-        data: cityData,
-        include: {
-          cityDomain: true,
+      const request = await tx.cityCreationRequest.create({
+        data: {
+          requesterId,
+          name: normalizedName,
+          region: normalizedRegion,
+          centerLat,
+          centerLng,
+          domain: normalizedDomain || null,
+        },
+        select: {
+          id: true,
+          name: true,
+          region: true,
+          centerLat: true,
+          centerLng: true,
+          domain: true,
+          status: true,
+          createdAt: true,
         },
       });
 
       const uploadedFile =
-        await this.r2StorageService.uploadCityVerificationDocument({
-          cityId: city.id,
+        await this.r2StorageService.uploadCityCreationRequestDocument({
+          requestId: request.id,
           fileName: document.originalname,
           mimeType: document.mimetype,
           buffer: document.buffer,
@@ -337,70 +366,125 @@ export class CityService {
           mimeType: document.mimetype,
           url: uploadedFile.url,
           type: 'DOCUMENT',
-          entityId: city.id,
-          entityType: 'CITY_VERIFICATION',
+          entityId: request.id,
+          entityType: 'CITY_CREATION_REQUEST',
+          cityCreationRequestId: request.id,
         },
-      });
-
-      await tx.role.createMany({
-        data: [
-          {
-            name: ROLES.ADMIN,
-            cityId: city.id,
-          },
-          {
-            name: ROLES.CITIZEN,
-            cityId: city.id,
-          },
-          {
-            name: ROLES.ORGANIZER,
-            cityId: city.id,
-          },
-          {
-            name: ROLES.MUNICIPALITY,
-            cityId: city.id,
-          },
-        ],
-        skipDuplicates: true,
-      });
-
-      const adminRole = await tx.role.findFirst({
-        where: {
-          name: ROLES.ADMIN,
-          cityId: city.id,
-        },
-      });
-
-      if (!adminRole) {
-        throw new Error(CITY_ERRORS.ADMIN_ROLE_NOT_FOUND);
-      }
-
-      const cityUser = await tx.userCity.create({
-        data: {
-          userId: userId,
-          cityId: city.id,
-        },
-      });
-
-      await tx.userRole.create({
-        data: {
-          userId: cityUser.userId,
-          roleId: adminRole.id,
-        },
-      });
-
-      await this.prepareNewCity(tx, {
-        userId,
-        cityId: city.id,
-        cityName: city.name,
       });
 
       return {
         success: true,
-        message: CITY_SUCCESS_MESSAGES.INITIALIZED,
-        city,
+        message: 'City creation request submitted for review',
+        request,
       };
     });
+  }
+
+  async provisionApprovedCity(
+    tx: Prisma.TransactionClient,
+    params: ProvisionApprovedCityParams,
+  ) {
+    const cityData: CityTransactionData = {
+      name: params.name,
+      region: params.region,
+    };
+
+    if (typeof params.centerLat === 'number') {
+      cityData.centerLat = params.centerLat;
+    }
+
+    if (typeof params.centerLng === 'number') {
+      cityData.centerLng = params.centerLng;
+    }
+
+    if (params.domain) {
+      cityData.cityDomain = {
+        create: {
+          domainName: params.domain,
+          token:
+            this.tokenStore.get(params.domain) ||
+            `city-domain=${crypto.randomUUID().toString()}`,
+          ownerId: params.requesterId,
+        },
+      };
+    }
+
+    const city = await tx.city.create({
+      data: cityData,
+      include: {
+        cityDomain: true,
+      },
+    });
+
+    if (params.verificationAttachmentId) {
+      await tx.attachment.update({
+        where: { id: params.verificationAttachmentId },
+        data: {
+          entityId: city.id,
+          entityType: 'CITY_VERIFICATION',
+          cityCreationRequestId: null,
+        },
+      });
+    }
+
+    await tx.role.createMany({
+      data: [
+        {
+          name: ROLES.ADMIN,
+          cityId: city.id,
+        },
+        {
+          name: ROLES.CITIZEN,
+          cityId: city.id,
+        },
+        {
+          name: ROLES.ORGANIZER,
+          cityId: city.id,
+        },
+        {
+          name: ROLES.MUNICIPALITY,
+          cityId: city.id,
+        },
+      ],
+      skipDuplicates: true,
+    });
+
+    const adminRole = await tx.role.findFirst({
+      where: {
+        name: ROLES.ADMIN,
+        cityId: city.id,
+      },
+    });
+
+    if (!adminRole) {
+      throw new Error(CITY_ERRORS.ADMIN_ROLE_NOT_FOUND);
+    }
+
+    const cityUser = await tx.userCity.create({
+      data: {
+        userId: params.requesterId,
+        cityId: city.id,
+      },
+    });
+
+    await tx.userRole.create({
+      data: {
+        userId: cityUser.userId,
+        roleId: adminRole.id,
+      },
+    });
+
+    await this.prepareNewCity(tx, {
+      userId: params.requesterId,
+      cityId: city.id,
+      cityName: city.name,
+    });
+
+    if (params.domain) {
+      this.tokenStore.delete(params.domain);
+    }
+
+    return city;
   }
 
   private async prepareNewCity(

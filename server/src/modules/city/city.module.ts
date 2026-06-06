@@ -25,5 +25,6 @@ import { CityDepartmentsModule } from './modules/city-departments/city-departmen
   ],
   controllers: [CityController],
   providers: [CityService],
+  exports: [CityService],
 })
 export class CityModule {}

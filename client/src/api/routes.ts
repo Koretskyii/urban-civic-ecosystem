@@ -65,6 +65,19 @@ export const API_ROUTES = {
     markAllRead: '/notifications/read-all',
     stream: '/notifications/stream',
   },
+  admin: {
+    cityCreationRequests: '/admin/city-creation-requests',
+    cityCreationRequestDetail: (id: string): string =>
+      `/admin/city-creation-requests/${id}`,
+    approveCityCreationRequest: (id: string): string =>
+      `/admin/city-creation-requests/${id}/approve`,
+    rejectCityCreationRequest: (id: string): string =>
+      `/admin/city-creation-requests/${id}/reject`,
+    cities: '/admin/cities',
+    cityDetail: (id: string): string => `/admin/cities/${id}`,
+    users: '/admin/users',
+    userSystemRole: (id: string): string => `/admin/users/${id}/system-role`,
+  },
   departments: {
     all: (cityId: string): string => `/city/${cityId}/departments`,
     detail: (cityId: string, departmentId: string): string =>

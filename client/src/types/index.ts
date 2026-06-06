@@ -1,9 +1,23 @@
 export type {
   User,
+  SystemRole,
   RegisterRequest,
   LoginRequest,
   AuthResponse,
 } from './auth.types';
+
+export type {
+  AdminAttachment,
+  AdminCitiesQuery,
+  AdminCity,
+  AdminCityCreationRequest,
+  AdminCityCreationRequestsQuery,
+  AdminPaginatedResponse,
+  AdminUser,
+  AdminUsersQuery,
+  CityCreationRequestStatus,
+  UpdateAdminCityPayload,
+} from './admin.types';
 
 export type {
   City,

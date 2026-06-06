@@ -150,4 +150,16 @@ export const queryKeys = {
     unreadCount: (cityId?: string) =>
       ['notifications', 'unread-count', cityId ?? 'all'] as const,
   },
+
+  admin: {
+    all: ['admin'] as const,
+    cityCreationRequests: (query?: unknown) =>
+      [...queryKeys.admin.all, 'city-creation-requests', query] as const,
+    cityCreationRequest: (id: string) =>
+      [...queryKeys.admin.all, 'city-creation-requests', id] as const,
+    cities: (query?: unknown) =>
+      [...queryKeys.admin.all, 'cities', query] as const,
+    users: (query?: unknown) =>
+      [...queryKeys.admin.all, 'users', query] as const,
+  },
 } as const;

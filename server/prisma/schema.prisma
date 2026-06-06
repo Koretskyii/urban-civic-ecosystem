@@ -16,6 +16,17 @@ enum RequestStatus {
   REJECTED
 }
 
+enum SystemRole {
+  USER
+  ADMIN
+}
+
+enum CityCreationRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ReportType {
   PROGRESS
   RESOLUTION
@@ -61,11 +72,12 @@ enum AlertSeverity {
 //////////////////// CITY (TENANT) ////////////////////
 
 model City {
-  id        String @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
   region    String
   centerLat Float?
   centerLng Float?
+  deletedAt DateTime?
 
   users                UserCity[]
   roles                Role[]
@@ -85,6 +97,8 @@ model City {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([deletedAt, name])
 }
 
 model CityDomain {
@@ -101,30 +115,33 @@ model CityDomain {
 //////////////////// USERS ////////////////////
 
 model User {
-  id           String  @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
-  email        String  @unique
+  email        String     @unique
   passwordHash String?
-  provider     String  @default("local")
+  provider     String     @default("local")
   providerId   String?
+  systemRole   SystemRole @default(USER)
 
-  memberships          UserCity[]
-  userRoles            UserRole[]
-  cityRequests         CityRequest[]
-  reports              Report[]
-  messages             Message[]
-  alertSubscriptions   AlertSubscription[]
-  publishedAlerts      Alert[]               @relation("alertPublisher")
-  posts                Post[]
-  comments             Comment[]
-  reactions            Reaction[]
-  votes                Vote[]
-  donations            Donation[]
-  crowdfundingProjects CrowdfundingProject[] @relation("creator")
-  projectParticipants  ProjectParticipant[]
-  communityMemberships CommunityMember[]
-  publishedNews        GeneralNews[]
-  notifications        InAppNotification[]
+  memberships                  UserCity[]
+  userRoles                    UserRole[]
+  cityRequests                 CityRequest[]
+  cityCreationRequests         CityCreationRequest[] @relation("CityCreationRequester")
+  reviewedCityCreationRequests CityCreationRequest[] @relation("CityCreationReviewer")
+  reports                      Report[]
+  messages                     Message[]
+  alertSubscriptions           AlertSubscription[]
+  publishedAlerts              Alert[]               @relation("alertPublisher")
+  posts                        Post[]
+  comments                     Comment[]
+  reactions                    Reaction[]
+  votes                        Vote[]
+  donations                    Donation[]
+  crowdfundingProjects         CrowdfundingProject[] @relation("creator")
+  projectParticipants          ProjectParticipant[]
+  communityMemberships         CommunityMember[]
+  publishedNews                GeneralNews[]
+  notifications                InAppNotification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -222,6 +239,32 @@ model CityRequest {
   @@index([cityId, assignedDepartmentId])
 }
 
+model CityCreationRequest {
+  id              String                    @id @default(cuid())
+  requesterId     String
+  reviewedById    String?
+  name            String
+  region          String
+  centerLat       Float?
+  centerLng       Float?
+  domain          String?
+  status          CityCreationRequestStatus @default(PENDING)
+  rejectionReason String?
+  reviewedAt      DateTime?
+
+  requester  User  @relation("CityCreationRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("CityCreationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  attachments Attachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([requesterId, status])
+  @@index([name, region])
+}
+
 model Department {
   id          String  @id @default(cuid())
   cityId      String
@@ -272,6 +315,9 @@ model Attachment {
 
   cityRequestId String?
   cityRequest   CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
+
+  cityCreationRequestId String?
+  cityCreationRequest   CityCreationRequest? @relation(fields: [cityCreationRequestId], references: [id], onDelete: Cascade)
 
   newsId String?
   news   GeneralNews? @relation(fields: [newsId], references: [id], onDelete: Cascade)

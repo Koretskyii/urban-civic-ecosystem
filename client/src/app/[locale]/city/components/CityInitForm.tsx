@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { cityApi } from '@/api/endpoints';
 import { VerifyDomainModal } from './VerifyDomainModal';
-import { useAuthStore } from '@/store';
 import { useDebouncedValue } from '@/hooks';
 import { useTranslations } from 'next-intl';
 import {
@@ -54,8 +53,9 @@ export function CityInitForm() {
   const [citySearchQuery, setCitySearchQuery] = useState('');
   const [isCityLoading, setIsCityLoading] = useState(false);
   const [citySearchError, setCitySearchError] = useState('');
+  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const debouncedCitySearchQuery = useDebouncedValue(citySearchQuery, 600);
-  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (debouncedCitySearchQuery.length < 2) {
@@ -118,7 +118,7 @@ export function CityInitForm() {
     }
   };
 
-  const initializeCityEnvironment = async () => {
+  const submitCityCreationRequest = async () => {
     const values = getValues();
     const files = values.document;
     const document = files?.[0];
@@ -137,19 +137,34 @@ export function CityInitForm() {
     if (typeof values.name?.lng === 'number') {
       formData.append('centerLng', String(values.name.lng));
     }
-    if (user?.id) formData.append('userId', user.id);
 
     try {
+      setSubmitError('');
+      setSubmitMessage('');
       await cityApi.initializeCity(formData);
+      setSubmitMessage(t('cityInit.requestSubmitted'));
     } catch (error) {
       console.error(t('cityInit.initError'), error);
+      setSubmitError(
+        error instanceof Error ? error.message : t('cityInit.initError'),
+      );
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(initializeCityEnvironment)}>
+    <form onSubmit={handleSubmit(submitCityCreationRequest)}>
       <div className="mx-auto mt-2 grid max-w-[600px] gap-3">
         <h2 className="text-2xl">{t('cityInit.title')}</h2>
+        {submitMessage ? (
+          <p className="rounded-md border border-[var(--success)]/30 bg-[var(--success)]/10 px-3 py-2 text-sm text-[var(--success-dark)]">
+            {submitMessage}
+          </p>
+        ) : null}
+        {submitError ? (
+          <p className="rounded-md border border-[var(--danger-light)] bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger-dark)]">
+            {submitError}
+          </p>
+        ) : null}
 
         <div>
           <Controller

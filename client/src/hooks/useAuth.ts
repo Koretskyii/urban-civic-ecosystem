@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { authApi } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/store';
@@ -10,12 +11,22 @@ import type {
 
 export function useCurrentUser() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const token = useAuthStore((s) => s.token);
+  const setUser = useAuthStore((s) => s.setUser);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: queryKeys.auth.me(),
     queryFn: () => authApi.getMe(),
     enabled: isAuthenticated,
   });
+
+  useEffect(() => {
+    if (query.data && token) {
+      setUser(query.data, token);
+    }
+  }, [query.data, setUser, token]);
+
+  return query;
 }
 
 export function useLogin() {

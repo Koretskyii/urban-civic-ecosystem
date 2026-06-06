@@ -14,6 +14,13 @@ interface UploadVerificationDocumentParams {
   buffer: Buffer;
 }
 
+interface UploadCityCreationRequestDocumentParams {
+  requestId: string;
+  fileName: string;
+  mimeType?: string;
+  buffer: Buffer;
+}
+
 interface UploadCityRequestAttachmentParams {
   cityId: string;
   requestId: string;
@@ -77,6 +84,27 @@ export class R2StorageService {
   ): Promise<UploadResult> {
     const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const key = `city-init/${params.cityId}/${Date.now()}-${safeName}`;
+
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: params.buffer,
+        ContentType: params.mimeType || 'application/octet-stream',
+      }),
+    );
+
+    return {
+      key,
+      url: `${this.publicBaseUrl}/${key}`,
+    };
+  }
+
+  async uploadCityCreationRequestDocument(
+    params: UploadCityCreationRequestDocumentParams,
+  ): Promise<UploadResult> {
+    const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const key = `city-creation-requests/${params.requestId}/${Date.now()}-${safeName}`;
 
     await this.s3Client.send(
       new PutObjectCommand({

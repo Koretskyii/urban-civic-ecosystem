@@ -5,10 +5,12 @@ import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
 import HeaderNotifications from './HeaderNotifications';
 import { useAuthStore } from '@/store';
+import { ShieldCheck } from 'lucide-react';
 
 export default function Header() {
   const t = useTranslations();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isSystemAdmin = useAuthStore((s) => s.user?.systemRole === 'ADMIN');
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--secondary)]/25 bg-white/92 text-[var(--primary)] shadow-[0_8px_24px_rgba(6,24,41,0.1)] backdrop-blur">
@@ -26,6 +28,15 @@ export default function Header() {
           >
             {t('header.createCity')}
           </Link>
+          {isSystemAdmin ? (
+            <Link
+              href="/admin/settings"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-[var(--primary)] no-underline transition hover:bg-[var(--secondary)]/20 hover:shadow-sm"
+            >
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              {t('header.adminSettings')}
+            </Link>
+          ) : null}
           {isAuthenticated ? (
             <>
               <HeaderNotifications />

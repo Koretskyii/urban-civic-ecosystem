@@ -102,7 +102,12 @@ export class AuthService {
 
     return {
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        systemRole: user.systemRole,
+      },
     };
   }
 
@@ -113,7 +118,12 @@ export class AuthService {
 
     return {
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        systemRole: user.systemRole,
+      },
     };
   }
 
@@ -162,7 +172,12 @@ export class AuthService {
 
     return {
       accessToken,
-      user: { id: userData.id, name: userData.name, email: userData.email },
+      user: {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        systemRole: userData.systemRole,
+      },
     };
   }
 
@@ -202,6 +217,7 @@ export class AuthService {
         sub: user.id,
         email: user.email,
         permissions,
+        systemRole: user.systemRole,
       },
       { expiresIn: Number(this.configService.get('jwt.expiresIn')) },
     );
