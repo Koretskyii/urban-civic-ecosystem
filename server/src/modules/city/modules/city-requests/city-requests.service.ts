@@ -11,6 +11,8 @@ import { R2StorageService } from '@/modules/r2/r2.service';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { ReportType, RequestStatus } from '@/generated/prisma/enums';
 import type { Prisma } from '@/generated/prisma/client';
+import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
+import { buildCityRequestEventPayload } from '@/modules/notifications/domain/domain-event.factory';
 import {
   AssignCityRequestDto,
   CityRequestScope,
@@ -102,6 +104,22 @@ export class CityRequestsService {
           })),
         });
       }
+
+      await tx.domainEventOutbox.create({
+        data: {
+          aggregateType: 'city_request',
+          aggregateId: cityRequest.id,
+          eventType: DOMAIN_EVENT_TYPES.CITY_REQUEST_CREATED,
+          payload: buildCityRequestEventPayload({
+            cityId,
+            requestId: cityRequest.id,
+            requesterId: userId,
+            actorId: userId,
+            requestTitle: cityRequest.title,
+            title: cityRequest.title,
+          }),
+        },
+      });
 
       return tx.cityRequest.findUnique({
         where: { id: requestId },
@@ -285,7 +303,7 @@ export class CityRequestsService {
       );
     }
 
-    return this.prisma.cityRequest.update({
+    const updated = await this.prisma.cityRequest.update({
       where: { id: requestId },
       data: {
         assignedDepartmentId: department.id,
@@ -298,6 +316,27 @@ export class CityRequestsService {
         assignedDepartment: true,
       },
     });
+
+    await this.prisma.domainEventOutbox.create({
+      data: {
+        aggregateType: 'city_request',
+        aggregateId: requestId,
+        eventType: DOMAIN_EVENT_TYPES.CITY_REQUEST_ASSIGNED,
+        payload: buildCityRequestEventPayload({
+          cityId,
+          requestId,
+          requesterId: request.userId,
+          actorId: userId,
+          requestTitle: request.title,
+          title: request.title,
+          status: updated.status,
+          departmentId: department.id,
+          departmentName: department.name,
+        }),
+      },
+    });
+
+    return updated;
   }
 
   async updateStatus(
@@ -308,7 +347,7 @@ export class CityRequestsService {
   ) {
     await this.ensureManagePermission(cityId, userId);
 
-    await this.getCityRequestOrThrow(cityId, requestId);
+    const request = await this.getCityRequestOrThrow(cityId, requestId);
 
     if (
       dto.status === RequestStatus.RESOLVED ||
@@ -319,13 +358,32 @@ export class CityRequestsService {
       );
     }
 
-    return this.prisma.cityRequest.update({
+    const updated = await this.prisma.cityRequest.update({
       where: { id: requestId },
       data: {
         status: dto.status,
         resolvedAt: null,
       },
     });
+
+    await this.prisma.domainEventOutbox.create({
+      data: {
+        aggregateType: 'city_request',
+        aggregateId: requestId,
+        eventType: DOMAIN_EVENT_TYPES.CITY_REQUEST_STATUS_UPDATED,
+        payload: buildCityRequestEventPayload({
+          cityId,
+          requestId,
+          requesterId: request.userId,
+          actorId: userId,
+          requestTitle: request.title,
+          title: request.title,
+          status: updated.status,
+        }),
+      },
+    });
+
+    return updated;
   }
 
   async createReport(
@@ -461,6 +519,25 @@ export class CityRequestsService {
       });
     });
 
+    await this.prisma.domainEventOutbox.create({
+      data: {
+        aggregateType: 'city_request',
+        aggregateId: requestId,
+        eventType: DOMAIN_EVENT_TYPES.CITY_REQUEST_REPORT_CREATED,
+        payload: buildCityRequestEventPayload({
+          cityId,
+          requestId,
+          requesterId: request.userId,
+          actorId: userId,
+          requestTitle: request.title,
+          title: request.title,
+          status: reportStatus ?? request.status,
+          reportId,
+          reportType: dto.type,
+        }),
+      },
+    });
+
     return this.withPublicAttachmentUrls(report);
   }
 
@@ -481,7 +558,7 @@ export class CityRequestsService {
 
     await this.ensureCityMembership(cityId, userId);
 
-    return this.prisma.message.create({
+    const message = await this.prisma.message.create({
       data: {
         chatId: request.chat.id,
         authorId: userId,
@@ -496,6 +573,26 @@ export class CityRequestsService {
         },
       },
     });
+
+    await this.prisma.domainEventOutbox.create({
+      data: {
+        aggregateType: 'city_request',
+        aggregateId: requestId,
+        eventType: DOMAIN_EVENT_TYPES.CITY_REQUEST_MESSAGE_CREATED,
+        payload: buildCityRequestEventPayload({
+          cityId,
+          requestId,
+          requesterId: request.userId,
+          actorId: userId,
+          requestTitle: request.title,
+          title: request.title,
+          messageId: message.id,
+          messagePreview: this.toMessagePreview(message.content),
+        }),
+      },
+    });
+
+    return message;
   }
 
   async getMessages(cityId: string, requestId: string, userId: string) {
@@ -656,6 +753,13 @@ export class CityRequestsService {
     }
 
     return request;
+  }
+
+  private toMessagePreview(content: string) {
+    const normalized = content.replace(/\s+/g, ' ').trim();
+    return normalized.length > 120
+      ? `${normalized.slice(0, 117).trimEnd()}...`
+      : normalized;
   }
 
   private withPublicRequestAttachmentUrls<

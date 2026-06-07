@@ -20,6 +20,13 @@ export const uk = {
     notificationActionChanged: 'Змінено',
     notificationEntityNews: 'новину',
     notificationEntityAlert: 'оголошення',
+    notificationEntityCityRequest: 'міське звернення',
+    notificationCityFallback: 'Місто',
+    notificationCityRequestCreated: 'Нове звернення',
+    notificationCityRequestAssigned: 'Призначено департамент',
+    notificationCityRequestStatusUpdated: 'Оновлено статус звернення',
+    notificationCityRequestReportCreated: 'Додано звіт по зверненню',
+    notificationCityRequestMessageCreated: 'Нове повідомлення у зверненні',
   },
   footer: {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',

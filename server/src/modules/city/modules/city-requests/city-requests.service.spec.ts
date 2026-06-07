@@ -22,6 +22,9 @@ describe('CityRequestsService', () => {
       findFirst: jest.fn(),
       findMany: jest.fn(),
     },
+    domainEventOutbox: {
+      create: jest.fn(),
+    },
   };
 
   const mockRbacService = {
@@ -75,6 +78,9 @@ describe('CityRequestsService', () => {
       },
       attachment: {
         createMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
+      domainEventOutbox: {
+        create: jest.fn().mockResolvedValue({ id: 'outbox-1' }),
       },
     };
 
@@ -249,6 +255,9 @@ describe('CityRequestsService', () => {
       },
       cityRequest: {
         update: jest.fn().mockResolvedValue({ id: 'request-1' }),
+      },
+      domainEventOutbox: {
+        create: jest.fn().mockResolvedValue({ id: 'outbox-1' }),
       },
     };
 
