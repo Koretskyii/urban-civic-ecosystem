@@ -39,6 +39,8 @@ export type {
   Post,
   Community,
   DomainVerificationData,
+  DomainVerificationResult,
+  DomainVerificationToken,
 } from './city.types';
 
 export type {

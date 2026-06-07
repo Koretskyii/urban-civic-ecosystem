@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import type { DomainVerificationToken } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 
 type CityOption = {
@@ -26,14 +27,10 @@ type CityOption = {
   geonameId?: number;
 };
 
-interface DomainToken {
-  token: string;
-}
-
 interface CityInitFormValues {
   name: CityOption | null;
   region: string;
-  domain?: string;
+  domain: string;
   document?: FileList;
 }
 
@@ -46,11 +43,14 @@ export function CityInitForm() {
     control,
     getValues,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<CityInitFormValues>({ shouldUnregister: true });
-  const [useDnsVerification, setUseDnsVerification] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [verificationToken, setVerificationToken] = useState('');
+  const [useDnsVerification, setUseDnsVerification] = useState(false);
+  const [domainVerification, setDomainVerification] =
+    useState<DomainVerificationToken | null>(null);
+  const [verifiedDomain, setVerifiedDomain] = useState('');
   const [isGeneratingToken, setIsGeneratingToken] = useState(false);
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [citySearchQuery, setCitySearchQuery] = useState('');
@@ -59,6 +59,7 @@ export function CityInitForm() {
   const [submitMessage, setSubmitMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
   const debouncedCitySearchQuery = useDebouncedValue(citySearchQuery, 600);
+  const domainValue = watch('domain');
 
   useEffect(() => {
     if (debouncedCitySearchQuery.length < 2) {
@@ -104,15 +105,14 @@ export function CityInitForm() {
   }, [debouncedCitySearchQuery, t]);
 
   const onDomainVerify = async () => {
-    const domainName = getValues('domain');
+    const domainName = getValues('domain')?.trim().toLowerCase();
     if (!domainName) return;
     if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) return;
     setIsGeneratingToken(true);
     try {
-      const response = (await cityApi.generateDomainToken(
-        domainName,
-      )) as DomainToken;
-      setVerificationToken(response.token);
+      const response = await cityApi.generateDomainToken(domainName);
+      setDomainVerification(response);
+      setVerifiedDomain('');
       setModalOpen(true);
     } catch (error) {
       console.error(t('cityInit.tokenGenerateError'), error);
@@ -127,13 +127,14 @@ export function CityInitForm() {
     const document = files?.[0];
     const cityName =
       typeof values.name === 'string' ? values.name : values.name?.label || '';
+    const domain = values.domain?.trim().toLowerCase();
     if (!document) return;
 
     const formData = new FormData();
     formData.append('name', cityName);
     formData.append('region', String(values.region || ''));
     formData.append('document', document);
-    if (values.domain) formData.append('domain', String(values.domain));
+    if (domain) formData.append('domain', domain);
     if (typeof values.name?.lat === 'number') {
       formData.append('centerLat', String(values.name.lat));
     }
@@ -266,7 +267,31 @@ export function CityInitForm() {
             {t('cityInit.representativeTitle')}
           </p>
 
-          <label className="mb-2 flex items-center gap-2 text-sm">
+          <div className="space-y-2">
+            <label className="mb-1 block text-sm text-[var(--muted-foreground)]">
+              {t('cityInit.domainLabel')}
+            </label>
+            <Input
+              {...register('domain', {
+                pattern: {
+                  value: /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: t('cityInit.domainInvalid'),
+                },
+                onChange: () => {
+                  setDomainVerification(null);
+                  setVerifiedDomain('');
+                },
+              })}
+              placeholder={t('cityInit.domainPlaceholder')}
+            />
+            {errors.domain ? (
+              <p className="mt-1 text-xs text-[var(--danger-dark)]">
+                {errors.domain.message as string}
+              </p>
+            ) : null}
+          </div>
+
+          <label className="mt-3 flex items-center gap-2 text-sm">
             <Checkbox
               checked={useDnsVerification}
               onCheckedChange={(checked) =>
@@ -281,19 +306,10 @@ export function CityInitForm() {
               <p className="mb-2 text-sm text-[var(--muted-foreground)]">
                 {t('cityInit.dnsHelper')}
               </p>
-              <Input
-                {...register('domain', {
-                  required: t('cityInit.domainRequired'),
-                  pattern: {
-                    value: /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                    message: t('cityInit.domainInvalid'),
-                  },
-                })}
-                placeholder={t('cityInit.domainPlaceholder')}
-              />
-              {errors.domain ? (
-                <p className="mt-1 text-xs text-[var(--danger-dark)]">
-                  {errors.domain.message as string}
+              {verifiedDomain &&
+              verifiedDomain === domainValue?.trim().toLowerCase() ? (
+                <p className="mt-2 rounded-md border border-[var(--success)]/30 bg-[var(--success)]/10 px-3 py-2 text-sm text-[var(--success-dark)]">
+                  {t('cityInit.domainVerified')}
                 </p>
               ) : null}
               <Button
@@ -357,8 +373,17 @@ export function CityInitForm() {
       <VerifyDomainModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        domain={getValues('domain') || ''}
-        token={verificationToken}
+        domain={domainVerification?.domain ?? ''}
+        token={domainVerification?.token ?? ''}
+        onVerified={(result) => {
+          setVerifiedDomain(result.domain);
+          setDomainVerification({
+            id: result.id,
+            domain: result.domain,
+            token: result.token,
+            verifiedAt: result.verifiedAt,
+          });
+        }}
       />
     </form>
   );

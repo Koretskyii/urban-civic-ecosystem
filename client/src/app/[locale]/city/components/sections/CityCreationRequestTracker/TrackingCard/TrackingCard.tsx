@@ -36,6 +36,10 @@ export function TrackingCard({
           value={formatCoordinates(request.centerLat, request.centerLng)}
         />
         <DetailItem
+          label={t('cityInit.trackingDomainVerifiedAt')}
+          value={formatDateTime(request.domainVerifiedAt)}
+        />
+        <DetailItem
           label={t('cityInit.trackingSubmittedAt')}
           value={formatDateTime(request.createdAt)}
         />

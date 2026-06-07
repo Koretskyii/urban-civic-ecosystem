@@ -5,17 +5,14 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import type { DomainVerificationResult } from '@/types';
 
 interface VerifyDomainModalProps {
   open: boolean;
   onClose: () => void;
   domain: string;
   token: string;
-}
-interface VerifyDomainResponse {
-  data: {
-    success: boolean;
-  };
+  onVerified: (result: DomainVerificationResult) => void;
 }
 
 export function VerifyDomainModal({
@@ -23,12 +20,14 @@ export function VerifyDomainModal({
   onClose,
   domain,
   token,
+  onVerified,
 }: VerifyDomainModalProps) {
   const t = useTranslations();
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isDomainVerified, setIsDomainVerified] = useState(false);
+  const recordName = domain ? `_urban-civic-verify.${domain}` : '';
 
   const handleCopyToken = async () => {
     try {
@@ -44,13 +43,14 @@ export function VerifyDomainModal({
     setIsVerifying(true);
     setError(null);
     try {
-      const response: VerifyDomainResponse = (await cityApi.verifyDomain({
+      const response = await cityApi.verifyDomain({
         domain,
         token,
-      })) as VerifyDomainResponse;
-      if (response?.data?.success) {
-        onClose();
+      });
+      if (response.success) {
+        onVerified(response);
         setIsDomainVerified(true);
+        onClose();
       }
     } catch (err) {
       setError((err as Error).message || t('verifyDomain.errorFallback'));
@@ -115,7 +115,7 @@ export function VerifyDomainModal({
               <li>
                 {t('verifyDomain.recordNameLabel')}{' '}
                 <code className="rounded bg-black/5 px-1 py-0.5">
-                  _urban-civic-verify
+                  {recordName}
                 </code>
               </li>
               <li>{t('verifyDomain.recordValueLabel')}</li>

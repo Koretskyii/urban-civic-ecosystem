@@ -37,20 +37,38 @@ describe('CityController', () => {
   });
 
   describe('generateDomainToken', () => {
-    it('should call service.generateDomainToken with domain', () => {
+    it('should throw UnauthorizedException if request user is missing', () => {
+      const req = { user: undefined } as unknown as Request;
+      expect(() => controller.generateDomainToken('test.com', req)).toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should call service.generateDomainToken with user id and domain', async () => {
       const domain = 'test.com';
       const expectedResult = { token: 'test-token', domain };
-      mockCityService.generateDomainToken.mockReturnValue(expectedResult);
+      mockCityService.generateDomainToken.mockResolvedValue(expectedResult);
+      const req = { user: { id: 'user-id' } } as unknown as Request;
 
-      const result = controller.generateDomainToken(domain);
+      const result = await controller.generateDomainToken(domain, req);
 
-      expect(mockCityService.generateDomainToken).toHaveBeenCalledWith(domain);
+      expect(mockCityService.generateDomainToken).toHaveBeenCalledWith(
+        'user-id',
+        domain,
+      );
       expect(result).toEqual(expectedResult);
     });
   });
 
   describe('verifyDomain', () => {
-    it('should call service.verifyDomain with domain and token', async () => {
+    it('should throw UnauthorizedException if request user is missing', async () => {
+      const req = { user: undefined } as unknown as Request;
+      await expect(
+        controller.verifyDomain({ domain: 'test.com', token: 'token' }, req),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should call service.verifyDomain with user id, domain and token', async () => {
       const body = { domain: 'test.com', token: 'test-token' };
       const expectedResult = {
         success: true,
@@ -58,10 +76,12 @@ describe('CityController', () => {
         domain: body.domain,
       };
       mockCityService.verifyDomain.mockResolvedValue(expectedResult);
+      const req = { user: { id: 'user-id' } } as unknown as Request;
 
-      const result = await controller.verifyDomain(body);
+      const result = await controller.verifyDomain(body, req);
 
       expect(mockCityService.verifyDomain).toHaveBeenCalledWith(
+        'user-id',
         body.domain,
         body.token,
       );

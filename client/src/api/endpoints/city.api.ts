@@ -6,14 +6,22 @@ import {
   Post,
   Community,
   DomainVerificationData,
+  DomainVerificationResult,
+  DomainVerificationToken,
 } from '@/types';
 
 export const cityApi = {
   generateDomainToken: (domain: string) => {
-    return apiClient.post(API_ROUTES.city.generateDomainToken, { domain });
+    return apiClient.post<DomainVerificationToken>(
+      API_ROUTES.city.generateDomainToken,
+      { domain },
+    );
   },
   verifyDomain: (data: DomainVerificationData) => {
-    return apiClient.post(API_ROUTES.city.verifyDomain, data);
+    return apiClient.post<DomainVerificationResult>(
+      API_ROUTES.city.verifyDomain,
+      data,
+    );
   },
   initializeCity: (data: FormData) => {
     return apiClient.postFormData(API_ROUTES.city.initializeCity, data);
