@@ -129,6 +129,7 @@ model User {
   cityRequests                 CityRequest[]
   cityCreationRequests         CityCreationRequest[] @relation("CityCreationRequester")
   reviewedCityCreationRequests CityCreationRequest[] @relation("CityCreationReviewer")
+  domainVerifications          DomainVerification[]
   reports                      Report[]
   messages                     Message[]
   alertSubscriptions           AlertSubscription[]
@@ -241,22 +242,25 @@ model CityRequest {
 }
 
 model CityCreationRequest {
-  id              String                    @id @default(cuid())
-  requesterId     String
-  reviewedById    String?
-  cityId          String?
-  name            String
-  region          String
-  centerLat       Float?
-  centerLng       Float?
-  domain          String?
-  status          CityCreationRequestStatus @default(PENDING)
-  rejectionReason String?
-  reviewedAt      DateTime?
+  id                   String                    @id @default(cuid())
+  requesterId          String
+  reviewedById         String?
+  cityId               String?
+  domainVerificationId String?                   @unique
+  name                 String
+  region               String
+  centerLat            Float?
+  centerLng            Float?
+  domain               String?
+  domainVerifiedAt     DateTime?
+  status               CityCreationRequestStatus @default(PENDING)
+  rejectionReason      String?
+  reviewedAt           DateTime?
 
-  requester  User  @relation("CityCreationRequester", fields: [requesterId], references: [id], onDelete: Cascade)
-  reviewedBy User? @relation("CityCreationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
-  city       City? @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  requester          User                @relation("CityCreationRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  reviewedBy         User?               @relation("CityCreationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  city               City?               @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  domainVerification DomainVerification? @relation(fields: [domainVerificationId], references: [id], onDelete: SetNull)
 
   attachments Attachment[]
 
@@ -266,7 +270,25 @@ model CityCreationRequest {
   @@index([status, createdAt])
   @@index([requesterId, status])
   @@index([cityId])
+  @@index([domainVerificationId])
   @@index([name, region])
+}
+
+model DomainVerification {
+  id          String    @id @default(cuid())
+  requesterId String
+  domain      String
+  token       String    @unique
+  verifiedAt  DateTime?
+
+  requester           User                 @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  cityCreationRequest CityCreationRequest?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requesterId, domain, verifiedAt])
+  @@index([domain, verifiedAt])
 }
 
 model Department {

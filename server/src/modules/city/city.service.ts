@@ -45,10 +45,14 @@ interface ProvisionApprovedCityParams {
   centerLat?: number | null;
   centerLng?: number | null;
   domain?: string | null;
+  domainVerificationToken?: string | null;
   verificationAttachmentId?: string;
 }
 
 const resolveTxt = promisify(dns.resolveTxt);
+const normalizeDomain = (domain?: string | null) =>
+  domain?.trim().toLowerCase() || '';
+const normalizeTxtValue = (value: string) => value.trim().replace(/^"|"$/g, '');
 
 @Injectable()
 export class CityService {
@@ -56,47 +60,88 @@ export class CityService {
     private readonly prisma: PrismaService,
     private readonly r2StorageService: R2StorageService,
   ) {}
-  private tokenStore = new Map<string, string>(); // TODO: Replace with persistent storage in production
 
-  generateDomainToken(domain: string) {
+  async generateDomainToken(requesterId: string, domain: string) {
+    const normalizedDomain = normalizeDomain(domain);
+    if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(normalizedDomain)) {
+      throw new BadRequestException('Invalid domain');
+    }
+
     const token = `urban-civic-ecosystem=${crypto.randomUUID().toString()}`;
-    // Store the token associated with the domain
-    this.tokenStore.set(domain, token);
-    return { token, domain };
+    const verification = await this.prisma.domainVerification.create({
+      data: {
+        requesterId,
+        domain: normalizedDomain,
+        token,
+      },
+      select: {
+        id: true,
+        domain: true,
+        token: true,
+        verifiedAt: true,
+        createdAt: true,
+      },
+    });
+
+    return verification;
   }
 
-  async verifyDomain(domain: string, token: string) {
+  async verifyDomain(requesterId: string, domain: string, token: string) {
+    const normalizedDomain = normalizeDomain(domain);
     try {
-      const storedToken = this.tokenStore.get(domain);
-      if (!storedToken) {
+      const verification = await this.prisma.domainVerification.findFirst({
+        where: {
+          requesterId,
+          domain: normalizedDomain,
+          token,
+        },
+      });
+
+      if (!verification) {
         throw new BadRequestException(CITY_ERRORS.TOKEN_NOT_FOUND);
       }
 
-      if (storedToken !== token) {
-        throw new BadRequestException(CITY_ERRORS.INVALID_TOKEN);
-      }
-
-      const txtRecords = await resolveTxt(`_urban-civic-verify.${domain}`);
-
-      const flatRecords = txtRecords.flat();
-      const tokenFound = flatRecords.some((record) => record === token);
+      const txtRecords = await Promise.allSettled([
+        resolveTxt(`_urban-civic-verify.${normalizedDomain}`),
+        resolveTxt(normalizedDomain),
+      ]);
+      const resolvedRecords = txtRecords.flatMap((result) =>
+        result.status === 'fulfilled' ? result.value : [],
+      );
+      const tokenFound = resolvedRecords.some((recordChunks) => {
+        const joinedRecord = normalizeTxtValue(recordChunks.join(''));
+        return (
+          joinedRecord === token ||
+          recordChunks.some((chunk) => normalizeTxtValue(chunk) === token)
+        );
+      });
 
       if (!tokenFound) {
         throw new BadRequestException(CITY_ERRORS.DNS_RECORD_NOT_FOUND);
       }
 
-      this.tokenStore.delete(domain);
+      const verifiedAt = new Date();
+      const updatedVerification = await this.prisma.domainVerification.update({
+        where: { id: verification.id },
+        data: { verifiedAt },
+        select: {
+          id: true,
+          domain: true,
+          token: true,
+          verifiedAt: true,
+        },
+      });
 
       return {
         success: true,
         message: CITY_SUCCESS_MESSAGES.DOMAIN_VERIFIED,
-        domain,
+        ...updatedVerification,
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       console.error(
-        `Domain verification failed for ${domain}: ${errorMessage}`,
+        `Domain verification failed for ${normalizedDomain}: ${errorMessage}`,
       );
 
       if (error instanceof BadRequestException) {
@@ -197,6 +242,7 @@ export class CityService {
         centerLat: true,
         centerLng: true,
         domain: true,
+        domainVerifiedAt: true,
         status: true,
         rejectionReason: true,
         reviewedAt: true,
@@ -305,7 +351,7 @@ export class CityService {
     const { name, region, domain, centerLat, centerLng } = data;
     const normalizedName = name?.trim().replace(/\s+/g, ' ');
     const normalizedRegion = region?.trim().replace(/\s+/g, ' ');
-    const normalizedDomain = domain?.trim().toLowerCase();
+    const normalizedDomain = normalizeDomain(domain);
 
     if (!normalizedName || !normalizedRegion) {
       throw new BadRequestException(CITY_ERRORS.NAME_AND_REGION_REQUIRED);
@@ -325,6 +371,24 @@ export class CityService {
     if (existingRequesterPendingRequest) {
       throw new BadRequestException(
         'You already have a city creation request pending review',
+      );
+    }
+
+    const existingRequesterDuplicateRequest =
+      await this.prisma.cityCreationRequest.findFirst({
+        where: {
+          requesterId,
+          name: { equals: normalizedName, mode: 'insensitive' },
+          region: { equals: normalizedRegion, mode: 'insensitive' },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    if (existingRequesterDuplicateRequest) {
+      throw new BadRequestException(
+        `You already submitted a city creation request for ${normalizedName}, ${normalizedRegion}`,
       );
     }
 
@@ -357,24 +421,44 @@ export class CityService {
       );
     }
 
+    let domainVerification: { id: string; verifiedAt: Date | null } | null =
+      null;
+
     if (normalizedDomain) {
-      const [existingDomain, existingDomainRequest] = await Promise.all([
-        this.prisma.cityDomain.findUnique({
-          where: { domainName: normalizedDomain },
-        }),
-        this.prisma.cityCreationRequest.findFirst({
-          where: {
-            status: CityCreationRequestStatus.PENDING,
-            domain: { equals: normalizedDomain, mode: 'insensitive' },
-          },
-        }),
-      ]);
+      const [existingDomain, existingDomainRequest, verifiedDomain] =
+        await Promise.all([
+          this.prisma.cityDomain.findUnique({
+            where: { domainName: normalizedDomain },
+          }),
+          this.prisma.cityCreationRequest.findFirst({
+            where: {
+              status: CityCreationRequestStatus.PENDING,
+              domain: { equals: normalizedDomain, mode: 'insensitive' },
+            },
+          }),
+          this.prisma.domainVerification.findFirst({
+            where: {
+              requesterId,
+              domain: normalizedDomain,
+              verifiedAt: { not: null },
+            },
+            orderBy: {
+              verifiedAt: 'desc',
+            },
+            select: {
+              id: true,
+              verifiedAt: true,
+            },
+          }),
+        ]);
 
       if (existingDomain || existingDomainRequest) {
         throw new BadRequestException(
           CITY_ERRORS.DOMAIN_ALREADY_REGISTERED(normalizedDomain),
         );
       }
+
+      domainVerification = verifiedDomain;
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -386,6 +470,8 @@ export class CityService {
           centerLat,
           centerLng,
           domain: normalizedDomain || null,
+          domainVerificationId: domainVerification?.id,
+          domainVerifiedAt: domainVerification?.verifiedAt,
         },
         select: {
           id: true,
@@ -394,6 +480,7 @@ export class CityService {
           centerLat: true,
           centerLng: true,
           domain: true,
+          domainVerifiedAt: true,
           status: true,
           createdAt: true,
         },
@@ -449,7 +536,7 @@ export class CityService {
         create: {
           domainName: params.domain,
           token:
-            this.tokenStore.get(params.domain) ||
+            params.domainVerificationToken ||
             `city-domain=${crypto.randomUUID().toString()}`,
           ownerId: params.requesterId,
         },
@@ -526,10 +613,6 @@ export class CityService {
       cityId: city.id,
       cityName: city.name,
     });
-
-    if (params.domain) {
-      this.tokenStore.delete(params.domain);
-    }
 
     return city;
   }

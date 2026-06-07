@@ -29,6 +29,7 @@ export interface CityCreationRequestTracking {
   centerLat?: number | null;
   centerLng?: number | null;
   domain?: string | null;
+  domainVerifiedAt?: string | null;
   status: CityCreationRequestStatus;
   rejectionReason?: string | null;
   reviewedAt?: string | null;
@@ -38,6 +39,23 @@ export interface CityCreationRequestTracking {
     id: string;
     name: string;
   } | null;
+}
+
+export interface DomainVerificationToken {
+  id: string;
+  domain: string;
+  token: string;
+  verifiedAt?: string | null;
+  createdAt?: string;
+}
+
+export interface DomainVerificationResult {
+  success: boolean;
+  message: string;
+  id: string;
+  domain: string;
+  token: string;
+  verifiedAt: string;
 }
 
 export interface PaginatedResponse<T> {

@@ -71,6 +71,10 @@ export function RequestDetailModal({
               value={request.domain}
             />
             <DetailItem
+              label={t('platformAdmin.domainVerifiedAt')}
+              value={formatDateTime(request.domainVerifiedAt)}
+            />
+            <DetailItem
               label={t('platformAdmin.coordinates')}
               value={formatCoordinates(request.centerLat, request.centerLng)}
             />

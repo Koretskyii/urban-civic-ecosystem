@@ -24,6 +24,7 @@ export type AdminCityCreationRequest = {
   centerLat?: number | null;
   centerLng?: number | null;
   domain?: string | null;
+  domainVerifiedAt?: string | null;
   status: CityCreationRequestStatus;
   rejectionReason?: string | null;
   reviewedAt?: string | null;

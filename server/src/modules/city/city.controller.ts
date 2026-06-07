@@ -39,8 +39,13 @@ export class CityController {
 
   @UseGuards(JWTGuard)
   @Post('domain/generate-token')
-  generateDomainToken(@Body('domain') domain: string) {
-    return this.cityService.generateDomainToken(domain);
+  generateDomainToken(@Body('domain') domain: string, @Req() req: Request) {
+    const user = req.user as User;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.cityService.generateDomainToken(user.id, domain);
   }
 
   @UseGuards(JWTGuard)
@@ -68,8 +73,16 @@ export class CityController {
 
   @UseGuards(JWTGuard)
   @Post('domain/verify')
-  async verifyDomain(@Body() body: DomainVerificationData) {
-    return this.cityService.verifyDomain(body.domain, body.token);
+  async verifyDomain(
+    @Body() body: DomainVerificationData,
+    @Req() req: Request,
+  ) {
+    const user = req.user as User;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.cityService.verifyDomain(user.id, body.domain, body.token);
   }
 
   @UseGuards(JWTGuard)

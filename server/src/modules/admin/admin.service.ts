@@ -78,6 +78,7 @@ export class AdminService {
           centerLat: true,
           centerLng: true,
           domain: true,
+          domainVerifiedAt: true,
           status: true,
           rejectionReason: true,
           reviewedAt: true,
@@ -127,6 +128,7 @@ export class AdminService {
         centerLat: true,
         centerLng: true,
         domain: true,
+        domainVerifiedAt: true,
         status: true,
         rejectionReason: true,
         reviewedAt: true,
@@ -431,6 +433,11 @@ export class AdminService {
             orderBy: { uploadedAt: 'desc' },
             take: 1,
           },
+          domainVerification: {
+            select: {
+              token: true,
+            },
+          },
         },
       });
 
@@ -478,6 +485,7 @@ export class AdminService {
         centerLat: request.centerLat,
         centerLng: request.centerLng,
         domain: request.domain,
+        domainVerificationToken: request.domainVerification?.token,
         verificationAttachmentId: verificationAttachment?.id,
       });
 
