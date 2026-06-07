@@ -35,3 +35,38 @@ export interface buildNewsEventPayloadData {
   publisherId: string | null;
   title: string;
 }
+
+export type CityRequestEventPayload = {
+  eventId: string;
+  occurredAt: string;
+  cityId: string;
+  aggregateId: string;
+  actorId: string;
+  requesterId: string;
+  title: string;
+  requestId: string;
+  requestTitle: string;
+  status?: string | null;
+  departmentId?: string | null;
+  departmentName?: string | null;
+  reportId?: string | null;
+  reportType?: string | null;
+  messageId?: string | null;
+  messagePreview?: string | null;
+};
+
+export interface BuildCityRequestEventPayloadData {
+  cityId: string;
+  requestId: string;
+  requesterId: string;
+  actorId: string;
+  requestTitle: string;
+  title?: string;
+  status?: string | null;
+  departmentId?: string | null;
+  departmentName?: string | null;
+  reportId?: string | null;
+  reportType?: string | null;
+  messageId?: string | null;
+  messagePreview?: string | null;
+}

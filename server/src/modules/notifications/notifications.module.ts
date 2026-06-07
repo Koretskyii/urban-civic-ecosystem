@@ -9,6 +9,8 @@ import { NotificationsProducer } from './queue/notifications.producer';
 import { NotificationsProcessor } from './queue/notifications.processor';
 import { NOTIFICATIONS_QUEUE } from './queue/notifications.queue';
 import { InAppNotificationService } from './in-app/in-app-notification.service';
+import { EmailNotificationService } from './email/email-notification.service';
+import { ResendEmailService } from './email/resend-email.service';
 import { NotificationsSseController } from './sse/notifications-sse.controller';
 import { NotificationsSseGateway } from './sse/notifications-sse.gateway';
 import { OutboxRelayWorker } from './outbox/outbox-relay.worker';
@@ -26,6 +28,8 @@ import { OutboxRelayWorker } from './outbox/outbox-relay.worker';
     NotificationsProducer,
     NotificationsProcessor,
     InAppNotificationService,
+    EmailNotificationService,
+    ResendEmailService,
     NotificationsSseGateway,
     OutboxRelayWorker,
   ],

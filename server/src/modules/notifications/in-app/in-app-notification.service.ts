@@ -14,6 +14,11 @@ export class InAppNotificationService {
     title: string,
     payload: Prisma.InputJsonValue,
     excludeUserId?: string,
+    options?: {
+      eventId?: string;
+      body?: string | null;
+      link?: string | null;
+    },
   ) {
     this.logger.log(
       `createForCityMembers cityId=${cityId} type=${type} excludeUserId=${excludeUserId ?? 'none'}`,
@@ -30,16 +35,48 @@ export class InAppNotificationService {
     this.logger.log(`createForCityMembers membersFound=${members.length}`);
     if (members.length === 0) return 0;
 
+    return this.createForUsers(
+      members.map((m) => m.userId),
+      cityId,
+      type,
+      title,
+      payload,
+      options,
+    );
+  }
+
+  async createForUsers(
+    userIds: string[],
+    cityId: string,
+    type: InAppNotificationType,
+    title: string,
+    payload: Prisma.InputJsonValue,
+    options?: {
+      eventId?: string;
+      body?: string | null;
+      link?: string | null;
+    },
+  ) {
+    const uniqueUserIds = [...new Set(userIds)].filter(Boolean);
+
+    if (uniqueUserIds.length === 0) {
+      return 0;
+    }
+
     const result = await this.prisma.inAppNotification.createMany({
-      data: members.map((m) => ({
-        userId: m.userId,
+      data: uniqueUserIds.map((userId) => ({
+        userId,
         cityId,
         type,
+        eventId: options?.eventId,
         title,
+        body: options?.body,
+        link: options?.link,
         payload,
       })),
+      skipDuplicates: true,
     });
-    this.logger.log(`createForCityMembers created=${result.count}`);
+    this.logger.log(`createForUsers created=${result.count}`);
 
     return result.count;
   }

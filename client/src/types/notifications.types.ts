@@ -4,13 +4,26 @@ export type InAppNotificationType =
   | 'NEWS_DELETED'
   | 'ALERT_CREATED'
   | 'ALERT_UPDATED'
-  | 'ALERT_DELETED';
+  | 'ALERT_DELETED'
+  | 'CITY_REQUEST_CREATED'
+  | 'CITY_REQUEST_ASSIGNED'
+  | 'CITY_REQUEST_STATUS_UPDATED'
+  | 'CITY_REQUEST_REPORT_CREATED'
+  | 'CITY_REQUEST_MESSAGE_CREATED';
+
+export interface InAppNotificationCity {
+  id: string;
+  name: string;
+  region: string;
+}
 
 export interface InAppNotification {
   id: string;
   userId: string;
   cityId: string;
+  city?: InAppNotificationCity | null;
   type: InAppNotificationType;
+  eventId?: string | null;
   title: string;
   body?: string | null;
   link?: string | null;
