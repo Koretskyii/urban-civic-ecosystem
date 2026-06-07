@@ -182,6 +182,36 @@ export class CityService {
     };
   }
 
+  async getCurrentCityCreationRequest(requesterId: string) {
+    return this.prisma.cityCreationRequest.findFirst({
+      where: {
+        requesterId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        name: true,
+        region: true,
+        centerLat: true,
+        centerLng: true,
+        domain: true,
+        status: true,
+        rejectionReason: true,
+        reviewedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        city: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
+
   async joinCity(cityId: string, userId: string) {
     const city = await this.prisma.city.findFirst({
       where: { id: cityId, deletedAt: null },
@@ -279,6 +309,23 @@ export class CityService {
 
     if (!normalizedName || !normalizedRegion) {
       throw new BadRequestException(CITY_ERRORS.NAME_AND_REGION_REQUIRED);
+    }
+
+    const existingRequesterPendingRequest =
+      await this.prisma.cityCreationRequest.findFirst({
+        where: {
+          requesterId,
+          status: CityCreationRequestStatus.PENDING,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    if (existingRequesterPendingRequest) {
+      throw new BadRequestException(
+        'You already have a city creation request pending review',
+      );
     }
 
     const existingCity = await this.prisma.city.findFirst({

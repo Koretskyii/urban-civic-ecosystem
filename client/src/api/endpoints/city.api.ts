@@ -1,6 +1,12 @@
 import { apiClient } from '../client';
 import { API_ROUTES } from '../routes';
-import { City, Post, Community, DomainVerificationData } from '@/types';
+import {
+  City,
+  CityCreationRequestTracking,
+  Post,
+  Community,
+  DomainVerificationData,
+} from '@/types';
 
 export const cityApi = {
   generateDomainToken: (domain: string) => {
@@ -11,6 +17,11 @@ export const cityApi = {
   },
   initializeCity: (data: FormData) => {
     return apiClient.postFormData(API_ROUTES.city.initializeCity, data);
+  },
+  getCurrentCityCreationRequest: () => {
+    return apiClient.get<CityCreationRequestTracking | null>(
+      API_ROUTES.city.currentCreationRequest,
+    );
   },
   getAllCities: () => {
     return apiClient.get<City[]>(API_ROUTES.city.getAll);

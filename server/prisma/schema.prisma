@@ -92,6 +92,7 @@ model City {
   crowdfundingProjects CrowdfundingProject[]
   news                 GeneralNews[]         @relation("news")
   notifications        InAppNotification[]
+  cityCreationRequests CityCreationRequest[]
 
   cityDomain CityDomain?
 
@@ -243,6 +244,7 @@ model CityCreationRequest {
   id              String                    @id @default(cuid())
   requesterId     String
   reviewedById    String?
+  cityId          String?
   name            String
   region          String
   centerLat       Float?
@@ -254,6 +256,7 @@ model CityCreationRequest {
 
   requester  User  @relation("CityCreationRequester", fields: [requesterId], references: [id], onDelete: Cascade)
   reviewedBy User? @relation("CityCreationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  city       City? @relation(fields: [cityId], references: [id], onDelete: SetNull)
 
   attachments Attachment[]
 
@@ -262,6 +265,7 @@ model CityCreationRequest {
 
   @@index([status, createdAt])
   @@index([requesterId, status])
+  @@index([cityId])
   @@index([name, region])
 }
 

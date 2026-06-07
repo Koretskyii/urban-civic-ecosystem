@@ -30,6 +30,8 @@ export const queryKeys = {
   cities: {
     all: () => ['cities'] as const,
     detail: (id: string) => ['cities', id] as const,
+    currentCreationRequest: () =>
+      [...queryKeys.cities.all(), 'creation-requests', 'current'] as const,
   },
 
   cityRequests: {

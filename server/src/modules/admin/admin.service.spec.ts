@@ -18,9 +18,11 @@ describe('AdminService', () => {
       reviewedById: string;
       reviewedAt: Date;
       rejectionReason: null;
+      cityId: string;
     };
     select: {
       id: boolean;
+      cityId: boolean;
       status: boolean;
       reviewedAt: boolean;
       reviewedById: boolean;
@@ -132,9 +134,11 @@ describe('AdminService', () => {
         reviewedById: 'admin-1',
         reviewedAt: updateArgs.data.reviewedAt,
         rejectionReason: null,
+        cityId: 'city-1',
       },
       select: {
         id: true,
+        cityId: true,
         status: true,
         reviewedAt: true,
         reviewedById: true,

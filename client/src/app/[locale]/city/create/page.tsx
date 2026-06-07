@@ -1,9 +1,9 @@
-import { CityInitForm } from '../components/CityInitForm';
+import { CityCreateView } from '../components/CityCreateView';
 
 export default async function CreateCityPage() {
   return (
     <div className="container mx-auto py-10">
-      <CityInitForm />
+      <CityCreateView />
     </div>
   );
 }

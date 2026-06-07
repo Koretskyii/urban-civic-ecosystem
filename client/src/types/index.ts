@@ -21,6 +21,7 @@ export type {
 
 export type {
   City,
+  CityCreationRequestTracking,
   PaginatedResponse,
   AlertSeverity,
   AlertType,

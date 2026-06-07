@@ -488,9 +488,11 @@ export class AdminService {
           reviewedById: reviewerId,
           reviewedAt: new Date(),
           rejectionReason: null,
+          cityId: city.id,
         },
         select: {
           id: true,
+          cityId: true,
           status: true,
           reviewedAt: true,
           reviewedById: true,

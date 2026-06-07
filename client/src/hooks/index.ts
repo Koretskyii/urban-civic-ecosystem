@@ -18,7 +18,12 @@ export {
   useUpdateUserSystemRole,
 } from './useAdmin';
 
-export { useCities, useCityById, useJoinCity } from './useCities';
+export {
+  useCities,
+  useCityById,
+  useJoinCity,
+  useCurrentCityCreationRequest,
+} from './useCities';
 export {
   useCityNews,
   useInfiniteCityNews,
