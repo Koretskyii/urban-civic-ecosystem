@@ -1,6 +1,6 @@
-import { Badge } from "@/components/ui/badge";
-import { CityCreationRequestTracking } from "@/types";
-import { useTranslations } from "next-intl";
+import { Badge } from '@/components/ui/badge';
+import { CityCreationRequestTracking } from '@/types';
+import { useTranslations } from 'next-intl';
 
 export function StatusBadge({
   status,

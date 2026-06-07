@@ -1,11 +1,15 @@
-import { Link } from "@/i18n/navigation";
-import { CityCreationRequestTracking } from "@/types";
-import { useTranslations } from "next-intl";
-import { formatCoordinates, formatDateTime } from "../helpers";
-import { DetailItem } from "../DetailItem/DetailItem";
-import { StatusBadge } from "../StatusBadge/StatusBadge";
+import { Link } from '@/i18n/navigation';
+import { CityCreationRequestTracking } from '@/types';
+import { useTranslations } from 'next-intl';
+import { formatCoordinates, formatDateTime } from '../helpers';
+import { DetailItem } from '../DetailItem/DetailItem';
+import { StatusBadge } from '../StatusBadge/StatusBadge';
 
-export function TrackingCard({ request }: { request: CityCreationRequestTracking }) {
+export function TrackingCard({
+  request,
+}: {
+  request: CityCreationRequestTracking;
+}) {
   const t = useTranslations();
 
   return (

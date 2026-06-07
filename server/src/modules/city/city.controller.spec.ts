@@ -86,9 +86,9 @@ describe('CityController', () => {
 
       const result = await controller.getCurrentCityCreationRequest(req);
 
-      expect(mockCityService.getCurrentCityCreationRequest).toHaveBeenCalledWith(
-        'user-id',
-      );
+      expect(
+        mockCityService.getCurrentCityCreationRequest,
+      ).toHaveBeenCalledWith('user-id');
       expect(result).toEqual(expectedResult);
     });
   });
