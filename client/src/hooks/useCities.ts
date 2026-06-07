@@ -21,6 +21,13 @@ export function useCityById(id: string) {
   });
 }
 
+export function useCurrentCityCreationRequest() {
+  return useQuery({
+    queryKey: queryKeys.cities.currentCreationRequest(),
+    queryFn: () => cityApi.getCurrentCityCreationRequest(),
+  });
+}
+
 export function useJoinCity() {
   return useMutation({
     mutationFn: (id: string) => cityApi.joinCity(id),

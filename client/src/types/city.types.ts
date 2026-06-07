@@ -1,3 +1,5 @@
+import type { CityCreationRequestStatus } from './admin.types';
+
 export interface City {
   id: string;
   name: string;
@@ -17,6 +19,24 @@ export interface City {
     url: string;
     type?: string | null;
     uploadedAt: string;
+  } | null;
+}
+
+export interface CityCreationRequestTracking {
+  id: string;
+  name: string;
+  region: string;
+  centerLat?: number | null;
+  centerLng?: number | null;
+  domain?: string | null;
+  status: CityCreationRequestStatus;
+  rejectionReason?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  city?: {
+    id: string;
+    name: string;
   } | null;
 }
 

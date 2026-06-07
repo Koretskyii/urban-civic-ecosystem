@@ -18,6 +18,7 @@ export const API_ROUTES = {
     generateDomainToken: '/city/domain/generate-token',
     verifyDomain: '/city/domain/verify',
     initializeCity: '/city/initialize',
+    currentCreationRequest: '/city/creation-requests/me/current',
   },
   cityMembers: {
     all: (cityId: string): string => `/city/${cityId}/members`,

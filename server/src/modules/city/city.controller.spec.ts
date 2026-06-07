@@ -10,6 +10,7 @@ describe('CityController', () => {
   const mockCityService = {
     generateDomainToken: jest.fn(),
     verifyDomain: jest.fn(),
+    getCurrentCityCreationRequest: jest.fn(),
     joinCity: jest.fn(),
   };
 
@@ -63,6 +64,30 @@ describe('CityController', () => {
       expect(mockCityService.verifyDomain).toHaveBeenCalledWith(
         body.domain,
         body.token,
+      );
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('getCurrentCityCreationRequest', () => {
+    it('should throw UnauthorizedException if request user is missing', async () => {
+      const req = { user: undefined } as unknown as Request;
+      await expect(
+        controller.getCurrentCityCreationRequest(req),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should call service.getCurrentCityCreationRequest with user id', async () => {
+      const expectedResult = { id: 'request-1', name: 'Kyiv' };
+      mockCityService.getCurrentCityCreationRequest.mockResolvedValue(
+        expectedResult,
+      );
+      const req = { user: { id: 'user-id' } } as unknown as Request;
+
+      const result = await controller.getCurrentCityCreationRequest(req);
+
+      expect(mockCityService.getCurrentCityCreationRequest).toHaveBeenCalledWith(
+        'user-id',
       );
       expect(result).toEqual(expectedResult);
     });

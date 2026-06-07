@@ -50,6 +50,17 @@ export class CityController {
   }
 
   @UseGuards(JWTGuard)
+  @Get('creation-requests/me/current')
+  async getCurrentCityCreationRequest(@Req() req: Request) {
+    const user = req.user as User;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.cityService.getCurrentCityCreationRequest(user.id);
+  }
+
+  @UseGuards(JWTGuard)
   @Get(':id')
   async getCityById(@Param('id') id: string) {
     return this.cityService.getCityById(id);
