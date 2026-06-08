@@ -109,4 +109,309 @@ export class NotificationsProcessor extends WorkerHost {
 
     return created;
   }
+
+  private getActorId(payload: Record<string, unknown>) {
+    const actorId = payload.actorId;
+    if (typeof actorId === 'string' && actorId.length > 0) return actorId;
+
+    const publisherId = payload.publisherId;
+    if (typeof publisherId === 'string' && publisherId.length > 0) {
+      return publisherId;
+    }
+
+    return null;
+  }
+
+  private async resolveRecipients(
+    eventType: DomainEventType,
+    payload: Record<string, unknown>,
+  ) {
+    const cityId = String(payload.cityId);
+    const actorId = this.getActorId(payload);
+
+    if (this.isCityRequestEvent(eventType)) {
+      return this.resolveCityRequestRecipients(cityId, payload, actorId);
+    }
+
+    return this.getActiveCityMembers(cityId, actorId);
+  }
+
+  private async resolveCityRequestRecipients(
+    cityId: string,
+    payload: Record<string, unknown>,
+    actorId: string | null,
+  ) {
+    const requesterId =
+      typeof payload.requesterId === 'string' ? payload.requesterId : null;
+
+    if (!requesterId) {
+      return [];
+    }
+
+    if (actorId === requesterId) {
+      return this.getCityManagers(cityId, actorId);
+    }
+
+    const requester = await this.prisma.userCity.findFirst({
+      where: {
+        cityId,
+        userId: requesterId,
+        isBlocked: false,
+        user: { isBlocked: false },
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!requester || requester.user.id === actorId) {
+      return [];
+    }
+
+    return [{ userId: requester.user.id, email: requester.user.email }];
+  }
+
+  private async getActiveCityMembers(
+    cityId: string,
+    excludeUserId?: string | null,
+  ) {
+    const members = await this.prisma.userCity.findMany({
+      where: {
+        cityId,
+        isBlocked: false,
+        user: { isBlocked: false },
+        ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return members.map((member) => ({
+      userId: member.user.id,
+      email: member.user.email,
+    }));
+  }
+
+  private async getCityManagers(cityId: string, excludeUserId?: string | null) {
+    const managerRoleNames = await this.prisma.rolePermission.findMany({
+      where: {
+        permission: {
+          key: PERMISSIONS_KEYS.CITY_REQUEST_MANAGE,
+        },
+      },
+      select: {
+        roleName: true,
+      },
+    });
+    const roleNames = managerRoleNames.map((role) => role.roleName);
+
+    if (roleNames.length === 0) {
+      return [];
+    }
+
+    const members = await this.prisma.userCity.findMany({
+      where: {
+        cityId,
+        isBlocked: false,
+        user: {
+          isBlocked: false,
+          userRoles: {
+            some: {
+              role: {
+                cityId,
+                name: { in: roleNames },
+              },
+            },
+          },
+        },
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return members.map((member) => ({
+      userId: member.user.id,
+      email: member.user.email,
+    }));
+  }
+
+  private isCityRequestEvent(eventType: DomainEventType) {
+    return eventType.startsWith('city_request.');
+  }
+
+  private buildNotificationLink(
+    eventType: DomainEventType,
+    payload: Record<string, unknown>,
+    cityId: string,
+  ) {
+    if (eventType.startsWith('news.')) {
+      const newsId = this.getAggregateId(payload);
+      return newsId ? `/city/${cityId}/news/${newsId}` : `/city/${cityId}/news`;
+    }
+
+    if (eventType.startsWith('alert.')) {
+      const alertId = this.getAggregateId(payload);
+      return alertId
+        ? `/city/${cityId}/alerts/${alertId}`
+        : `/city/${cityId}/alerts`;
+    }
+
+    if (this.isCityRequestEvent(eventType)) {
+      const requestId =
+        typeof payload.requestId === 'string'
+          ? payload.requestId
+          : this.getAggregateId(payload);
+      return requestId
+        ? `/city/${cityId}/city-requests/${requestId}`
+        : `/city/${cityId}/city-requests`;
+    }
+
+    return `/city/${cityId}`;
+  }
+
+  private getAggregateId(payload: Record<string, unknown>) {
+    if (typeof payload.aggregateId === 'string') return payload.aggregateId;
+    if (typeof payload.agregateId === 'string') return payload.agregateId;
+    return null;
+  }
+
+  private buildNotificationBody(
+    eventType: DomainEventType,
+    payload: Record<string, unknown>,
+  ) {
+    if (eventType === DOMAIN_EVENT_TYPES.ALERT_CREATED) {
+      const severity =
+        typeof payload.severity === 'string' ? payload.severity : null;
+      return severity ? `Severity: ${severity}` : null;
+    }
+
+    if (eventType === DOMAIN_EVENT_TYPES.ALERT_UPDATED) {
+      const severity =
+        typeof payload.severity === 'string' ? payload.severity : null;
+      return severity
+        ? `Alert updated. Severity: ${severity}`
+        : 'Alert updated';
+    }
+
+    if (eventType === DOMAIN_EVENT_TYPES.CITY_REQUEST_ASSIGNED) {
+      const departmentName =
+        typeof payload.departmentName === 'string'
+          ? payload.departmentName
+          : null;
+      return departmentName
+        ? `Assigned department: ${departmentName}`
+        : 'Department assignment updated';
+    }
+
+    if (eventType === DOMAIN_EVENT_TYPES.CITY_REQUEST_STATUS_UPDATED) {
+      const status = typeof payload.status === 'string' ? payload.status : null;
+      return status ? `Status: ${status}` : 'Status updated';
+    }
+
+    if (eventType === DOMAIN_EVENT_TYPES.CITY_REQUEST_REPORT_CREATED) {
+      const reportType =
+        typeof payload.reportType === 'string' ? payload.reportType : null;
+      return reportType ? `Report: ${reportType}` : 'New report added';
+    }
+
+    if (eventType === DOMAIN_EVENT_TYPES.CITY_REQUEST_MESSAGE_CREATED) {
+      return typeof payload.messagePreview === 'string'
+        ? payload.messagePreview
+        : 'New message added';
+    }
+
+    return null;
+  }
+
+  private buildEmailSubject(eventType: DomainEventType, title: string) {
+    if (eventType.startsWith('alert.')) {
+      return `City alert: ${title}`;
+    }
+
+    if (this.isCityRequestEvent(eventType)) {
+      return `City request update: ${title}`;
+    }
+
+    return title;
+  }
+
+  private buildEmailText(
+    eventType: DomainEventType,
+    payload: Record<string, unknown>,
+    link: string,
+    body: string | null,
+  ) {
+    const clientUrl = process.env.CLIENT_URL || 'https://localhost:3000';
+    const title = this.getPayloadTitle(payload);
+    const cityLine = `City ID: ${String(payload.cityId)}`;
+    const detailLine = body ? `\n${body}` : '';
+    const urlLine = `${clientUrl}${link}`;
+
+    if (this.isCityRequestEvent(eventType)) {
+      const requestTitle =
+        typeof payload.requestTitle === 'string' ? payload.requestTitle : title;
+      return `${title}\nRequest: ${requestTitle}\n${cityLine}${detailLine}\n\nOpen: ${urlLine}`;
+    }
+
+    return `${title}\n${cityLine}${detailLine}\n\nOpen: ${urlLine}`;
+  }
+
+  private buildEmailHtml(
+    eventType: DomainEventType,
+    payload: Record<string, unknown>,
+    link: string,
+    body: string | null,
+  ) {
+    const clientUrl = process.env.CLIENT_URL || 'https://localhost:3000';
+    const title = this.escapeHtml(this.getPayloadTitle(payload));
+    const requestTitle =
+      typeof payload.requestTitle === 'string'
+        ? this.escapeHtml(payload.requestTitle)
+        : title;
+    const details = body ? `<p>${this.escapeHtml(body)}</p>` : '';
+    const fullUrl = `${clientUrl}${link}`;
+    const url = this.escapeHtml(fullUrl);
+    const requestLine = this.isCityRequestEvent(eventType)
+      ? `<p><strong>Request:</strong> ${requestTitle}</p>`
+      : '';
+
+    return `
+      <div>
+        <h2>${title}</h2>
+        ${requestLine}
+        ${details}
+        <p><a href="${url}">Open in Urban Civic Ecosystem</a></p>
+      </div>
+    `;
+  }
+
+  private escapeHtml(value: string) {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  private getPayloadTitle(payload: Record<string, unknown>) {
+    return typeof payload.title === 'string' ? payload.title : 'Notification';
+  }
 }

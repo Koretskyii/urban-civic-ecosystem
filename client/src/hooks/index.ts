@@ -12,8 +12,10 @@ export {
   useAdminCityCreationRequests,
   useAdminUsers,
   useApproveCityCreationRequest,
+  useBlockUser,
   useDeleteAdminCity,
   useRejectCityCreationRequest,
+  useUnblockUser,
   useUpdateAdminCity,
   useUpdateUserSystemRole,
 } from './useAdmin';

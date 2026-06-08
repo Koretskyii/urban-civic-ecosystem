@@ -2,6 +2,7 @@ export const ERROR_MESSAGES = {
   USER_NOT_FOUND: 'User not found',
   INVALID_PASSWORD: 'Invalid password',
   USER_EXISTS: 'User with this email already exists',
+  USER_BLOCKED: 'Your account has been blocked.',
   OAUTH_LOGIN_REQUIRED:
     'This account uses Google authentication. Please log in with Google.',
   LOCAL_LOGIN_REQUIRED:

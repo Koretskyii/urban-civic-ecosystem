@@ -106,3 +106,25 @@ export function useUpdateUserSystemRole() {
     },
   });
 }
+
+export function useBlockUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => adminApi.blockUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+}
+
+export function useUnblockUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => adminApi.unblockUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+}

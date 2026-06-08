@@ -123,6 +123,9 @@ model User {
   provider     String     @default("local")
   providerId   String?
   systemRole   SystemRole @default(USER)
+  isBlocked    Boolean    @default(false)
+  blockedAt    DateTime?
+  blockedById  String?
 
   memberships                  UserCity[]
   userRoles                    UserRole[]
