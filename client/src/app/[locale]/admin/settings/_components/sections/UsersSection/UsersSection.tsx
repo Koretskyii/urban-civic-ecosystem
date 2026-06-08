@@ -163,7 +163,9 @@ function UserRow({
       </AdminCell>
       <AdminCell>
         <Badge variant={user.isBlocked ? 'danger' : 'success'}>
-          {user.isBlocked ? t('platformAdmin.blocked') : t('platformAdmin.active')}
+          {user.isBlocked
+            ? t('platformAdmin.blocked')
+            : t('platformAdmin.active')}
         </Badge>
       </AdminCell>
       <AdminCell>{user._count?.memberships ?? 0}</AdminCell>
@@ -186,7 +188,9 @@ function UserRow({
           disabled={isPending || isCurrentUser || user.systemRole === 'ADMIN'}
           onClick={onBlockToggle}
         >
-          {user.isBlocked ? t('platformAdmin.unblock') : t('platformAdmin.block')}
+          {user.isBlocked
+            ? t('platformAdmin.unblock')
+            : t('platformAdmin.block')}
         </Button>
       </AdminCell>
     </div>

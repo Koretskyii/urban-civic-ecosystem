@@ -9,7 +9,10 @@ import type { Job } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import type { DomainEventOutbox, Prisma } from '@/generated/prisma/client';
+import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 import type { DomainEventType } from '@/modules/notifications/domain/domain-events.types';
+import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
+import { PrismaService } from '@/prisma/prisma.service';
 import {
   EVENT_PAYLOAD_DTO_MAP,
   EVENT_TYPE_TO_NOTIFICATION_TYPE,
@@ -28,6 +31,7 @@ export class NotificationsProcessor extends WorkerHost {
     private readonly outboxRepository: OutboxRepository,
     private readonly inAppNotificationService: InAppNotificationService,
     private readonly sseGateway: NotificationsSseGateway,
+    private readonly prisma: PrismaService,
   ) {
     super();
   }
@@ -224,6 +228,7 @@ export class NotificationsProcessor extends WorkerHost {
       where: {
         cityId,
         isBlocked: false,
+        ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
         user: {
           isBlocked: false,
           userRoles: {
