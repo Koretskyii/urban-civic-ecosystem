@@ -95,8 +95,6 @@ model City {
 model CityDomain {
   id         String    @id @default(cuid())
   domainName String    @unique
-  token      String    @unique
-  verifiedAt DateTime?
   ownerId    String
   cityId     String    @unique
 
@@ -239,7 +237,6 @@ model CityCreationRequest {
   centerLat            Float?
   centerLng            Float?
   domain               String?
-  domainVerifiedAt     DateTime?
   status               CityCreationRequestStatus @default(PENDING)
   rejectionReason      String?
   reviewedAt           DateTime?

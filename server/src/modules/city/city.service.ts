@@ -16,6 +16,7 @@ import {
   CITY_SUCCESS_MESSAGES,
 } from '../rbac/constants/city.const';
 import { ALERT_TYPES } from '@/shared/constants/alerts.const';
+import { withDomainVerifiedAt } from '@/utils';
 import { DEFAULT_CITY_DEPARTMENTS } from '@/shared/constants/departments.const';
 
 interface CityTransactionData {
@@ -26,7 +27,6 @@ interface CityTransactionData {
   cityDomain?: {
     create: {
       domainName: string;
-      token: string;
       ownerId: string;
     };
   };
@@ -45,7 +45,6 @@ interface ProvisionApprovedCityParams {
   centerLat?: number | null;
   centerLng?: number | null;
   domain?: string | null;
-  domainVerificationToken?: string | null;
   verificationAttachmentId?: string;
 }
 
@@ -228,7 +227,7 @@ export class CityService {
   }
 
   async getCurrentCityCreationRequest(requesterId: string) {
-    return this.prisma.cityCreationRequest.findFirst({
+    const request = await this.prisma.cityCreationRequest.findFirst({
       where: {
         requesterId,
       },
@@ -242,7 +241,7 @@ export class CityService {
         centerLat: true,
         centerLng: true,
         domain: true,
-        domainVerifiedAt: true,
+        domainVerification: { select: { verifiedAt: true } },
         status: true,
         rejectionReason: true,
         reviewedAt: true,
@@ -256,6 +255,8 @@ export class CityService {
         },
       },
     });
+
+    return request ? withDomainVerifiedAt(request) : null;
   }
 
   async joinCity(cityId: string, userId: string) {
@@ -457,7 +458,6 @@ export class CityService {
           centerLng,
           domain: normalizedDomain || null,
           domainVerificationId: domainVerification?.id,
-          domainVerifiedAt: domainVerification?.verifiedAt,
         },
         select: {
           id: true,
@@ -466,7 +466,6 @@ export class CityService {
           centerLat: true,
           centerLng: true,
           domain: true,
-          domainVerifiedAt: true,
           status: true,
           createdAt: true,
         },
@@ -493,7 +492,10 @@ export class CityService {
       return {
         success: true,
         message: 'City creation request submitted for review',
-        request,
+        request: {
+          ...request,
+          domainVerifiedAt: domainVerification?.verifiedAt ?? null,
+        },
       };
     });
   }
@@ -519,9 +521,6 @@ export class CityService {
       cityData.cityDomain = {
         create: {
           domainName: params.domain,
-          token:
-            params.domainVerificationToken ||
-            `city-domain=${crypto.randomUUID().toString()}`,
           ownerId: params.requesterId,
         },
       };
