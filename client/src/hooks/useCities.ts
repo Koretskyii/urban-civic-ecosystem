@@ -33,19 +33,3 @@ export function useJoinCity() {
     mutationFn: (id: string) => cityApi.joinCity(id),
   });
 }
-
-export function useCityPosts(cityId: string) {
-  return useQuery({
-    queryKey: queryKeys.posts.all(cityId),
-    queryFn: () => cityApi.getCityPosts(cityId),
-    enabled: !!cityId,
-  });
-}
-
-export function useCityCommunity(cityId: string) {
-  return useQuery({
-    queryKey: queryKeys.communities.all(cityId),
-    queryFn: () => cityApi.getCityCommunity(cityId),
-    enabled: !!cityId,
-  });
-}

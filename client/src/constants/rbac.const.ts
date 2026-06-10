@@ -44,27 +44,6 @@ export const PERMISSION_GROUPS = {
     MANAGE: 'project:manage' as PermissionKey,
   },
 
-  COMMUNITY: {
-    CREATE: 'community:create' as PermissionKey,
-    UPDATE: 'community:update' as PermissionKey,
-    DELETE: 'community:delete' as PermissionKey,
-    MANAGE: 'community:manage' as PermissionKey,
-  },
-
-  POST: {
-    CREATE: 'post:create' as PermissionKey,
-    UPDATE: 'post:update' as PermissionKey,
-    DELETE: 'post:delete' as PermissionKey,
-    MANAGE: 'post:manage' as PermissionKey,
-  },
-
-  COMMENT: {
-    CREATE: 'comment:create' as PermissionKey,
-    UPDATE: 'comment:update' as PermissionKey,
-    DELETE: 'comment:delete' as PermissionKey,
-    MANAGE: 'comment:manage' as PermissionKey,
-  },
-
   CHAT: {
     CREATE: 'chat:create' as PermissionKey,
     UPDATE: 'chat:update' as PermissionKey,
@@ -84,13 +63,6 @@ export const PERMISSION_GROUPS = {
     UPDATE: 'attachment:update' as PermissionKey,
     DELETE: 'attachment:delete' as PermissionKey,
     MANAGE: 'attachment:manage' as PermissionKey,
-  },
-
-  REACTION: {
-    CREATE: 'reaction:create' as PermissionKey,
-    UPDATE: 'reaction:update' as PermissionKey,
-    DELETE: 'reaction:delete' as PermissionKey,
-    MANAGE: 'reaction:manage' as PermissionKey,
   },
 
   SURVEY: {
@@ -145,10 +117,7 @@ export const RBAC_PERMISSIONS = {
   canManageAlert: [PERMISSION_GROUPS.ALERT.MANAGE] as const,
   canCreateProject: [PERMISSION_GROUPS.PROJECT.CREATE] as const,
   canManageProject: [PERMISSION_GROUPS.PROJECT.MANAGE] as const,
-  canCreatePost: [PERMISSION_GROUPS.POST.CREATE] as const,
-  canManagePost: [PERMISSION_GROUPS.POST.MANAGE] as const,
   canManageRole: [PERMISSION_GROUPS.ROLE.MANAGE] as const,
-  canManageCommunity: [PERMISSION_GROUPS.COMMUNITY.MANAGE] as const,
 } as const;
 
 export const ROLE_ACCENT_CLASSES: Record<RoleKey, string> = {
@@ -161,8 +130,8 @@ export const ROLE_ACCENT_CLASSES: Record<RoleKey, string> = {
 export const ROLE_CAPABILITY_KEYS: Record<RoleKey, string[]> = {
   admin: ['manageCity', 'manageRoles', 'publishContent', 'processRequests'],
   municipality: ['processRequests', 'publishAlerts', 'coordinateDepartments'],
-  organizer: ['publishContent', 'community', 'projects'],
-  citizen: ['createRequests', 'followUpdates', 'community'],
+  organizer: ['publishContent', 'projects'],
+  citizen: ['createRequests', 'followUpdates'],
 };
 
 export const inferRoleFromPermissions = (

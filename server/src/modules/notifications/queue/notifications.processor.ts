@@ -11,7 +11,6 @@ import { validate } from 'class-validator';
 import type { DomainEventOutbox, Prisma } from '@/generated/prisma/client';
 import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 import type { DomainEventType } from '@/modules/notifications/domain/domain-events.types';
-import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
@@ -36,7 +35,6 @@ export class NotificationsProcessor extends WorkerHost {
     private readonly inAppNotificationService: InAppNotificationService,
     private readonly emailNotificationService: EmailNotificationService,
     private readonly sseGateway: NotificationsSseGateway,
-    private readonly prisma: PrismaService,
   ) {
     super();
   }

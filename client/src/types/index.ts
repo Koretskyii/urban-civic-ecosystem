@@ -36,8 +36,6 @@ export type {
   CityMemberSortBy,
   Alert,
   News,
-  Post,
-  Community,
   DomainVerificationData,
   DomainVerificationResult,
   DomainVerificationToken,

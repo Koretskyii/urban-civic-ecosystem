@@ -310,20 +310,6 @@ export class CityService {
         },
       });
 
-      // Also join the main community
-      const mainCommunity = await tx.community.findFirst({
-        where: { cityId },
-      });
-
-      if (mainCommunity) {
-        await tx.communityMember.create({
-          data: {
-            userId,
-            communityId: mainCommunity.id,
-          },
-        });
-      }
-
       // Subscribe to all alert types for this city by default
       const alertTypes = await tx.alertType.findMany();
       if (alertTypes.length > 0) {
@@ -635,50 +621,6 @@ export class CityService {
       };
     };
     const { userId, cityId, cityName } = params;
-    const community = await tx.community.create({
-      data: {
-        cityId: cityId,
-        name: `${cityName} - Загальна спільнота`,
-        description: `Загальна спільнота для мешканців міста ${cityName}`,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    await tx.communityMember.create({
-      data: {
-        userId: userId,
-        communityId: community.id,
-      },
-    });
-
-    const chat = await tx.chat.create({
-      data: {
-        cityId: cityId,
-        communityId: community.id,
-        contextType: 'community',
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    await tx.message.create({
-      data: {
-        authorId: userId,
-        chatId: chat.id,
-        content: `Вітаємо у спільноті міста ${cityName}!`,
-      },
-    });
-
-    await tx.post.create({
-      data: {
-        authorId: userId,
-        communityId: community.id,
-        content: `Вітаємо у спільноті міста ${cityName}!`,
-      },
-    });
 
     const alertTypes = await tx.alertType.findMany();
 

@@ -79,13 +79,6 @@ export const queryKeys = {
     detail: (id: string) => ['projects', 'detail', id] as const,
   },
 
-  communities: {
-    all: (cityId: string) => ['communities', cityId] as const,
-    detail: (id: string) => ['communities', 'detail', id] as const,
-    posts: (communityId: string) =>
-      ['communities', communityId, 'posts'] as const,
-  },
-
   surveys: {
     all: (cityId: string) => ['surveys', cityId] as const,
     detail: (id: string) => ['surveys', 'detail', id] as const,
@@ -134,10 +127,6 @@ export const queryKeys = {
     detail: (cityId: string, alertId: string) =>
       ['alerts', cityId, 'detail', alertId] as const,
     types: (cityId: string) => ['alerts', cityId, 'types'] as const,
-  },
-
-  posts: {
-    all: (cityId: string) => ['posts', cityId] as const,
   },
 
   chats: {

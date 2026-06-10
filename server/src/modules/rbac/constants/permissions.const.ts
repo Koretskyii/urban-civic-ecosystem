@@ -47,30 +47,6 @@ export const PERMISSIONS_KEYS = {
   PROJECT_DELETE: 'project:delete',
   PROJECT_MANAGE: 'project:manage',
 
-  // ─── Community ───
-  COMMUNITY_CREATE: 'community:create',
-  COMMUNITY_UPDATE: 'community:update',
-  COMMUNITY_DELETE: 'community:delete',
-  COMMUNITY_MANAGE: 'community:manage',
-
-  // ─── Posts ───
-  POST_CREATE: 'post:create',
-  POST_UPDATE: 'post:update',
-  POST_DELETE: 'post:delete',
-  POST_MANAGE: 'post:manage',
-
-  // ─── Comments ───
-  COMMENT_CREATE: 'comment:create',
-  COMMENT_UPDATE: 'comment:update',
-  COMMENT_DELETE: 'comment:delete',
-  COMMENT_MANAGE: 'comment:manage',
-
-  // ─── Reactions ───
-  REACTION_CREATE: 'reaction:create',
-  REACTION_UPDATE: 'reaction:update',
-  REACTION_DELETE: 'reaction:delete',
-  REACTION_MANAGE: 'reaction:manage',
-
   // ─── Surveys ───
   SURVEY_CREATE: 'survey:create',
   SURVEY_UPDATE: 'survey:update',

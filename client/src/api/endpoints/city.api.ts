@@ -3,8 +3,6 @@ import { API_ROUTES } from '../routes';
 import {
   City,
   CityCreationRequestTracking,
-  Post,
-  Community,
   DomainVerificationData,
   DomainVerificationResult,
   DomainVerificationToken,
@@ -39,11 +37,5 @@ export const cityApi = {
   },
   joinCity: (id: string) => {
     return apiClient.post(API_ROUTES.city.join(id), {});
-  },
-  getCityPosts: (cityId: string) => {
-    return apiClient.get<Post[]>(API_ROUTES.posts.all(cityId));
-  },
-  getCityCommunity: (cityId: string) => {
-    return apiClient.get<Community>(API_ROUTES.community.detail(cityId));
   },
 };

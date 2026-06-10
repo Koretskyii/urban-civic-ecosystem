@@ -47,30 +47,6 @@ export type PermissionKey =
   | 'project:delete'
   | 'project:manage'
 
-  // Community
-  | 'community:create'
-  | 'community:update'
-  | 'community:delete'
-  | 'community:manage'
-
-  // Posts
-  | 'post:create'
-  | 'post:update'
-  | 'post:delete'
-  | 'post:manage'
-
-  // Comments
-  | 'comment:create'
-  | 'comment:update'
-  | 'comment:delete'
-  | 'comment:manage'
-
-  // Reactions
-  | 'reaction:create'
-  | 'reaction:update'
-  | 'reaction:delete'
-  | 'reaction:manage'
-
   // Surveys
   | 'survey:create'
   | 'survey:update'

@@ -39,13 +39,6 @@ enum ProjectStatus {
   CANCELLED
 }
 
-enum ReactionType {
-  LIKE
-  DISLIKE
-  LAUGH
-  ANGRY
-}
-
 enum OutboxStatus {
   PENDING
   PROCESSING
@@ -92,7 +85,6 @@ model City {
   alerts               Alert[]
   alertSubscriptions   AlertSubscription[]   @relation("alertSubscriptions")
   projects             Project[]
-  communities          Community[]
   surveys              Survey[]
   crowdfundingProjects CrowdfundingProject[]
   news                 GeneralNews[]         @relation("news")
@@ -142,14 +134,10 @@ model User {
   messages                     Message[]
   alertSubscriptions           AlertSubscription[]
   publishedAlerts              Alert[]               @relation("alertPublisher")
-  posts                        Post[]
-  comments                     Comment[]
-  reactions                    Reaction[]
   votes                        Vote[]
   donations                    Donation[]
   crowdfundingProjects         CrowdfundingProject[] @relation("creator")
   projectParticipants          ProjectParticipant[]
-  communityMemberships         CommunityMember[]
   publishedNews                GeneralNews[]
   notifications                InAppNotification[]
   notificationDeliveries       NotificationDelivery[]
@@ -366,12 +354,10 @@ model Chat {
   id            String  @id @default(cuid())
   cityId        String
   cityRequestId String? @unique
-  communityId   String?
   contextType   String  @default("cityRequest")
 
   city        City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
   cityRequest CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
-  community   Community?   @relation(fields: [communityId], references: [id], onDelete: Cascade)
   messages    Message[]
 
   createdAt DateTime @default(now())
@@ -473,72 +459,6 @@ model Event {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
-}
-
-//////////////////// COMMUNITY ////////////////////
-
-model Community {
-  id          String  @id @default(cuid())
-  cityId      String
-  name        String
-  description String?
-
-  city    City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  posts   Post[]
-  members CommunityMember[]
-  chats   Chat[]
-
-  createdAt DateTime @default(now())
-}
-
-model CommunityMember {
-  userId      String
-  communityId String
-
-  joinedAt DateTime @default(now())
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-
-  @@id([userId, communityId])
-}
-
-model Post {
-  id          String @id @default(cuid())
-  authorId    String
-  communityId String
-  content     String
-
-  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  community Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  comments  Comment[]
-  reactions Reaction[]
-
-  createdAt DateTime @default(now())
-}
-
-model Comment {
-  id      String @id @default(cuid())
-  postId  String
-  userId  String
-  content String
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-}
-
-model Reaction {
-  postId String
-  userId String
-  type   ReactionType
-
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@id([postId, userId])
 }
 
 //////////////////// SURVEYS ////////////////////

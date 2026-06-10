@@ -197,8 +197,6 @@ export const en = {
       home: 'Home',
       news: 'News',
       alerts: 'Announcements',
-      posts: 'Posts',
-      community: 'Community',
       adminSettings: 'Admin settings',
       projects: 'Projects',
       problem: 'Report a problem',
@@ -334,7 +332,6 @@ export const en = {
         coordinateDepartments: 'Assign requests to responsible departments.',
         createRequests: 'Create city issue requests with a point on the map.',
         followUpdates: 'Follow news, announcements, and request statuses.',
-        community: 'Participate in community posts and communication.',
         projects: 'Work with city initiatives and projects.',
       },
     },
@@ -376,14 +373,6 @@ export const en = {
         description:
           'Urgent alerts, warnings, and operational notices for residents',
       },
-      posts: {
-        title: 'Posts',
-        description: 'Posts from residents and your city community',
-      },
-      community: {
-        title: 'Community',
-        description: 'Interest-based groups and local communities',
-      },
       projects: {
         title: 'Projects',
         description:
@@ -395,30 +384,6 @@ export const en = {
           'Report city issues — roads, lighting, utilities, and services',
       },
     },
-  },
-  community: {
-    loadError: 'Failed to load community.',
-    membersTitle: 'Community members (1,248)',
-    latestPostsTitle: 'Latest posts',
-    noPosts: 'No posts yet.',
-    chatTitle: 'Community chat',
-    noMessages: 'No messages yet. Start the conversation!',
-    messagePlaceholder: 'Write a message...',
-    memberNames: {
-      alexander: 'Alexander',
-      maria: 'Maria',
-      ivan: 'Ivan',
-      anna: 'Anna',
-      petro: 'Petro',
-      olena: 'Olena',
-      denys: 'Denys',
-    },
-  },
-  posts: {
-    loadError: 'Failed to load posts.',
-    empty: 'No posts to display.',
-    title: 'Community posts',
-    residentPost: 'Resident post',
   },
   news: {
     loadError: 'Failed to load news.',

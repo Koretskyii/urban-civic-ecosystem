@@ -40,12 +40,6 @@ export const API_ROUTES = {
     detail: (cityId: string, newsId: string): string =>
       `/city/${cityId}/news/${newsId}`,
   },
-  posts: {
-    all: (cityId: string): string => `/city/${cityId}/posts`,
-  },
-  community: {
-    detail: (cityId: string): string => `/city/${cityId}/community`,
-  },
   cityRequests: {
     all: (cityId: string): string => `/city/${cityId}/requests`,
     detail: (cityId: string, requestId: string): string =>
