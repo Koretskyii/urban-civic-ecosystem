@@ -16,6 +16,7 @@ import {
   CITY_SUCCESS_MESSAGES,
 } from '../rbac/constants/city.const';
 import { ALERT_TYPES } from '@/shared/constants/alerts.const';
+import { withDomainVerifiedAt } from '@/utils';
 import { DEFAULT_CITY_DEPARTMENTS } from '@/shared/constants/departments.const';
 
 interface CityTransactionData {
@@ -26,7 +27,6 @@ interface CityTransactionData {
   cityDomain?: {
     create: {
       domainName: string;
-      token: string;
       ownerId: string;
     };
   };
@@ -45,7 +45,6 @@ interface ProvisionApprovedCityParams {
   centerLat?: number | null;
   centerLng?: number | null;
   domain?: string | null;
-  domainVerificationToken?: string | null;
   verificationAttachmentId?: string;
 }
 
@@ -194,8 +193,8 @@ export class CityService {
       }),
       this.prisma.attachment.findFirst({
         where: {
-          entityId: id,
-          entityType: 'CITY_VERIFICATION',
+          cityId: id,
+          type: 'DOCUMENT',
         },
         select: {
           id: true,
@@ -228,7 +227,7 @@ export class CityService {
   }
 
   async getCurrentCityCreationRequest(requesterId: string) {
-    return this.prisma.cityCreationRequest.findFirst({
+    const request = await this.prisma.cityCreationRequest.findFirst({
       where: {
         requesterId,
       },
@@ -242,7 +241,7 @@ export class CityService {
         centerLat: true,
         centerLng: true,
         domain: true,
-        domainVerifiedAt: true,
+        domainVerification: { select: { verifiedAt: true } },
         status: true,
         rejectionReason: true,
         reviewedAt: true,
@@ -256,6 +255,8 @@ export class CityService {
         },
       },
     });
+
+    return request ? withDomainVerifiedAt(request) : null;
   }
 
   async joinCity(cityId: string, userId: string) {
@@ -309,20 +310,6 @@ export class CityService {
           roleId: citizenRole.id,
         },
       });
-
-      // Also join the main community
-      const mainCommunity = await tx.community.findFirst({
-        where: { cityId },
-      });
-
-      if (mainCommunity) {
-        await tx.communityMember.create({
-          data: {
-            userId,
-            communityId: mainCommunity.id,
-          },
-        });
-      }
 
       // Subscribe to all alert types for this city by default
       const alertTypes = await tx.alertType.findMany();
@@ -471,7 +458,6 @@ export class CityService {
           centerLng,
           domain: normalizedDomain || null,
           domainVerificationId: domainVerification?.id,
-          domainVerifiedAt: domainVerification?.verifiedAt,
         },
         select: {
           id: true,
@@ -480,7 +466,6 @@ export class CityService {
           centerLat: true,
           centerLng: true,
           domain: true,
-          domainVerifiedAt: true,
           status: true,
           createdAt: true,
         },
@@ -500,8 +485,6 @@ export class CityService {
           mimeType: document.mimetype,
           url: uploadedFile.url,
           type: 'DOCUMENT',
-          entityId: request.id,
-          entityType: 'CITY_CREATION_REQUEST',
           cityCreationRequestId: request.id,
         },
       });
@@ -509,7 +492,10 @@ export class CityService {
       return {
         success: true,
         message: 'City creation request submitted for review',
-        request,
+        request: {
+          ...request,
+          domainVerifiedAt: domainVerification?.verifiedAt ?? null,
+        },
       };
     });
   }
@@ -535,9 +521,6 @@ export class CityService {
       cityData.cityDomain = {
         create: {
           domainName: params.domain,
-          token:
-            params.domainVerificationToken ||
-            `city-domain=${crypto.randomUUID().toString()}`,
           ownerId: params.requesterId,
         },
       };
@@ -554,8 +537,7 @@ export class CityService {
       await tx.attachment.update({
         where: { id: params.verificationAttachmentId },
         data: {
-          entityId: city.id,
-          entityType: 'CITY_VERIFICATION',
+          cityId: city.id,
           cityCreationRequestId: null,
         },
       });
@@ -569,10 +551,6 @@ export class CityService {
         },
         {
           name: ROLES.CITIZEN,
-          cityId: city.id,
-        },
-        {
-          name: ROLES.ORGANIZER,
           cityId: city.id,
         },
         {
@@ -635,50 +613,6 @@ export class CityService {
       };
     };
     const { userId, cityId, cityName } = params;
-    const community = await tx.community.create({
-      data: {
-        cityId: cityId,
-        name: `${cityName} - Загальна спільнота`,
-        description: `Загальна спільнота для мешканців міста ${cityName}`,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    await tx.communityMember.create({
-      data: {
-        userId: userId,
-        communityId: community.id,
-      },
-    });
-
-    const chat = await tx.chat.create({
-      data: {
-        cityId: cityId,
-        communityId: community.id,
-        contextType: 'community',
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    await tx.message.create({
-      data: {
-        authorId: userId,
-        chatId: chat.id,
-        content: `Вітаємо у спільноті міста ${cityName}!`,
-      },
-    });
-
-    await tx.post.create({
-      data: {
-        authorId: userId,
-        communityId: community.id,
-        content: `Вітаємо у спільноті міста ${cityName}!`,
-      },
-    });
 
     const alertTypes = await tx.alertType.findMany();
 

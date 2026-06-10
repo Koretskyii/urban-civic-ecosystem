@@ -74,7 +74,6 @@ export const en = {
   },
   cityPages: {
     alertsTitle: 'Announcements',
-    projectsComingSoon: 'Projects — coming soon',
     problemComingSoon: 'Problem report — coming soon',
   },
   cityProblem: {
@@ -197,10 +196,7 @@ export const en = {
       home: 'Home',
       news: 'News',
       alerts: 'Announcements',
-      posts: 'Posts',
-      community: 'Community',
       adminSettings: 'Admin settings',
-      projects: 'Projects',
       problem: 'Report a problem',
     },
   },
@@ -226,7 +222,6 @@ export const en = {
     roles: {
       admin: 'Admin',
       municipality: 'Municipality',
-      organizer: 'Organizer',
       citizen: 'Citizen',
     },
   },
@@ -287,8 +282,6 @@ export const en = {
       admin: 'Full access to city administration and role management.',
       municipality:
         'Processes city requests and coordinates municipal updates.',
-      organizer:
-        'Publishes community initiatives, projects, and public content.',
       citizen: 'Creates requests and participates in the city community.',
     },
   },
@@ -318,8 +311,6 @@ export const en = {
           'Full control over the city space, roles, content, and requests.',
         municipality:
           'Process requests, coordinate departments, and publish operational notices.',
-        organizer:
-          'Work with content, community activity, and city initiatives.',
         citizen:
           'Create requests, follow news and announcements, and participate in the community.',
       },
@@ -334,8 +325,6 @@ export const en = {
         coordinateDepartments: 'Assign requests to responsible departments.',
         createRequests: 'Create city issue requests with a point on the map.',
         followUpdates: 'Follow news, announcements, and request statuses.',
-        community: 'Participate in community posts and communication.',
-        projects: 'Work with city initiatives and projects.',
       },
     },
     latestNews: {
@@ -376,49 +365,12 @@ export const en = {
         description:
           'Urgent alerts, warnings, and operational notices for residents',
       },
-      posts: {
-        title: 'Posts',
-        description: 'Posts from residents and your city community',
-      },
-      community: {
-        title: 'Community',
-        description: 'Interest-based groups and local communities',
-      },
-      projects: {
-        title: 'Projects',
-        description:
-          'City initiatives, voting, and crowdfunding for development projects',
-      },
       problem: {
         title: 'Report a problem',
         description:
           'Report city issues — roads, lighting, utilities, and services',
       },
     },
-  },
-  community: {
-    loadError: 'Failed to load community.',
-    membersTitle: 'Community members (1,248)',
-    latestPostsTitle: 'Latest posts',
-    noPosts: 'No posts yet.',
-    chatTitle: 'Community chat',
-    noMessages: 'No messages yet. Start the conversation!',
-    messagePlaceholder: 'Write a message...',
-    memberNames: {
-      alexander: 'Alexander',
-      maria: 'Maria',
-      ivan: 'Ivan',
-      anna: 'Anna',
-      petro: 'Petro',
-      olena: 'Olena',
-      denys: 'Denys',
-    },
-  },
-  posts: {
-    loadError: 'Failed to load posts.',
-    empty: 'No posts to display.',
-    title: 'Community posts',
-    residentPost: 'Resident post',
   },
   news: {
     loadError: 'Failed to load news.',
@@ -686,7 +638,10 @@ export const en = {
     includeDeleted: 'Include deleted',
     active: 'Active',
     deleted: 'Deleted',
+    blocked: 'Blocked',
     delete: 'Delete',
+    block: 'Block',
+    unblock: 'Unblock',
     name: 'Name',
     email: 'Email',
     role: 'Role',

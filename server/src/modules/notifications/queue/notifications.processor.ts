@@ -9,8 +9,8 @@ import type { Job } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import type { DomainEventOutbox, Prisma } from '@/generated/prisma/client';
-import type { DomainEventType } from '@/modules/notifications/domain/domain-events.types';
 import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
+import type { DomainEventType } from '@/modules/notifications/domain/domain-events.types';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
@@ -189,6 +189,7 @@ export class NotificationsProcessor extends WorkerHost {
         cityId,
         userId: requesterId,
         isBlocked: false,
+        user: { isBlocked: false },
       },
       select: {
         user: {
@@ -215,6 +216,7 @@ export class NotificationsProcessor extends WorkerHost {
       where: {
         cityId,
         isBlocked: false,
+        user: { isBlocked: false },
         ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
       },
       select: {
@@ -256,6 +258,7 @@ export class NotificationsProcessor extends WorkerHost {
         isBlocked: false,
         ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
         user: {
+          isBlocked: false,
           userRoles: {
             some: {
               role: {

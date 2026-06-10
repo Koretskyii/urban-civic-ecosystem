@@ -4,8 +4,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   useAdminUsers,
+  useBlockUser,
   useCurrentUser,
+  useUnblockUser,
   useUpdateUserSystemRole,
 } from '@/hooks';
 import type { AdminUser, SystemRole } from '@/types';
@@ -16,7 +25,7 @@ import { TableState } from '../../TableState/TableState';
 
 const SYSTEM_ROLES = ['USER', 'ADMIN'] as const;
 const ADMIN_PAGE_SIZE = 25;
-const USER_COLUMNS = 'grid-cols-[24%_34%_16%_10%_16%]';
+const USER_COLUMNS = 'grid-cols-[20%_26%_16%_12%_10%_16%]';
 
 export function UsersSection() {
   const t = useTranslations();
@@ -31,6 +40,8 @@ export function UsersSection() {
   });
   const currentUser = useCurrentUser();
   const updateRole = useUpdateUserSystemRole();
+  const blockUser = useBlockUser();
+  const unblockUser = useUnblockUser();
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
 
@@ -46,21 +57,25 @@ export function UsersSection() {
           placeholder={t('platformAdmin.search')}
           className="h-10 md:w-64"
         />
-        <select
+        <Select
           value={systemRole}
-          onChange={(event) => {
-            setSystemRole(event.target.value as SystemRole | 'ALL');
+          onValueChange={(value) => {
+            setSystemRole(value as SystemRole | 'ALL');
             setPage(1);
           }}
-          className="h-10 rounded-md border border-black/10 px-3 text-sm outline-none"
         >
-          <option value="ALL">{t('platformAdmin.allRoles')}</option>
-          {SYSTEM_ROLES.map((item) => (
-            <option key={item} value={item}>
-              {t(`platformAdmin.systemRoles.${item}`)}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="md:w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">{t('platformAdmin.allRoles')}</SelectItem>
+            {SYSTEM_ROLES.map((item) => (
+              <SelectItem key={item} value={item}>
+                {t(`platformAdmin.systemRoles.${item}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </AdminToolbar>
 
       <TableState
@@ -72,12 +87,13 @@ export function UsersSection() {
       {items.length > 0 ? (
         <>
           <AdminTable
-            minWidth="900px"
+            minWidth="1000px"
             columns={USER_COLUMNS}
             headers={[
               t('platformAdmin.name'),
               t('platformAdmin.email'),
               t('platformAdmin.role'),
+              t('cityMembers.statusLabel'),
               t('platformAdmin.memberships'),
               t('platformAdmin.actions'),
             ]}
@@ -87,9 +103,18 @@ export function UsersSection() {
                 key={user.id}
                 user={user}
                 isCurrentUser={user.id === currentUser.data?.id}
-                isPending={updateRole.isPending}
+                isPending={
+                  updateRole.isPending ||
+                  blockUser.isPending ||
+                  unblockUser.isPending
+                }
                 onRoleChange={(nextRole) =>
                   updateRole.mutate({ id: user.id, systemRole: nextRole })
+                }
+                onBlockToggle={() =>
+                  user.isBlocked
+                    ? unblockUser.mutate(user.id)
+                    : blockUser.mutate(user.id)
                 }
               />
             ))}
@@ -111,11 +136,13 @@ function UserRow({
   isCurrentUser,
   isPending,
   onRoleChange,
+  onBlockToggle,
 }: {
   user: AdminUser;
   isCurrentUser: boolean;
   isPending: boolean;
   onRoleChange: (systemRole: SystemRole) => void;
+  onBlockToggle: () => void;
 }) {
   const t = useTranslations();
   const nextRole: SystemRole = user.systemRole === 'ADMIN' ? 'USER' : 'ADMIN';
@@ -134,8 +161,15 @@ function UserRow({
           {t(`platformAdmin.systemRoles.${user.systemRole}`)}
         </Badge>
       </AdminCell>
-      <AdminCell>{user._count?.memberships ?? 0}</AdminCell>
       <AdminCell>
+        <Badge variant={user.isBlocked ? 'danger' : 'success'}>
+          {user.isBlocked
+            ? t('platformAdmin.blocked')
+            : t('platformAdmin.active')}
+        </Badge>
+      </AdminCell>
+      <AdminCell>{user._count?.memberships ?? 0}</AdminCell>
+      <AdminCell className="flex gap-2">
         <Button
           type="button"
           size="sm"
@@ -146,6 +180,17 @@ function UserRow({
           {user.systemRole === 'ADMIN'
             ? t('platformAdmin.removeAdmin')
             : t('platformAdmin.makeAdmin')}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={user.isBlocked ? 'outline' : 'danger'}
+          disabled={isPending || isCurrentUser || user.systemRole === 'ADMIN'}
+          onClick={onBlockToggle}
+        >
+          {user.isBlocked
+            ? t('platformAdmin.unblock')
+            : t('platformAdmin.block')}
         </Button>
       </AdminCell>
     </div>

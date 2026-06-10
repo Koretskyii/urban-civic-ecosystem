@@ -41,35 +41,6 @@ export type PermissionKey =
   | 'alert:delete'
   | 'alert:manage'
 
-  // Projects
-  | 'project:create'
-  | 'project:update'
-  | 'project:delete'
-  | 'project:manage'
-
-  // Community
-  | 'community:create'
-  | 'community:update'
-  | 'community:delete'
-  | 'community:manage'
-
-  // Posts
-  | 'post:create'
-  | 'post:update'
-  | 'post:delete'
-  | 'post:manage'
-
-  // Comments
-  | 'comment:create'
-  | 'comment:update'
-  | 'comment:delete'
-  | 'comment:manage'
-
-  // Reactions
-  | 'reaction:create'
-  | 'reaction:update'
-  | 'reaction:delete'
-  | 'reaction:manage'
 
   // Surveys
   | 'survey:create'
@@ -82,18 +53,6 @@ export type PermissionKey =
   | 'vote:update'
   | 'vote:delete'
   | 'vote:manage'
-
-  // Crowdfunding
-  | 'crowdfunding_project:create'
-  | 'crowdfunding_project:update'
-  | 'crowdfunding_project:delete'
-  | 'crowdfunding_project:manage'
-
-  // Donations
-  | 'donation:create'
-  | 'donation:update'
-  | 'donation:delete'
-  | 'donation:manage'
 
   // News
   | 'news:create'
@@ -113,7 +72,7 @@ export type PermissionKey =
   | 'user:delete_profile'
   | 'user:manage_profile';
 
-export type RoleKey = 'admin' | 'citizen' | 'organizer' | 'municipality';
+export type RoleKey = 'admin' | 'citizen' | 'municipality';
 
 export interface GetPermissionsResponse {
   permissions: PermissionKey[];

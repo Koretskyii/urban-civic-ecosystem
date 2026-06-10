@@ -96,4 +96,14 @@ export class AdminController {
   ) {
     return this.adminService.updateUserSystemRole(id, req.user.id, dto);
   }
+
+  @Patch('users/:id/block')
+  blockUser(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.adminService.blockUser(id, req.user.id);
+  }
+
+  @Patch('users/:id/unblock')
+  unblockUser(@Param('id') id: string) {
+    return this.adminService.unblockUser(id);
+  }
 }

@@ -41,36 +41,6 @@ export const PERMISSIONS_KEYS = {
   ALERT_DELETE: 'alert:delete',
   ALERT_MANAGE: 'alert:manage',
 
-  // ─── Projects ───
-  PROJECT_CREATE: 'project:create',
-  PROJECT_UPDATE: 'project:update',
-  PROJECT_DELETE: 'project:delete',
-  PROJECT_MANAGE: 'project:manage',
-
-  // ─── Community ───
-  COMMUNITY_CREATE: 'community:create',
-  COMMUNITY_UPDATE: 'community:update',
-  COMMUNITY_DELETE: 'community:delete',
-  COMMUNITY_MANAGE: 'community:manage',
-
-  // ─── Posts ───
-  POST_CREATE: 'post:create',
-  POST_UPDATE: 'post:update',
-  POST_DELETE: 'post:delete',
-  POST_MANAGE: 'post:manage',
-
-  // ─── Comments ───
-  COMMENT_CREATE: 'comment:create',
-  COMMENT_UPDATE: 'comment:update',
-  COMMENT_DELETE: 'comment:delete',
-  COMMENT_MANAGE: 'comment:manage',
-
-  // ─── Reactions ───
-  REACTION_CREATE: 'reaction:create',
-  REACTION_UPDATE: 'reaction:update',
-  REACTION_DELETE: 'reaction:delete',
-  REACTION_MANAGE: 'reaction:manage',
-
   // ─── Surveys ───
   SURVEY_CREATE: 'survey:create',
   SURVEY_UPDATE: 'survey:update',
@@ -82,18 +52,6 @@ export const PERMISSIONS_KEYS = {
   VOTE_UPDATE: 'vote:update',
   VOTE_DELETE: 'vote:delete',
   VOTE_MANAGE: 'vote:manage',
-
-  // ─── Crowdfunding ───
-  CROWDFUNDING_PROJECT_CREATE: 'crowdfunding_project:create',
-  CROWDFUNDING_PROJECT_UPDATE: 'crowdfunding_project:update',
-  CROWDFUNDING_PROJECT_DELETE: 'crowdfunding_project:delete',
-  CROWDFUNDING_PROJECT_MANAGE: 'crowdfunding_project:manage',
-
-  // ─── Donations ───
-  DONATION_CREATE: 'donation:create',
-  DONATION_UPDATE: 'donation:update',
-  DONATION_DELETE: 'donation:delete',
-  DONATION_MANAGE: 'donation:manage',
 
   // ─── News ───
   NEWS_CREATE: 'news:create',

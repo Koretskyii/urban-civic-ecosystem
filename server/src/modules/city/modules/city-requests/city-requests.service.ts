@@ -74,9 +74,7 @@ export class CityRequestsService {
           userId,
           title: dto.title,
           description: dto.description,
-          category: dto.category,
           priority: dto.priority ?? 0,
-          location: dto.location,
           locationLat: dto.locationLat,
           locationLng: dto.locationLng,
           address: dto.address,
@@ -85,9 +83,7 @@ export class CityRequestsService {
 
       await tx.chat.create({
         data: {
-          cityId,
           cityRequestId: cityRequest.id,
-          contextType: CITY_REQUESTS_CONSTANTS.CONTEXT_TYPE,
         },
       });
 
@@ -98,8 +94,6 @@ export class CityRequestsService {
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REQUEST,
-            entityId: requestId,
-            entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.CITY_REQUEST,
             cityRequestId: requestId,
           })),
         });
@@ -197,7 +191,6 @@ export class CityRequestsService {
         title: true,
         status: true,
         priority: true,
-        category: true,
         address: true,
         locationLat: true,
         locationLng: true,
@@ -484,8 +477,6 @@ export class CityRequestsService {
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REPORT,
-            entityId: reportId,
-            entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.REPORT,
             reportId,
           })),
         });

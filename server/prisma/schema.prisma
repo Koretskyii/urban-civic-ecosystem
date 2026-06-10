@@ -33,19 +33,6 @@ enum ReportType {
   REJECTION
 }
 
-enum ProjectStatus {
-  ACTIVE
-  COMPLETED
-  CANCELLED
-}
-
-enum ReactionType {
-  LIKE
-  DISLIKE
-  LAUGH
-  ANGRY
-}
-
 enum OutboxStatus {
   PENDING
   PROCESSING
@@ -88,16 +75,13 @@ model City {
   roles                Role[]
   cityRequests         CityRequest[]
   departments          Department[]
-  chats                Chat[]
   alerts               Alert[]
   alertSubscriptions   AlertSubscription[]   @relation("alertSubscriptions")
-  projects             Project[]
-  communities          Community[]
   surveys              Survey[]
-  crowdfundingProjects CrowdfundingProject[]
   news                 GeneralNews[]         @relation("news")
   notifications        InAppNotification[]
   cityCreationRequests CityCreationRequest[]
+  attachments          Attachment[]          @relation("cityAttachments")
 
   cityDomain CityDomain?
 
@@ -110,8 +94,6 @@ model City {
 model CityDomain {
   id         String    @id @default(cuid())
   domainName String    @unique
-  token      String    @unique
-  verifiedAt DateTime?
   ownerId    String
   cityId     String    @unique
 
@@ -128,6 +110,9 @@ model User {
   provider     String     @default("local")
   providerId   String?
   systemRole   SystemRole @default(USER)
+  isBlocked    Boolean    @default(false)
+  blockedAt    DateTime?
+  blockedById  String?
 
   memberships                  UserCity[]
   userRoles                    UserRole[]
@@ -139,14 +124,7 @@ model User {
   messages                     Message[]
   alertSubscriptions           AlertSubscription[]
   publishedAlerts              Alert[]               @relation("alertPublisher")
-  posts                        Post[]
-  comments                     Comment[]
-  reactions                    Reaction[]
   votes                        Vote[]
-  donations                    Donation[]
-  crowdfundingProjects         CrowdfundingProject[] @relation("creator")
-  projectParticipants          ProjectParticipant[]
-  communityMemberships         CommunityMember[]
   publishedNews                GeneralNews[]
   notifications                InAppNotification[]
   notificationDeliveries       NotificationDelivery[]
@@ -201,6 +179,8 @@ model UserRole {
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
+
+  @@index([roleId])
 }
 
 /// Global role-permission mapping — shared across all cities.
@@ -223,12 +203,10 @@ model CityRequest {
   title                String
   description          String?
   status               RequestStatus @default(OPEN)
-  location             String?
   locationLat          Float?
   locationLng          Float?
   address              String?
   priority             Int           @default(0)
-  category             String?
   assignedDepartmentId String?
   resolvedAt           DateTime?
 
@@ -243,7 +221,7 @@ model CityRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([cityId, status])
+  @@index([cityId, status, createdAt(sort: Desc)])
   @@index([cityId, assignedDepartmentId])
 }
 
@@ -258,7 +236,6 @@ model CityCreationRequest {
   centerLat            Float?
   centerLng            Float?
   domain               String?
-  domainVerifiedAt     DateTime?
   status               CityCreationRequestStatus @default(PENDING)
   rejectionReason      String?
   reviewedAt           DateTime?
@@ -276,7 +253,7 @@ model CityCreationRequest {
   @@index([status, createdAt])
   @@index([requesterId, status])
   @@index([cityId])
-  @@index([domainVerificationId])
+  @@index([reviewedById])
   @@index([name, region])
 }
 
@@ -331,6 +308,9 @@ model Report {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([cityRequestId])
+  @@index([authorId])
 }
 
 model Attachment {
@@ -339,8 +319,6 @@ model Attachment {
   mimeType   String?
   url        String
   type       String?
-  entityId   String
-  entityType String
 
   reportId String?
   report   Report? @relation(fields: [reportId], references: [id], onDelete: Cascade)
@@ -354,21 +332,25 @@ model Attachment {
   newsId String?
   news   GeneralNews? @relation(fields: [newsId], references: [id], onDelete: Cascade)
 
+  cityId String?
+  city   City?   @relation("cityAttachments", fields: [cityId], references: [id], onDelete: Cascade)
+
   uploadedAt DateTime @default(now())
+
+  @@index([cityRequestId])
+  @@index([reportId])
+  @@index([cityCreationRequestId])
+  @@index([newsId])
+  @@index([cityId])
 }
 
 //////////////////// CHAT ////////////////////
 
 model Chat {
-  id            String  @id @default(cuid())
-  cityId        String
-  cityRequestId String? @unique
-  communityId   String?
-  contextType   String  @default("cityRequest")
+  id            String @id @default(cuid())
+  cityRequestId String @unique
 
-  city        City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  cityRequest CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
-  community   Community?   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  cityRequest CityRequest @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
   messages    Message[]
 
   createdAt DateTime @default(now())
@@ -384,6 +366,9 @@ model Message {
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   timestamp DateTime @default(now())
+
+  @@index([chatId, timestamp])
+  @@index([authorId])
 }
 
 //////////////////// ALERTS ////////////////////
@@ -397,7 +382,6 @@ model Alert {
   expiresAt   DateTime?
   title       String
   content     String
-  timestamp   DateTime      @default(now())
 
   city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
   publisher User?     @relation("alertPublisher", fields: [publisherId], references: [id], onDelete: Cascade)
@@ -410,6 +394,7 @@ model Alert {
   @@index([cityId, deletedAt, severity, createdAt(sort: Desc)])
   @@index([cityId, alertTypeId, createdAt(sort: Desc)])
   @@index([expiresAt])
+  @@index([publisherId])
 }
 
 model AlertType {
@@ -430,112 +415,6 @@ model AlertSubscription {
   alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
 
   @@id([userId, cityId, alertTypeId])
-}
-
-//////////////////// PROJECTS ////////////////////
-
-model Project {
-  id          String        @id @default(cuid())
-  cityId      String
-  title       String
-  description String?
-  status      ProjectStatus @default(ACTIVE)
-
-  city         City                 @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  events       Event[]
-  participants ProjectParticipant[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ProjectParticipant {
-  userId    String
-  projectId String
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@id([userId, projectId])
-}
-
-model Event {
-  id        String    @id @default(cuid())
-  projectId String
-  title     String
-  startTime DateTime
-  endTime   DateTime?
-  location  String?
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-}
-
-//////////////////// COMMUNITY ////////////////////
-
-model Community {
-  id          String  @id @default(cuid())
-  cityId      String
-  name        String
-  description String?
-
-  city    City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  posts   Post[]
-  members CommunityMember[]
-  chats   Chat[]
-
-  createdAt DateTime @default(now())
-}
-
-model CommunityMember {
-  userId      String
-  communityId String
-
-  joinedAt DateTime @default(now())
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-
-  @@id([userId, communityId])
-}
-
-model Post {
-  id          String @id @default(cuid())
-  authorId    String
-  communityId String
-  content     String
-
-  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  community Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  comments  Comment[]
-  reactions Reaction[]
-
-  createdAt DateTime @default(now())
-}
-
-model Comment {
-  id      String @id @default(cuid())
-  postId  String
-  userId  String
-  content String
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-}
-
-model Reaction {
-  postId String
-  userId String
-  type   ReactionType
-
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@id([postId, userId])
 }
 
 //////////////////// SURVEYS ////////////////////
@@ -576,39 +455,6 @@ model Vote {
   @@unique([surveyId, userId])
 }
 
-//////////////////// CROWDFUNDING ////////////////////
-
-model CrowdfundingProject {
-  id            String   @id @default(cuid())
-  cityId        String
-  creatorId     String
-  title         String
-  description   String?
-  fundingGoal   Decimal
-  currentAmount Decimal  @default(0)
-  deadline      DateTime
-
-  city      City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  creator   User       @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
-  donations Donation[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Donation {
-  id            String   @id @default(cuid())
-  projectId     String
-  contributorId String
-  amount        Decimal
-  timestamp     DateTime @default(now())
-
-  project     CrowdfundingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contributor User                @relation(fields: [contributorId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-}
-
 //////////////////// GENERAL NEWS ////////////////////
 
 model GeneralNews {
@@ -617,7 +463,6 @@ model GeneralNews {
   publisherId String
   title       String
   content     String
-  timestamp   DateTime @default(now())
 
   attachments Attachment[]
   city        City         @relation("news", fields: [cityId], references: [id], onDelete: Cascade)
@@ -628,6 +473,7 @@ model GeneralNews {
   deletedAt DateTime?
 
   @@index([cityId, deletedAt, createdAt(sort: Desc)])
+  @@index([publisherId])
 }
 
 //////////////////// OUTBOX ////////////////////

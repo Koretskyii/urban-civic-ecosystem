@@ -11,7 +11,6 @@ import { CITY_MEMBERS_ERRORS } from './city-members.constants';
 const ROLE_PRIORITY = [
   ROLES.ADMIN,
   ROLES.MUNICIPALITY,
-  ROLES.ORGANIZER,
   ROLES.CITIZEN,
 ] as const;
 

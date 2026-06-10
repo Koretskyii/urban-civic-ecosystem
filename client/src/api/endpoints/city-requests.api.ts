@@ -108,11 +108,9 @@ export const cityRequestsApi = {
     formData.set('locationLng', String(payload.locationLng));
 
     if (payload.description) formData.set('description', payload.description);
-    if (payload.category) formData.set('category', payload.category);
     if (payload.priority !== undefined)
       formData.set('priority', String(payload.priority));
     if (payload.address) formData.set('address', payload.address);
-    if (payload.location) formData.set('location', payload.location);
 
     files.forEach((file) => formData.append('files', file));
 

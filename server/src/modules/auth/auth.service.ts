@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto/index';
@@ -47,6 +51,9 @@ export class AuthService {
     const user = await this.findUser(loginData.email);
     if (!user) {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+    if (user.isBlocked) {
+      throw new ForbiddenException(ERROR_MESSAGES.USER_BLOCKED);
     }
     if (!user.passwordHash) {
       throw new UnauthorizedException(ERROR_MESSAGES.OAUTH_LOGIN_REQUIRED);
@@ -135,6 +142,10 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
+    if (user.isBlocked) {
+      throw new ForbiddenException(ERROR_MESSAGES.USER_BLOCKED);
+    }
+
     const accessToken = await this.generateAccessToken(user);
     this.setRefreshCookie(res, this.generateRefreshToken(user));
     this.setAccessCookie(res, accessToken);
@@ -164,6 +175,10 @@ export class AuthService {
 
     if (!userData) {
       throw new UnauthorizedException(ERROR_MESSAGES.OAUTH_USER_AUTH_FAILED);
+    }
+
+    if (userData.isBlocked) {
+      throw new ForbiddenException(ERROR_MESSAGES.USER_BLOCKED);
     }
 
     const accessToken = await this.generateAccessToken(userData);
@@ -203,6 +218,10 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
+    if (user.isBlocked) {
+      throw new ForbiddenException(ERROR_MESSAGES.USER_BLOCKED);
+    }
+
     const { passwordHash: _, ...profile } = user;
     return profile;
   }
@@ -218,6 +237,7 @@ export class AuthService {
         email: user.email,
         permissions,
         systemRole: user.systemRole,
+        isBlocked: user.isBlocked,
       },
       { expiresIn: Number(this.configService.get('jwt.expiresIn')) },
     );
@@ -246,6 +266,11 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
+
+    if (user.isBlocked) {
+      throw new ForbiddenException(ERROR_MESSAGES.USER_BLOCKED);
+    }
+
     if (!user.passwordHash) {
       throw new UnauthorizedException(ERROR_MESSAGES.OAUTH_LOGIN_REQUIRED);
     }

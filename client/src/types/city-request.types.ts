@@ -34,7 +34,6 @@ export type CityRequestListItem = {
   title: string;
   status: CityRequestStatus;
   priority: number;
-  category?: string | null;
   address?: string | null;
   locationLat?: number | null;
   locationLng?: number | null;
@@ -83,12 +82,10 @@ export type CityRequestDetail = {
   title: string;
   description?: string | null;
   status: CityRequestStatus;
-  location?: string | null;
   locationLat?: number | null;
   locationLng?: number | null;
   address?: string | null;
   priority: number;
-  category?: string | null;
   assignedDepartmentId?: string | null;
   resolvedAt?: string | null;
   createdAt: string;

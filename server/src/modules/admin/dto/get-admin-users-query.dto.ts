@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsOptional,
@@ -24,6 +25,15 @@ export class GetAdminUsersQueryDto {
   @IsOptional()
   @IsIn(SYSTEM_ROLES)
   systemRole?: SystemRole;
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return value;
+  })
+  @IsBoolean()
+  isBlocked?: boolean;
 
   @IsOptional()
   @Transform(({ value }: { value: unknown }) => Number(value))

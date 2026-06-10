@@ -40,12 +40,6 @@ export const API_ROUTES = {
     detail: (cityId: string, newsId: string): string =>
       `/city/${cityId}/news/${newsId}`,
   },
-  posts: {
-    all: (cityId: string): string => `/city/${cityId}/posts`,
-  },
-  community: {
-    detail: (cityId: string): string => `/city/${cityId}/community`,
-  },
   cityRequests: {
     all: (cityId: string): string => `/city/${cityId}/requests`,
     detail: (cityId: string, requestId: string): string =>
@@ -78,6 +72,8 @@ export const API_ROUTES = {
     cityDetail: (id: string): string => `/admin/cities/${id}`,
     users: '/admin/users',
     userSystemRole: (id: string): string => `/admin/users/${id}/system-role`,
+    blockUser: (id: string): string => `/admin/users/${id}/block`,
+    unblockUser: (id: string): string => `/admin/users/${id}/unblock`,
   },
   departments: {
     all: (cityId: string): string => `/city/${cityId}/departments`,

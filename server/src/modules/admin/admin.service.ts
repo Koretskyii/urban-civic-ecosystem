@@ -18,6 +18,7 @@ import {
   UpdateUserSystemRoleDto,
 } from './dto';
 import { CITY_ERRORS } from '@/modules/rbac/constants/city.const';
+import { withDomainVerifiedAt } from '@/utils';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 25;
@@ -78,7 +79,7 @@ export class AdminService {
           centerLat: true,
           centerLng: true,
           domain: true,
-          domainVerifiedAt: true,
+          domainVerification: { select: { verifiedAt: true } },
           status: true,
           rejectionReason: true,
           reviewedAt: true,
@@ -115,7 +116,12 @@ export class AdminService {
       this.prisma.cityCreationRequest.count({ where }),
     ]);
 
-    return { items, total, page, limit };
+    return {
+      items: items.map(withDomainVerifiedAt),
+      total,
+      page,
+      limit,
+    };
   }
 
   async getCityCreationRequest(id: string) {
@@ -128,7 +134,7 @@ export class AdminService {
         centerLat: true,
         centerLng: true,
         domain: true,
-        domainVerifiedAt: true,
+        domainVerification: { select: { verifiedAt: true } },
         status: true,
         rejectionReason: true,
         reviewedAt: true,
@@ -166,7 +172,7 @@ export class AdminService {
       throw new NotFoundException('City creation request not found');
     }
 
-    return request;
+    return withDomainVerifiedAt(request);
   }
 
   async listCities(query: GetAdminCitiesQueryDto) {
@@ -287,7 +293,6 @@ export class AdminService {
             create: {
               cityId: id,
               domainName: dto.domain,
-              token: `admin-domain=${crypto.randomUUID().toString()}`,
               ownerId: city.cityDomain?.ownerId ?? actorId,
             },
           });
@@ -338,6 +343,7 @@ export class AdminService {
     const search = query.search?.trim();
     const where = {
       ...(query.systemRole ? { systemRole: query.systemRole } : {}),
+      ...(query.isBlocked !== undefined ? { isBlocked: query.isBlocked } : {}),
       ...(search
         ? {
             OR: [
@@ -360,6 +366,9 @@ export class AdminService {
           email: true,
           provider: true,
           systemRole: true,
+          isBlocked: true,
+          blockedAt: true,
+          blockedById: true,
           createdAt: true,
           updatedAt: true,
           _count: {
@@ -373,6 +382,70 @@ export class AdminService {
     ]);
 
     return { items, total, page, limit };
+  }
+
+  async blockUser(id: string, reviewerId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, isBlocked: true, systemRole: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isBlocked) {
+      throw new BadRequestException('User is already blocked');
+    }
+
+    if (user.systemRole === SystemRole.ADMIN) {
+      throw new BadRequestException('Cannot block a system admin');
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        isBlocked: true,
+        blockedAt: new Date(),
+        blockedById: reviewerId,
+      },
+      select: {
+        id: true,
+        isBlocked: true,
+        blockedAt: true,
+        blockedById: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async unblockUser(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, isBlocked: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.isBlocked) {
+      throw new BadRequestException('User is not blocked');
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        isBlocked: false,
+        blockedAt: null,
+        blockedById: null,
+      },
+      select: {
+        id: true,
+        isBlocked: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async updateUserSystemRole(
@@ -433,11 +506,6 @@ export class AdminService {
             orderBy: { uploadedAt: 'desc' },
             take: 1,
           },
-          domainVerification: {
-            select: {
-              token: true,
-            },
-          },
         },
       });
 
@@ -485,7 +553,6 @@ export class AdminService {
         centerLat: request.centerLat,
         centerLng: request.centerLng,
         domain: request.domain,
-        domainVerificationToken: request.domainVerification?.token,
         verificationAttachmentId: verificationAttachment?.id,
       });
 

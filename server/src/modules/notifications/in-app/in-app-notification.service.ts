@@ -27,6 +27,7 @@ export class InAppNotificationService {
       where: {
         cityId,
         isBlocked: false,
+        user: { isBlocked: false },
         ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
       },
       select: { userId: true },

@@ -54,6 +54,9 @@ export type AdminUser = {
   email: string;
   provider?: string;
   systemRole: SystemRole;
+  isBlocked: boolean;
+  blockedAt?: string | null;
+  blockedById?: string | null;
   createdAt: string;
   updatedAt: string;
   _count?: { memberships: number };
@@ -83,6 +86,7 @@ export type AdminCitiesQuery = {
 export type AdminUsersQuery = {
   search?: string;
   systemRole?: SystemRole;
+  isBlocked?: boolean;
   page?: number;
   limit?: number;
 };

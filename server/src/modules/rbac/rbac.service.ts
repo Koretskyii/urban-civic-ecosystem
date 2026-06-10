@@ -7,7 +7,6 @@ export type PermissionsByCity = Record<string, string[]>;
 const ROLE_PRIORITY = [
   ROLES.ADMIN,
   ROLES.MUNICIPALITY,
-  ROLES.ORGANIZER,
   ROLES.CITIZEN,
 ] as const;
 

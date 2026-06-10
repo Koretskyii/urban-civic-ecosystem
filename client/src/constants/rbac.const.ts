@@ -37,34 +37,6 @@ export const PERMISSION_GROUPS = {
     MANAGE: 'alert:manage' as PermissionKey,
   },
 
-  PROJECT: {
-    CREATE: 'project:create' as PermissionKey,
-    UPDATE: 'project:update' as PermissionKey,
-    DELETE: 'project:delete' as PermissionKey,
-    MANAGE: 'project:manage' as PermissionKey,
-  },
-
-  COMMUNITY: {
-    CREATE: 'community:create' as PermissionKey,
-    UPDATE: 'community:update' as PermissionKey,
-    DELETE: 'community:delete' as PermissionKey,
-    MANAGE: 'community:manage' as PermissionKey,
-  },
-
-  POST: {
-    CREATE: 'post:create' as PermissionKey,
-    UPDATE: 'post:update' as PermissionKey,
-    DELETE: 'post:delete' as PermissionKey,
-    MANAGE: 'post:manage' as PermissionKey,
-  },
-
-  COMMENT: {
-    CREATE: 'comment:create' as PermissionKey,
-    UPDATE: 'comment:update' as PermissionKey,
-    DELETE: 'comment:delete' as PermissionKey,
-    MANAGE: 'comment:manage' as PermissionKey,
-  },
-
   CHAT: {
     CREATE: 'chat:create' as PermissionKey,
     UPDATE: 'chat:update' as PermissionKey,
@@ -86,13 +58,6 @@ export const PERMISSION_GROUPS = {
     MANAGE: 'attachment:manage' as PermissionKey,
   },
 
-  REACTION: {
-    CREATE: 'reaction:create' as PermissionKey,
-    UPDATE: 'reaction:update' as PermissionKey,
-    DELETE: 'reaction:delete' as PermissionKey,
-    MANAGE: 'reaction:manage' as PermissionKey,
-  },
-
   SURVEY: {
     CREATE: 'survey:create' as PermissionKey,
     UPDATE: 'survey:update' as PermissionKey,
@@ -105,20 +70,6 @@ export const PERMISSION_GROUPS = {
     UPDATE: 'vote:update' as PermissionKey,
     DELETE: 'vote:delete' as PermissionKey,
     MANAGE: 'vote:manage' as PermissionKey,
-  },
-
-  CROWDFUNDING: {
-    CREATE: 'crowdfunding_project:create' as PermissionKey,
-    UPDATE: 'crowdfunding_project:update' as PermissionKey,
-    DELETE: 'crowdfunding_project:delete' as PermissionKey,
-    MANAGE: 'crowdfunding_project:manage' as PermissionKey,
-  },
-
-  DONATION: {
-    CREATE: 'donation:create' as PermissionKey,
-    UPDATE: 'donation:update' as PermissionKey,
-    DELETE: 'donation:delete' as PermissionKey,
-    MANAGE: 'donation:manage' as PermissionKey,
   },
 
   ROLE: {
@@ -143,26 +94,19 @@ export const RBAC_PERMISSIONS = {
   canManageNews: [PERMISSION_GROUPS.NEWS.MANAGE] as const,
   canCreateAlert: [PERMISSION_GROUPS.ALERT.CREATE] as const,
   canManageAlert: [PERMISSION_GROUPS.ALERT.MANAGE] as const,
-  canCreateProject: [PERMISSION_GROUPS.PROJECT.CREATE] as const,
-  canManageProject: [PERMISSION_GROUPS.PROJECT.MANAGE] as const,
-  canCreatePost: [PERMISSION_GROUPS.POST.CREATE] as const,
-  canManagePost: [PERMISSION_GROUPS.POST.MANAGE] as const,
   canManageRole: [PERMISSION_GROUPS.ROLE.MANAGE] as const,
-  canManageCommunity: [PERMISSION_GROUPS.COMMUNITY.MANAGE] as const,
 } as const;
 
 export const ROLE_ACCENT_CLASSES: Record<RoleKey, string> = {
   admin: 'border-[var(--primary)]/20 bg-[rgba(12,38,61,0.06)]',
   municipality: 'border-[var(--secondary)]/25 bg-[rgba(63,136,197,0.08)]',
-  organizer: 'border-[var(--success)]/25 bg-[rgba(49,107,80,0.08)]',
   citizen: 'border-[var(--warning)]/40 bg-[rgba(255,186,8,0.10)]',
 };
 
 export const ROLE_CAPABILITY_KEYS: Record<RoleKey, string[]> = {
   admin: ['manageCity', 'manageRoles', 'publishContent', 'processRequests'],
   municipality: ['processRequests', 'publishAlerts', 'coordinateDepartments'],
-  organizer: ['publishContent', 'community', 'projects'],
-  citizen: ['createRequests', 'followUpdates', 'community'],
+  citizen: ['createRequests', 'followUpdates'],
 };
 
 export const inferRoleFromPermissions = (
@@ -184,13 +128,6 @@ export const inferRoleFromPermissions = (
     permissionSet.has(PERMISSION_GROUPS.NEWS.MANAGE)
   ) {
     return 'municipality';
-  }
-
-  if (
-    permissionSet.has(PERMISSION_GROUPS.PROJECT.MANAGE) ||
-    permissionSet.has(PERMISSION_GROUPS.PROJECT.CREATE)
-  ) {
-    return 'organizer';
   }
 
   if (permissions.length > 0) {

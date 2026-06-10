@@ -65,4 +65,10 @@ export const adminApi = {
     apiClient.patch<AdminUser>(API_ROUTES.admin.userSystemRole(id), {
       systemRole,
     }),
+
+  blockUser: (id: string) =>
+    apiClient.patch<AdminUser>(API_ROUTES.admin.blockUser(id), {}),
+
+  unblockUser: (id: string) =>
+    apiClient.patch<AdminUser>(API_ROUTES.admin.unblockUser(id), {}),
 };

@@ -258,6 +258,7 @@ describe('CityService', () => {
 
   describe('getCurrentCityCreationRequest', () => {
     it('should return the current city creation request for requester', async () => {
+      const verifiedAt = new Date('2026-06-07T11:00:00.000Z');
       const currentRequest = {
         id: 'request-1',
         name: 'Kyiv',
@@ -265,6 +266,7 @@ describe('CityService', () => {
         centerLat: 50.45,
         centerLng: 30.52,
         domain: 'kyiv.example.com',
+        domainVerification: { verifiedAt },
         status: CityCreationRequestStatus.PENDING,
         rejectionReason: null,
         reviewedAt: null,
@@ -294,7 +296,7 @@ describe('CityService', () => {
           centerLat: true,
           centerLng: true,
           domain: true,
-          domainVerifiedAt: true,
+          domainVerification: { select: { verifiedAt: true } },
           status: true,
           rejectionReason: true,
           reviewedAt: true,
@@ -308,7 +310,8 @@ describe('CityService', () => {
           },
         },
       });
-      expect(result).toEqual(currentRequest);
+      const { domainVerification, ...rest } = currentRequest;
+      expect(result).toEqual({ ...rest, domainVerifiedAt: verifiedAt });
     });
   });
 
