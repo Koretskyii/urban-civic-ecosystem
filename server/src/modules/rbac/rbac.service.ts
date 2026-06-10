@@ -4,11 +4,7 @@ import { ROLES } from './constants/roles.const';
 
 export type PermissionsByCity = Record<string, string[]>;
 
-const ROLE_PRIORITY = [
-  ROLES.ADMIN,
-  ROLES.MUNICIPALITY,
-  ROLES.CITIZEN,
-] as const;
+const ROLE_PRIORITY = [ROLES.ADMIN, ROLES.MUNICIPALITY, ROLES.CITIZEN] as const;
 
 @Injectable()
 export class RbacService {

@@ -37,10 +37,13 @@ const buildNewsQuery = (query?: NewsListQuery) => {
   return queryString ? `?${queryString}` : '';
 };
 
+export const buildNewsListPath = (cityId: string, query?: NewsListQuery) =>
+  `${API_ROUTES.news.all(cityId)}${buildNewsQuery(query)}`;
+
 export const cityNewsApi = {
   getCityNews: (cityId: string, query?: NewsListQuery) => {
     return apiClient.get<PaginatedResponse<News>>(
-      `${API_ROUTES.news.all(cityId)}${buildNewsQuery(query)}`,
+      buildNewsListPath(cityId, query),
     );
   },
   getCityNewsById: (cityId: string, newsId: string) => {

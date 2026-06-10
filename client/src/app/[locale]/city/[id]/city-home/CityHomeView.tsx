@@ -26,17 +26,17 @@ import {
   Users,
 } from 'lucide-react';
 import type { Alert, CityRequestListItem, News } from '@/types';
-import { AsyncListState } from './components/AsyncListState/AsyncListState';
-import { AlertPreview } from './components/AlertPreview/AlertPreview';
-import { ContentCard } from './components/ContentCard/ContentCard';
-import { NewsPreview } from './components/NewsPreview/NewsPreview';
-import { RequestPreview } from './components/RequestPreview/RequestPreview';
-import { RolePanel } from './components/RolePanel/RolePanel';
+import { AsyncListState } from './_components/AsyncListState/AsyncListState';
+import { AlertPreview } from './_components/AlertPreview/AlertPreview';
+import { ContentCard } from './_components/ContentCard/ContentCard';
+import { NewsPreview } from './_components/NewsPreview/NewsPreview';
+import { RequestPreview } from './_components/RequestPreview/RequestPreview';
+import { RolePanel } from './_components/RolePanel/RolePanel';
 import type { CityHomeViewProps } from './types/CityHomeView.types';
 
 const CityRequestsOverviewMap = dynamic(
   () =>
-    import('./components/CityRequestsOverviewMap/CityRequestsOverviewMap').then(
+    import('./_components/CityRequestsOverviewMap/CityRequestsOverviewMap').then(
       (module) => module.CityRequestsOverviewMap,
     ),
   {

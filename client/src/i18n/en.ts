@@ -32,6 +32,11 @@ export const en = {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',
   },
   common: {
+    notFoundTitle: 'Not found',
+    notFoundBack: 'Go back',
+    loading: 'Loading...',
+    errorTitle: 'Something went wrong',
+    errorRetry: 'Try again',
     cancel: 'Cancel',
     verify: 'Verify',
     verifying: 'Verifying...',
