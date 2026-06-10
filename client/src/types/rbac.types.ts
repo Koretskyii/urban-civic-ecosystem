@@ -54,18 +54,6 @@ export type PermissionKey =
   | 'vote:delete'
   | 'vote:manage'
 
-  // Crowdfunding
-  | 'crowdfunding_project:create'
-  | 'crowdfunding_project:update'
-  | 'crowdfunding_project:delete'
-  | 'crowdfunding_project:manage'
-
-  // Donations
-  | 'donation:create'
-  | 'donation:update'
-  | 'donation:delete'
-  | 'donation:manage'
-
   // News
   | 'news:create'
   | 'news:update'

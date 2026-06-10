@@ -53,18 +53,6 @@ export const PERMISSIONS_KEYS = {
   VOTE_DELETE: 'vote:delete',
   VOTE_MANAGE: 'vote:manage',
 
-  // ─── Crowdfunding ───
-  CROWDFUNDING_PROJECT_CREATE: 'crowdfunding_project:create',
-  CROWDFUNDING_PROJECT_UPDATE: 'crowdfunding_project:update',
-  CROWDFUNDING_PROJECT_DELETE: 'crowdfunding_project:delete',
-  CROWDFUNDING_PROJECT_MANAGE: 'crowdfunding_project:manage',
-
-  // ─── Donations ───
-  DONATION_CREATE: 'donation:create',
-  DONATION_UPDATE: 'donation:update',
-  DONATION_DELETE: 'donation:delete',
-  DONATION_MANAGE: 'donation:manage',
-
   // ─── News ───
   NEWS_CREATE: 'news:create',
   NEWS_UPDATE: 'news:update',

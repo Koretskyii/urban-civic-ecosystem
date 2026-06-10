@@ -79,11 +79,6 @@ export const queryKeys = {
     detail: (id: string) => ['surveys', 'detail', id] as const,
   },
 
-  crowdfunding: {
-    all: (cityId: string) => ['crowdfunding', cityId] as const,
-    detail: (id: string) => ['crowdfunding', 'detail', id] as const,
-  },
-
   news: {
     all: (cityId: string) => ['news', cityId] as const,
     list: (cityId: string, filters?: NewsListQuery) =>

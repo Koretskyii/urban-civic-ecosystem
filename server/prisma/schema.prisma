@@ -79,7 +79,6 @@ model City {
   alerts               Alert[]
   alertSubscriptions   AlertSubscription[]   @relation("alertSubscriptions")
   surveys              Survey[]
-  crowdfundingProjects CrowdfundingProject[]
   news                 GeneralNews[]         @relation("news")
   notifications        InAppNotification[]
   cityCreationRequests CityCreationRequest[]
@@ -128,8 +127,6 @@ model User {
   alertSubscriptions           AlertSubscription[]
   publishedAlerts              Alert[]               @relation("alertPublisher")
   votes                        Vote[]
-  donations                    Donation[]
-  crowdfundingProjects         CrowdfundingProject[] @relation("creator")
   publishedNews                GeneralNews[]
   notifications                InAppNotification[]
   notificationDeliveries       NotificationDelivery[]
@@ -449,39 +446,6 @@ model Vote {
   createdAt DateTime     @default(now())
 
   @@unique([surveyId, userId])
-}
-
-//////////////////// CROWDFUNDING ////////////////////
-
-model CrowdfundingProject {
-  id            String   @id @default(cuid())
-  cityId        String
-  creatorId     String
-  title         String
-  description   String?
-  fundingGoal   Decimal
-  currentAmount Decimal  @default(0)
-  deadline      DateTime
-
-  city      City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  creator   User       @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
-  donations Donation[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Donation {
-  id            String   @id @default(cuid())
-  projectId     String
-  contributorId String
-  amount        Decimal
-  timestamp     DateTime @default(now())
-
-  project     CrowdfundingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contributor User                @relation(fields: [contributorId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
 }
 
 //////////////////// GENERAL NEWS ////////////////////

@@ -72,20 +72,6 @@ export const PERMISSION_GROUPS = {
     MANAGE: 'vote:manage' as PermissionKey,
   },
 
-  CROWDFUNDING: {
-    CREATE: 'crowdfunding_project:create' as PermissionKey,
-    UPDATE: 'crowdfunding_project:update' as PermissionKey,
-    DELETE: 'crowdfunding_project:delete' as PermissionKey,
-    MANAGE: 'crowdfunding_project:manage' as PermissionKey,
-  },
-
-  DONATION: {
-    CREATE: 'donation:create' as PermissionKey,
-    UPDATE: 'donation:update' as PermissionKey,
-    DELETE: 'donation:delete' as PermissionKey,
-    MANAGE: 'donation:manage' as PermissionKey,
-  },
-
   ROLE: {
     CREATE: 'role:create' as PermissionKey,
     UPDATE: 'role:update' as PermissionKey,
