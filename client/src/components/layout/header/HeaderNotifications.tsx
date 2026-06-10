@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname } from '@/i18n/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
   useMarkAllNotificationsRead,
@@ -24,6 +24,7 @@ function useCurrentCityIdFromPath() {
 
 export default function HeaderNotifications() {
   const t = useTranslations();
+  const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const cityId = useCurrentCityIdFromPath();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -65,9 +66,35 @@ export default function HeaderNotifications() {
 
   const formatNotificationDescription = (item: InAppNotification) => {
     const isNews = item.type.startsWith('NEWS_');
+    const isCityRequest = item.type.startsWith('CITY_REQUEST_');
     const isCreated = item.type.endsWith('_CREATED');
     const isUpdated = item.type.endsWith('_UPDATED');
     const isDeleted = item.type.endsWith('_DELETED');
+
+    const cityLabel = item.city
+      ? `${item.city.name}, ${item.city.region}`
+      : t('header.notificationCityFallback');
+
+    if (isCityRequest) {
+      const primary =
+        item.type === 'CITY_REQUEST_CREATED'
+          ? t('header.notificationCityRequestCreated')
+          : item.type === 'CITY_REQUEST_ASSIGNED'
+            ? t('header.notificationCityRequestAssigned')
+            : item.type === 'CITY_REQUEST_STATUS_UPDATED'
+              ? t('header.notificationCityRequestStatusUpdated')
+              : item.type === 'CITY_REQUEST_REPORT_CREATED'
+                ? t('header.notificationCityRequestReportCreated')
+                : t('header.notificationCityRequestMessageCreated');
+
+      return {
+        primary,
+        title: item.title,
+        details: item.body ?? null,
+        cityLabel,
+        createdAt: new Date(item.createdAt).toLocaleString(),
+      };
+    }
 
     const entityLabel = isNews
       ? t('header.notificationEntityNews')
@@ -92,9 +119,21 @@ export default function HeaderNotifications() {
     return {
       primary: `${actionLabel} ${entityLabel}`,
       title: item.title,
-      details: details || null,
+      details: item.body ?? (details || null),
+      cityLabel,
       createdAt,
     };
+  };
+
+  const openNotification = (item: InAppNotification) => {
+    if (!item.isRead) {
+      markRead.mutate(item.id);
+    }
+
+    if (item.link) {
+      router.push(item.link);
+      setOpen(false);
+    }
   };
 
   return (
@@ -151,7 +190,11 @@ export default function HeaderNotifications() {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => openNotification(item)}
+                        className="min-w-0 flex-1 pr-2 text-left"
+                      >
                         <p
                           className={`text-sm ${item.isRead ? 'font-normal' : 'font-bold'}`}
                         >
@@ -159,6 +202,11 @@ export default function HeaderNotifications() {
                         </p>
                         <div className="mt-1 space-y-0.5">
                           <p className="text-sm leading-5">{content.title}</p>
+                          <p className="inline-flex max-w-full rounded-full bg-[var(--secondary)]/12 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
+                            <span className="truncate">
+                              {content.cityLabel}
+                            </span>
+                          </p>
                           {content.details ? (
                             <p className="text-xs text-[var(--muted-foreground)]">
                               {content.details}
@@ -168,11 +216,14 @@ export default function HeaderNotifications() {
                             {content.createdAt}
                           </p>
                         </div>
-                      </div>
+                      </button>
                       {!item.isRead ? (
                         <button
                           type="button"
-                          onClick={() => markRead.mutate(item.id)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            markRead.mutate(item.id);
+                          }}
                           disabled={markRead.isPending}
                           className="max-w-20 shrink-0 whitespace-normal text-right text-xs leading-tight text-[var(--primary-light)] transition-opacity disabled:opacity-50"
                         >

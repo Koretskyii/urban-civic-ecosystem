@@ -12,6 +12,12 @@ export class ResendEmailService {
   private readonly logger = new Logger(ResendEmailService.name);
 
   async send(input: SendEmailInput) {
+    console.log('Sending email via Resend:', {
+      to: input.to,
+      subject: input.subject,
+      text: input.text,
+      html: input.html ? '[HTML content]' : undefined,
+    });
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.EMAIL_FROM;
 
@@ -49,6 +55,7 @@ export class ResendEmailService {
         }`,
       );
     }
+    console.log('Email sent successfully via Resend');
     return { ok: true };
   }
 }

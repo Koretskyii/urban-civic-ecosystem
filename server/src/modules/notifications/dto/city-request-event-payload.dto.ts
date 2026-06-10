@@ -1,32 +1,58 @@
-import { IsOptional, IsString } from 'class-validator';
-import { BaseEventPayloadDto } from './base-event-payload.dto';
+import { IsISO8601, IsOptional, IsString } from 'class-validator';
 
-export class CityRequestEventPayloadDto extends BaseEventPayloadDto {
+export class CityRequestEventPayloadDto {
+  @IsString()
+  eventId!: string;
+
+  @IsISO8601()
+  occurredAt!: string;
+
+  @IsString()
+  cityId!: string;
+
+  @IsString()
+  aggregateId!: string;
+
+  @IsString()
+  actorId!: string;
+
+  @IsString()
+  requesterId!: string;
+
+  @IsString()
+  title!: string;
+
+  @IsString()
+  requestId!: string;
+
+  @IsString()
+  requestTitle!: string;
+
   @IsOptional()
   @IsString()
-  requesterId?: string;
+  status!: string | null;
 
   @IsOptional()
   @IsString()
-  requestId?: string;
+  departmentId!: string | null;
 
   @IsOptional()
   @IsString()
-  requestTitle?: string;
+  departmentName!: string | null;
 
   @IsOptional()
   @IsString()
-  departmentName?: string;
+  reportId!: string | null;
 
   @IsOptional()
   @IsString()
-  status?: string;
+  reportType!: string | null;
 
   @IsOptional()
   @IsString()
-  reportType?: string;
+  messageId!: string | null;
 
   @IsOptional()
   @IsString()
-  messagePreview?: string;
+  messagePreview!: string | null;
 }

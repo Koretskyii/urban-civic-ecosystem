@@ -11,12 +11,15 @@ import { validate } from 'class-validator';
 import type { DomainEventOutbox, Prisma } from '@/generated/prisma/client';
 import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 import type { DomainEventType } from '@/modules/notifications/domain/domain-events.types';
+import { DOMAIN_EVENT_TYPES } from '@/modules/notifications/domain/domain-events';
 import { PERMISSIONS_KEYS } from '@/modules/rbac/constants/permissions.const';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
+  EVENT_TYPE_TO_EMAIL_ENABLED,
   EVENT_PAYLOAD_DTO_MAP,
   EVENT_TYPE_TO_NOTIFICATION_TYPE,
 } from '../notifications.constants';
+import { EmailNotificationService } from '../email/email-notification.service';
 import { InAppNotificationService } from '../in-app/in-app-notification.service';
 import { OutboxRepository } from '../outbox/outbox.repository';
 import { NotificationsSseGateway } from '../sse/notifications-sse.gateway';
@@ -28,8 +31,10 @@ export class NotificationsProcessor extends WorkerHost {
   private readonly logger = new Logger(NotificationsProcessor.name);
 
   constructor(
+    private readonly prisma: PrismaService,
     private readonly outboxRepository: OutboxRepository,
     private readonly inAppNotificationService: InAppNotificationService,
+    private readonly emailNotificationService: EmailNotificationService,
     private readonly sseGateway: NotificationsSseGateway,
     private readonly prisma: PrismaService,
   ) {
@@ -89,20 +94,45 @@ export class NotificationsProcessor extends WorkerHost {
       throw new BadRequestException('Invalid outbox payload');
     }
 
-    const cityId = (payload as { cityId: string }).cityId;
-    const title = (payload as { title: string }).title;
-    const publisherId = (payload as { publisherId?: string }).publisherId;
+    const payloadRecord = outboxEvent.payload as Record<string, unknown>;
+    const cityId = String(payloadRecord.cityId);
+    const title = String(payloadRecord.title);
+    const eventId =
+      typeof payloadRecord.eventId === 'string' ? payloadRecord.eventId : null;
+    const link = this.buildNotificationLink(eventType, payloadRecord, cityId);
+    const body = this.buildNotificationBody(eventType, payloadRecord);
+    const recipients = await this.resolveRecipients(eventType, payloadRecord);
 
-    const created = await this.inAppNotificationService.createForCityMembers(
+    const created = await this.inAppNotificationService.createForUsers(
+      recipients.map((recipient) => recipient.userId),
       cityId,
       EVENT_TYPE_TO_NOTIFICATION_TYPE[eventType],
       title,
       outboxEvent.payload as Prisma.InputJsonValue,
-      publisherId,
+      {
+        eventId: eventId ?? undefined,
+        body,
+        link,
+      },
     );
     this.logger.log(
-      `processOutboxEvent outboxEventId=${outboxEvent.id} cityId=${cityId} eventType=${eventType} created=${created}`,
+      `processOutboxEvent outboxEventId=${outboxEvent.id} cityId=${cityId} eventType=${eventType} recipients=${recipients.length} created=${created}`,
     );
+
+    if (EVENT_TYPE_TO_EMAIL_ENABLED[eventType]) {
+      const emailResult = await this.emailNotificationService.sendForRecipients(
+        {
+          outboxEvent,
+          recipients,
+          subject: this.buildEmailSubject(eventType, title),
+          text: this.buildEmailText(eventType, payloadRecord, link, body),
+          html: this.buildEmailHtml(eventType, payloadRecord, link, body),
+        },
+      );
+      this.logger.log(
+        `email processed outboxEventId=${outboxEvent.id} eventType=${eventType} sent=${emailResult.sent} failed=${emailResult.failed}`,
+      );
+    }
 
     if (created > 0) {
       this.sseGateway.emit({
@@ -409,11 +439,11 @@ export class NotificationsProcessor extends WorkerHost {
 
   private escapeHtml(value: string) {
     return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
   private getPayloadTitle(payload: Record<string, unknown>) {

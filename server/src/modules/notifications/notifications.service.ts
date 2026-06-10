@@ -47,6 +47,15 @@ export class NotificationsService {
         ...(cityId ? { cityId } : {}),
         ...(onlyUnread ? { isRead: false } : {}),
       },
+      include: {
+        city: {
+          select: {
+            id: true,
+            name: true,
+            region: true,
+          },
+        },
+      },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),

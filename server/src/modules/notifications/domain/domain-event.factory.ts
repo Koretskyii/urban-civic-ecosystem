@@ -1,6 +1,7 @@
 import {
-  buildAlertEventPayloadData,
-  buildNewsEventPayloadData,
+  type BuildCityRequestEventPayloadData,
+  type buildAlertEventPayloadData,
+  type buildNewsEventPayloadData,
 } from './domain-events.types';
 
 export function buildNewsEventPayload(data: buildNewsEventPayloadData) {
@@ -25,5 +26,28 @@ export function buildAlertEventPayload(data: buildAlertEventPayloadData) {
     alertTypeId: data.alertTypeId,
     severity: data.severity,
     expiresAt: data.expiresAt ? data.expiresAt.toISOString() : null,
+  };
+}
+
+export function buildCityRequestEventPayload(
+  data: BuildCityRequestEventPayloadData,
+) {
+  return {
+    eventId: crypto.randomUUID(),
+    occurredAt: new Date().toISOString(),
+    cityId: data.cityId,
+    aggregateId: data.requestId,
+    actorId: data.actorId,
+    requesterId: data.requesterId,
+    title: data.title ?? data.requestTitle,
+    requestId: data.requestId,
+    requestTitle: data.requestTitle,
+    status: data.status ?? null,
+    departmentId: data.departmentId ?? null,
+    departmentName: data.departmentName ?? null,
+    reportId: data.reportId ?? null,
+    reportType: data.reportType ?? null,
+    messageId: data.messageId ?? null,
+    messagePreview: data.messagePreview ?? null,
   };
 }

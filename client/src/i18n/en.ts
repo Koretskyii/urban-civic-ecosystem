@@ -20,6 +20,13 @@ export const en = {
     notificationActionChanged: 'Changed',
     notificationEntityNews: 'news item',
     notificationEntityAlert: 'announcement',
+    notificationEntityCityRequest: 'city request',
+    notificationCityFallback: 'City',
+    notificationCityRequestCreated: 'New request',
+    notificationCityRequestAssigned: 'Department assigned',
+    notificationCityRequestStatusUpdated: 'Request status updated',
+    notificationCityRequestReportCreated: 'Request report added',
+    notificationCityRequestMessageCreated: 'New request message',
   },
   footer: {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',

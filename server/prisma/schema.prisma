@@ -60,6 +60,11 @@ enum InAppNotificationType {
   ALERT_CREATED
   ALERT_UPDATED
   ALERT_DELETED
+  CITY_REQUEST_CREATED
+  CITY_REQUEST_ASSIGNED
+  CITY_REQUEST_STATUS_UPDATED
+  CITY_REQUEST_REPORT_CREATED
+  CITY_REQUEST_MESSAGE_CREATED
 }
 
 enum AlertSeverity {
@@ -147,6 +152,7 @@ model User {
   communityMemberships         CommunityMember[]
   publishedNews                GeneralNews[]
   notifications                InAppNotification[]
+  notificationDeliveries       NotificationDelivery[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -642,6 +648,8 @@ model DomainEventOutbox {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
+  notificationDeliveries NotificationDelivery[]
+
   @@index([status, availableAt, createdAt])
   @@index([aggregateType, aggregateId])
 }
@@ -651,6 +659,7 @@ model InAppNotification {
   userId    String
   cityId    String
   type      InAppNotificationType
+  eventId   String?
   title     String
   body      String?
   link      String?
@@ -664,4 +673,27 @@ model InAppNotification {
 
   @@index([userId, isRead, createdAt(sort: Desc)])
   @@index([cityId, createdAt(sort: Desc)])
+  @@unique([userId, eventId, type])
+}
+
+model NotificationDelivery {
+  id            String    @id @default(cuid())
+  outboxEventId String
+  userId        String
+  channel       String
+  status        String    @default("PENDING")
+  attempts      Int       @default(0)
+  recipient     String
+  subject       String
+  lastError     String?
+  sentAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  outboxEvent DomainEventOutbox @relation(fields: [outboxEventId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([outboxEventId, userId, channel])
+  @@index([status, createdAt])
+  @@index([userId, channel, createdAt(sort: Desc)])
 }
