@@ -85,9 +85,7 @@ export class CityRequestsService {
 
       await tx.chat.create({
         data: {
-          cityId,
           cityRequestId: cityRequest.id,
-          contextType: CITY_REQUESTS_CONSTANTS.CONTEXT_TYPE,
         },
       });
 

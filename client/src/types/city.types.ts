@@ -76,7 +76,6 @@ export interface Alert {
   expiresAt?: string | null;
   title: string;
   content: string;
-  timestamp: string;
   alertType: {
     id: string;
     name: string;

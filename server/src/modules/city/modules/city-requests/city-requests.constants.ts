@@ -1,5 +1,4 @@
 export const CITY_REQUESTS_CONSTANTS = {
-  CONTEXT_TYPE: 'cityRequest',
   SOCKET_NAMESPACE: '/city-requests',
   ROOM_PREFIX: 'city-request',
   ATTACHMENT_TYPES: {

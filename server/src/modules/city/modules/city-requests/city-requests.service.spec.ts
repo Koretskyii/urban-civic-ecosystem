@@ -123,10 +123,9 @@ describe('CityRequestsService', () => {
 
     const createChatCalls = txMock.chat.create.mock.calls as unknown[][];
     const createChatCall = createChatCalls[0]?.[0] as {
-      data: { cityRequestId: string; contextType: string };
+      data: { cityRequestId: string };
     };
     expect(createChatCall.data.cityRequestId).toBe('request-1');
-    expect(createChatCall.data.contextType).toBe('cityRequest');
     expect(txMock.attachment.createMany).toHaveBeenCalled();
   });
 

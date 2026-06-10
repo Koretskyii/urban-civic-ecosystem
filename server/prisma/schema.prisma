@@ -75,7 +75,6 @@ model City {
   roles                Role[]
   cityRequests         CityRequest[]
   departments          Department[]
-  chats                Chat[]
   alerts               Alert[]
   alertSubscriptions   AlertSubscription[]   @relation("alertSubscriptions")
   surveys              Survey[]
@@ -339,13 +338,10 @@ model Attachment {
 //////////////////// CHAT ////////////////////
 
 model Chat {
-  id            String  @id @default(cuid())
-  cityId        String
-  cityRequestId String? @unique
-  contextType   String  @default("cityRequest")
+  id            String @id @default(cuid())
+  cityRequestId String @unique
 
-  city        City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  cityRequest CityRequest? @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
+  cityRequest CityRequest @relation(fields: [cityRequestId], references: [id], onDelete: Cascade)
   messages    Message[]
 
   createdAt DateTime @default(now())
@@ -374,7 +370,6 @@ model Alert {
   expiresAt   DateTime?
   title       String
   content     String
-  timestamp   DateTime      @default(now())
 
   city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
   publisher User?     @relation("alertPublisher", fields: [publisherId], references: [id], onDelete: Cascade)
@@ -455,7 +450,6 @@ model GeneralNews {
   publisherId String
   title       String
   content     String
-  timestamp   DateTime @default(now())
 
   attachments Attachment[]
   city        City         @relation("news", fields: [cityId], references: [id], onDelete: Cascade)

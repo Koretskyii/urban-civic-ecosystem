@@ -339,7 +339,6 @@ export class AlertsService {
       expiresAt: true,
       title: true,
       content: true,
-      timestamp: true,
       createdAt: true,
       updatedAt: true,
       deletedAt: true,
