@@ -15,7 +15,6 @@ export const CITY_MEMBER_SORT_ORDERS = ['asc', 'desc'] as const;
 export const CITY_MEMBER_ROLES = [
   ROLES.ADMIN,
   ROLES.MUNICIPALITY,
-  ROLES.ORGANIZER,
   ROLES.CITIZEN,
 ] as const;
 

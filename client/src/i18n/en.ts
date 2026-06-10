@@ -74,7 +74,6 @@ export const en = {
   },
   cityPages: {
     alertsTitle: 'Announcements',
-    projectsComingSoon: 'Projects — coming soon',
     problemComingSoon: 'Problem report — coming soon',
   },
   cityProblem: {
@@ -198,7 +197,6 @@ export const en = {
       news: 'News',
       alerts: 'Announcements',
       adminSettings: 'Admin settings',
-      projects: 'Projects',
       problem: 'Report a problem',
     },
   },
@@ -224,7 +222,6 @@ export const en = {
     roles: {
       admin: 'Admin',
       municipality: 'Municipality',
-      organizer: 'Organizer',
       citizen: 'Citizen',
     },
   },
@@ -285,8 +282,6 @@ export const en = {
       admin: 'Full access to city administration and role management.',
       municipality:
         'Processes city requests and coordinates municipal updates.',
-      organizer:
-        'Publishes community initiatives, projects, and public content.',
       citizen: 'Creates requests and participates in the city community.',
     },
   },
@@ -316,8 +311,6 @@ export const en = {
           'Full control over the city space, roles, content, and requests.',
         municipality:
           'Process requests, coordinate departments, and publish operational notices.',
-        organizer:
-          'Work with content, community activity, and city initiatives.',
         citizen:
           'Create requests, follow news and announcements, and participate in the community.',
       },
@@ -332,7 +325,6 @@ export const en = {
         coordinateDepartments: 'Assign requests to responsible departments.',
         createRequests: 'Create city issue requests with a point on the map.',
         followUpdates: 'Follow news, announcements, and request statuses.',
-        projects: 'Work with city initiatives and projects.',
       },
     },
     latestNews: {
@@ -372,11 +364,6 @@ export const en = {
         title: 'Announcements',
         description:
           'Urgent alerts, warnings, and operational notices for residents',
-      },
-      projects: {
-        title: 'Projects',
-        description:
-          'City initiatives, voting, and crowdfunding for development projects',
       },
       problem: {
         title: 'Report a problem',

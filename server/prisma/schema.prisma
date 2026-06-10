@@ -33,12 +33,6 @@ enum ReportType {
   REJECTION
 }
 
-enum ProjectStatus {
-  ACTIVE
-  COMPLETED
-  CANCELLED
-}
-
 enum OutboxStatus {
   PENDING
   PROCESSING
@@ -84,7 +78,6 @@ model City {
   chats                Chat[]
   alerts               Alert[]
   alertSubscriptions   AlertSubscription[]   @relation("alertSubscriptions")
-  projects             Project[]
   surveys              Survey[]
   crowdfundingProjects CrowdfundingProject[]
   news                 GeneralNews[]         @relation("news")
@@ -137,7 +130,6 @@ model User {
   votes                        Vote[]
   donations                    Donation[]
   crowdfundingProjects         CrowdfundingProject[] @relation("creator")
-  projectParticipants          ProjectParticipant[]
   publishedNews                GeneralNews[]
   notifications                InAppNotification[]
   notificationDeliveries       NotificationDelivery[]
@@ -419,46 +411,6 @@ model AlertSubscription {
   alertType AlertType @relation(fields: [alertTypeId], references: [id], onDelete: Cascade)
 
   @@id([userId, cityId, alertTypeId])
-}
-
-//////////////////// PROJECTS ////////////////////
-
-model Project {
-  id          String        @id @default(cuid())
-  cityId      String
-  title       String
-  description String?
-  status      ProjectStatus @default(ACTIVE)
-
-  city         City                 @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  events       Event[]
-  participants ProjectParticipant[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ProjectParticipant {
-  userId    String
-  projectId String
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@id([userId, projectId])
-}
-
-model Event {
-  id        String    @id @default(cuid())
-  projectId String
-  title     String
-  startTime DateTime
-  endTime   DateTime?
-  location  String?
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
 }
 
 //////////////////// SURVEYS ////////////////////

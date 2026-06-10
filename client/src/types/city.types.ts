@@ -172,7 +172,7 @@ export interface CityMember {
   isBlocked: boolean;
   blockedAt?: string | null;
   blockedById?: string | null;
-  role: 'admin' | 'citizen' | 'organizer' | 'municipality';
+  role: 'admin' | 'citizen' | 'municipality';
 }
 
 export type CityMemberSortBy = 'name' | 'email' | 'joinedAt';

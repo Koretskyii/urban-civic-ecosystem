@@ -13,7 +13,6 @@ import {
   Newspaper,
   Bell,
   Settings,
-  GitBranch,
   TriangleAlert,
   Building2,
 } from 'lucide-react';
@@ -30,7 +29,6 @@ const NAV_ITEMS = [
   { key: 'home', path: '', icon: <House size={18} /> },
   { key: 'news', path: '/news', icon: <Newspaper size={18} /> },
   { key: 'alerts', path: '/alerts', icon: <Bell size={18} /> },
-  { key: 'projects', path: '/projects', icon: <GitBranch size={18} /> },
   {
     key: 'problem',
     path: '/city-requests',

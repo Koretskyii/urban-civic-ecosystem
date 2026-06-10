@@ -558,10 +558,6 @@ export class CityService {
           cityId: city.id,
         },
         {
-          name: ROLES.ORGANIZER,
-          cityId: city.id,
-        },
-        {
           name: ROLES.MUNICIPALITY,
           cityId: city.id,
         },

@@ -41,11 +41,6 @@ export type PermissionKey =
   | 'alert:delete'
   | 'alert:manage'
 
-  // Projects
-  | 'project:create'
-  | 'project:update'
-  | 'project:delete'
-  | 'project:manage'
 
   // Surveys
   | 'survey:create'
@@ -89,7 +84,7 @@ export type PermissionKey =
   | 'user:delete_profile'
   | 'user:manage_profile';
 
-export type RoleKey = 'admin' | 'citizen' | 'organizer' | 'municipality';
+export type RoleKey = 'admin' | 'citizen' | 'municipality';
 
 export interface GetPermissionsResponse {
   permissions: PermissionKey[];

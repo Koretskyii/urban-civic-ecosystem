@@ -41,12 +41,6 @@ export const PERMISSIONS_KEYS = {
   ALERT_DELETE: 'alert:delete',
   ALERT_MANAGE: 'alert:manage',
 
-  // ─── Projects ───
-  PROJECT_CREATE: 'project:create',
-  PROJECT_UPDATE: 'project:update',
-  PROJECT_DELETE: 'project:delete',
-  PROJECT_MANAGE: 'project:manage',
-
   // ─── Surveys ───
   SURVEY_CREATE: 'survey:create',
   SURVEY_UPDATE: 'survey:update',

@@ -74,11 +74,6 @@ export const queryKeys = {
       ] as const,
   },
 
-  projects: {
-    all: (cityId: string) => ['projects', cityId] as const,
-    detail: (id: string) => ['projects', 'detail', id] as const,
-  },
-
   surveys: {
     all: (cityId: string) => ['surveys', cityId] as const,
     detail: (id: string) => ['surveys', 'detail', id] as const,

@@ -37,13 +37,6 @@ export const PERMISSION_GROUPS = {
     MANAGE: 'alert:manage' as PermissionKey,
   },
 
-  PROJECT: {
-    CREATE: 'project:create' as PermissionKey,
-    UPDATE: 'project:update' as PermissionKey,
-    DELETE: 'project:delete' as PermissionKey,
-    MANAGE: 'project:manage' as PermissionKey,
-  },
-
   CHAT: {
     CREATE: 'chat:create' as PermissionKey,
     UPDATE: 'chat:update' as PermissionKey,
@@ -115,22 +108,18 @@ export const RBAC_PERMISSIONS = {
   canManageNews: [PERMISSION_GROUPS.NEWS.MANAGE] as const,
   canCreateAlert: [PERMISSION_GROUPS.ALERT.CREATE] as const,
   canManageAlert: [PERMISSION_GROUPS.ALERT.MANAGE] as const,
-  canCreateProject: [PERMISSION_GROUPS.PROJECT.CREATE] as const,
-  canManageProject: [PERMISSION_GROUPS.PROJECT.MANAGE] as const,
   canManageRole: [PERMISSION_GROUPS.ROLE.MANAGE] as const,
 } as const;
 
 export const ROLE_ACCENT_CLASSES: Record<RoleKey, string> = {
   admin: 'border-[var(--primary)]/20 bg-[rgba(12,38,61,0.06)]',
   municipality: 'border-[var(--secondary)]/25 bg-[rgba(63,136,197,0.08)]',
-  organizer: 'border-[var(--success)]/25 bg-[rgba(49,107,80,0.08)]',
   citizen: 'border-[var(--warning)]/40 bg-[rgba(255,186,8,0.10)]',
 };
 
 export const ROLE_CAPABILITY_KEYS: Record<RoleKey, string[]> = {
   admin: ['manageCity', 'manageRoles', 'publishContent', 'processRequests'],
   municipality: ['processRequests', 'publishAlerts', 'coordinateDepartments'],
-  organizer: ['publishContent', 'projects'],
   citizen: ['createRequests', 'followUpdates'],
 };
 
@@ -153,13 +142,6 @@ export const inferRoleFromPermissions = (
     permissionSet.has(PERMISSION_GROUPS.NEWS.MANAGE)
   ) {
     return 'municipality';
-  }
-
-  if (
-    permissionSet.has(PERMISSION_GROUPS.PROJECT.MANAGE) ||
-    permissionSet.has(PERMISSION_GROUPS.PROJECT.CREATE)
-  ) {
-    return 'organizer';
   }
 
   if (permissions.length > 0) {

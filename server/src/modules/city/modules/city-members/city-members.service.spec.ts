@@ -143,12 +143,11 @@ describe('CityMembersService', () => {
     mockPrismaService.role.findMany.mockResolvedValue([
       { id: 'role-admin', name: ROLES.ADMIN },
       { id: 'role-citizen', name: ROLES.CITIZEN },
-      { id: 'role-organizer', name: ROLES.ORGANIZER },
       { id: 'role-municipality', name: ROLES.MUNICIPALITY },
     ]);
     mockPrismaService.role.findUnique.mockResolvedValue({
-      id: 'role-organizer',
-      name: ROLES.ORGANIZER,
+      id: 'role-municipality',
+      name: ROLES.MUNICIPALITY,
     });
     mockPrismaService.userRole.findMany.mockResolvedValue([
       { roleId: 'role-citizen' },
@@ -168,17 +167,17 @@ describe('CityMembersService', () => {
       'city-1',
       'user-2',
       'admin-1',
-      { role: ROLES.ORGANIZER },
+      { role: ROLES.MUNICIPALITY },
     );
 
     expect(mockPrismaService.userRole.deleteMany).toHaveBeenCalled();
     expect(mockPrismaService.userRole.create).toHaveBeenCalledWith({
       data: {
         userId: 'user-2',
-        roleId: 'role-organizer',
+        roleId: 'role-municipality',
       },
     });
-    expect(result).toEqual({ userId: 'user-2', role: ROLES.ORGANIZER });
+    expect(result).toEqual({ userId: 'user-2', role: ROLES.MUNICIPALITY });
   });
 
   it('updateMemberRole should reject role change for last admin', async () => {
