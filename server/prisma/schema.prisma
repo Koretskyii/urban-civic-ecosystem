@@ -179,6 +179,8 @@ model UserRole {
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
+
+  @@index([roleId])
 }
 
 /// Global role-permission mapping — shared across all cities.
@@ -219,7 +221,7 @@ model CityRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([cityId, status])
+  @@index([cityId, status, createdAt(sort: Desc)])
   @@index([cityId, assignedDepartmentId])
 }
 
@@ -251,7 +253,7 @@ model CityCreationRequest {
   @@index([status, createdAt])
   @@index([requesterId, status])
   @@index([cityId])
-  @@index([domainVerificationId])
+  @@index([reviewedById])
   @@index([name, region])
 }
 
@@ -306,6 +308,9 @@ model Report {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([cityRequestId])
+  @@index([authorId])
 }
 
 model Attachment {
@@ -331,6 +336,12 @@ model Attachment {
   city   City?   @relation("cityAttachments", fields: [cityId], references: [id], onDelete: Cascade)
 
   uploadedAt DateTime @default(now())
+
+  @@index([cityRequestId])
+  @@index([reportId])
+  @@index([cityCreationRequestId])
+  @@index([newsId])
+  @@index([cityId])
 }
 
 //////////////////// CHAT ////////////////////
@@ -355,6 +366,9 @@ model Message {
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   timestamp DateTime @default(now())
+
+  @@index([chatId, timestamp])
+  @@index([authorId])
 }
 
 //////////////////// ALERTS ////////////////////
@@ -380,6 +394,7 @@ model Alert {
   @@index([cityId, deletedAt, severity, createdAt(sort: Desc)])
   @@index([cityId, alertTypeId, createdAt(sort: Desc)])
   @@index([expiresAt])
+  @@index([publisherId])
 }
 
 model AlertType {
@@ -458,6 +473,7 @@ model GeneralNews {
   deletedAt DateTime?
 
   @@index([cityId, deletedAt, createdAt(sort: Desc)])
+  @@index([publisherId])
 }
 
 //////////////////// OUTBOX ////////////////////
