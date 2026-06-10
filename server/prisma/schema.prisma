@@ -201,12 +201,10 @@ model CityRequest {
   title                String
   description          String?
   status               RequestStatus @default(OPEN)
-  location             String?
   locationLat          Float?
   locationLng          Float?
   address              String?
   priority             Int           @default(0)
-  category             String?
   assignedDepartmentId String?
   resolvedAt           DateTime?
 

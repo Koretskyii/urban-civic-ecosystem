@@ -3,12 +3,10 @@ import type { CityRequestStatus, ReportType } from '@/types';
 export type CreateCityRequestPayload = {
   title: string;
   description?: string;
-  category?: string;
   priority?: number;
   locationLat: number;
   locationLng: number;
   address?: string;
-  location?: string;
 };
 
 export type CreateCityRequestInput = {

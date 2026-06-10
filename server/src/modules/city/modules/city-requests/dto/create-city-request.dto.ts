@@ -19,10 +19,6 @@ export class CreateCityRequestDto {
   description?: string;
 
   @IsOptional()
-  @IsString()
-  category?: string;
-
-  @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(0)
@@ -40,8 +36,4 @@ export class CreateCityRequestDto {
   @IsOptional()
   @IsString()
   address?: string;
-
-  @IsOptional()
-  @IsString()
-  location?: string;
 }
