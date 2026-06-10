@@ -16,7 +16,7 @@ import {
   CITY_REQUESTS_SOCKET_EVENTS,
   type CityRequestsMutationSocketEvent,
 } from './city-requests.events';
-import { CITY_REQUESTS_CONSTANTS } from './city-requests.constants';
+import { CITY_REQUESTS_CONSTANTS } from './city-requests.const';
 
 export type SocketWithUser = Socket & {
   data: {

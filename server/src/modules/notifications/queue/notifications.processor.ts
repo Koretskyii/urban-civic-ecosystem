@@ -17,7 +17,7 @@ import {
   EVENT_TYPE_TO_EMAIL_ENABLED,
   EVENT_PAYLOAD_DTO_MAP,
   EVENT_TYPE_TO_NOTIFICATION_TYPE,
-} from '../notifications.constants';
+} from '../notifications.const';
 import { EmailNotificationService } from '../email/email-notification.service';
 import { InAppNotificationService } from '../in-app/in-app-notification.service';
 import { OutboxRepository } from '../outbox/outbox.repository';

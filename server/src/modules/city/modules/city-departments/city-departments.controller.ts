@@ -8,8 +8,6 @@ import {
   Post,
   Req,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
 import { PermissionsGuard } from '@/modules/rbac/guards/permissions.guard';
@@ -21,13 +19,6 @@ import { CreateCityDepartmentDto, UpdateCityDepartmentDto } from './dto';
 
 @Controller('city/:cityId/departments')
 @UseGuards(JWTGuard)
-@UsePipes(
-  new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }),
-)
 export class CityDepartmentsController {
   constructor(
     private readonly cityDepartmentsService: CityDepartmentsService,

@@ -14,7 +14,9 @@ import {
 import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CityService } from './city.service';
-import { CityInitData, DomainVerificationData } from '@/types';
+import { DomainVerificationService } from './domain-verification/domain-verification.service';
+import { CityCreationService } from './city-creation/city-creation.service';
+import { CityInitData, DomainVerificationData } from './types/city.types';
 import { CITY_ERRORS } from '../rbac/constants/city.const';
 import { JWTGuard } from '../auth/guards/jwt.guard';
 import type { User } from '@/types/auth.types';
@@ -35,7 +37,11 @@ const toOptionalNumber = (value: unknown): number | undefined => {
 
 @Controller('city')
 export class CityController {
-  constructor(private readonly cityService: CityService) {}
+  constructor(
+    private readonly cityService: CityService,
+    private readonly domainVerificationService: DomainVerificationService,
+    private readonly cityCreationService: CityCreationService,
+  ) {}
 
   @UseGuards(JWTGuard)
   @Post('domain/generate-token')
@@ -45,7 +51,7 @@ export class CityController {
       throw new UnauthorizedException();
     }
 
-    return this.cityService.generateDomainToken(user.id, domain);
+    return this.domainVerificationService.generateDomainToken(user.id, domain);
   }
 
   @UseGuards(JWTGuard)
@@ -62,7 +68,7 @@ export class CityController {
       throw new UnauthorizedException();
     }
 
-    return this.cityService.getCurrentCityCreationRequest(user.id);
+    return this.cityCreationService.getCurrentCityCreationRequest(user.id);
   }
 
   @UseGuards(JWTGuard)
@@ -82,7 +88,11 @@ export class CityController {
       throw new UnauthorizedException();
     }
 
-    return this.cityService.verifyDomain(user.id, body.domain, body.token);
+    return this.domainVerificationService.verifyDomain(
+      user.id,
+      body.domain,
+      body.token,
+    );
   }
 
   @UseGuards(JWTGuard)
@@ -155,7 +165,7 @@ export class CityController {
       throw new BadRequestException('centerLng must be between -180 and 180');
     }
 
-    return this.cityService.createCityCreationRequest(
+    return this.cityCreationService.createCityCreationRequest(
       user.id,
       {
         ...data,

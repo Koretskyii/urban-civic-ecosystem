@@ -3,15 +3,21 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
 import { CityController } from './city.controller';
 import { CityService } from './city.service';
+import { DomainVerificationService } from './domain-verification/domain-verification.service';
+import { CityCreationService } from './city-creation/city-creation.service';
 
 describe('CityController', () => {
   let controller: CityController;
 
   const mockCityService = {
+    joinCity: jest.fn(),
+  };
+  const mockDomainVerificationService = {
     generateDomainToken: jest.fn(),
     verifyDomain: jest.fn(),
+  };
+  const mockCityCreationService = {
     getCurrentCityCreationRequest: jest.fn(),
-    joinCity: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -21,6 +27,14 @@ describe('CityController', () => {
         {
           provide: CityService,
           useValue: mockCityService,
+        },
+        {
+          provide: DomainVerificationService,
+          useValue: mockDomainVerificationService,
+        },
+        {
+          provide: CityCreationService,
+          useValue: mockCityCreationService,
         },
       ],
     }).compile();
@@ -47,15 +61,16 @@ describe('CityController', () => {
     it('should call service.generateDomainToken with user id and domain', async () => {
       const domain = 'test.com';
       const expectedResult = { token: 'test-token', domain };
-      mockCityService.generateDomainToken.mockResolvedValue(expectedResult);
+      mockDomainVerificationService.generateDomainToken.mockResolvedValue(
+        expectedResult,
+      );
       const req = { user: { id: 'user-id' } } as unknown as Request;
 
       const result = await controller.generateDomainToken(domain, req);
 
-      expect(mockCityService.generateDomainToken).toHaveBeenCalledWith(
-        'user-id',
-        domain,
-      );
+      expect(
+        mockDomainVerificationService.generateDomainToken,
+      ).toHaveBeenCalledWith('user-id', domain);
       expect(result).toEqual(expectedResult);
     });
   });
@@ -75,12 +90,14 @@ describe('CityController', () => {
         message: 'Verified',
         domain: body.domain,
       };
-      mockCityService.verifyDomain.mockResolvedValue(expectedResult);
+      mockDomainVerificationService.verifyDomain.mockResolvedValue(
+        expectedResult,
+      );
       const req = { user: { id: 'user-id' } } as unknown as Request;
 
       const result = await controller.verifyDomain(body, req);
 
-      expect(mockCityService.verifyDomain).toHaveBeenCalledWith(
+      expect(mockDomainVerificationService.verifyDomain).toHaveBeenCalledWith(
         'user-id',
         body.domain,
         body.token,
@@ -99,7 +116,7 @@ describe('CityController', () => {
 
     it('should call service.getCurrentCityCreationRequest with user id', async () => {
       const expectedResult = { id: 'request-1', name: 'Kyiv' };
-      mockCityService.getCurrentCityCreationRequest.mockResolvedValue(
+      mockCityCreationService.getCurrentCityCreationRequest.mockResolvedValue(
         expectedResult,
       );
       const req = { user: { id: 'user-id' } } as unknown as Request;
@@ -107,7 +124,7 @@ describe('CityController', () => {
       const result = await controller.getCurrentCityCreationRequest(req);
 
       expect(
-        mockCityService.getCurrentCityCreationRequest,
+        mockCityCreationService.getCurrentCityCreationRequest,
       ).toHaveBeenCalledWith('user-id');
       expect(result).toEqual(expectedResult);
     });

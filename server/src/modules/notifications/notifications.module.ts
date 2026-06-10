@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { NotificationsService } from './notifications.service';
-import { NotificationsController } from './api/notifications.controller';
+import { NotificationsController } from './notifications.controller';
 import { OutboxRepository } from './outbox/outbox.repository';
 import { OutboxRelayService } from './outbox/outbox-relay.service';
 import { NotificationsProducer } from './queue/notifications.producer';

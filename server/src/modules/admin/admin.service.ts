@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CityService } from '@/modules/city/city.service';
+import { CityCreationService } from '@/modules/city/city-creation/city-creation.service';
 import {
   CityCreationRequestStatus,
   SystemRole,
@@ -38,7 +38,7 @@ const getPagination = (page?: number, limit?: number) => {
 export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cityService: CityService,
+    private readonly cityCreationService: CityCreationService,
   ) {}
 
   async listCityCreationRequests(query: GetCityCreationRequestsQueryDto) {
@@ -546,7 +546,7 @@ export class AdminService {
       }
 
       const verificationAttachment = request.attachments[0];
-      const city = await this.cityService.provisionApprovedCity(tx, {
+      const city = await this.cityCreationService.provisionApprovedCity(tx, {
         requesterId: request.requesterId,
         name: request.name,
         region: request.region,

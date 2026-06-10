@@ -25,7 +25,7 @@ import {
 import {
   CITY_REQUESTS_CONSTANTS,
   CITY_REQUESTS_ERRORS,
-} from './city-requests.constants';
+} from './city-requests.const';
 
 const DEFAULT_PAGE_SIZE = 40;
 const MAX_PAGE_SIZE = 100;
