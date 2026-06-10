@@ -56,8 +56,6 @@ export class NewsService {
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: 'NEWS_ATTACHMENT',
-            entityId: newsId,
-            entityType: 'NEWS',
             newsId,
           })),
         });

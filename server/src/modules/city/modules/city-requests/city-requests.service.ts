@@ -98,8 +98,6 @@ export class CityRequestsService {
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REQUEST,
-            entityId: requestId,
-            entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.CITY_REQUEST,
             cityRequestId: requestId,
           })),
         });
@@ -484,8 +482,6 @@ export class CityRequestsService {
             mimeType: attachment.mimeType,
             url: attachment.url,
             type: CITY_REQUESTS_CONSTANTS.ATTACHMENT_TYPES.REPORT,
-            entityId: reportId,
-            entityType: CITY_REQUESTS_CONSTANTS.ENTITY_TYPES.REPORT,
             reportId,
           })),
         });

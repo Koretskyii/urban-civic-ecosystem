@@ -82,6 +82,7 @@ model City {
   news                 GeneralNews[]         @relation("news")
   notifications        InAppNotification[]
   cityCreationRequests CityCreationRequest[]
+  attachments          Attachment[]          @relation("cityAttachments")
 
   cityDomain CityDomain?
 
@@ -319,8 +320,6 @@ model Attachment {
   mimeType   String?
   url        String
   type       String?
-  entityId   String
-  entityType String
 
   reportId String?
   report   Report? @relation(fields: [reportId], references: [id], onDelete: Cascade)
@@ -333,6 +332,9 @@ model Attachment {
 
   newsId String?
   news   GeneralNews? @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  cityId String?
+  city   City?   @relation("cityAttachments", fields: [cityId], references: [id], onDelete: Cascade)
 
   uploadedAt DateTime @default(now())
 }

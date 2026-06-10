@@ -194,8 +194,8 @@ export class CityService {
       }),
       this.prisma.attachment.findFirst({
         where: {
-          entityId: id,
-          entityType: 'CITY_VERIFICATION',
+          cityId: id,
+          type: 'DOCUMENT',
         },
         select: {
           id: true,
@@ -486,8 +486,6 @@ export class CityService {
           mimeType: document.mimetype,
           url: uploadedFile.url,
           type: 'DOCUMENT',
-          entityId: request.id,
-          entityType: 'CITY_CREATION_REQUEST',
           cityCreationRequestId: request.id,
         },
       });
@@ -540,8 +538,7 @@ export class CityService {
       await tx.attachment.update({
         where: { id: params.verificationAttachmentId },
         data: {
-          entityId: city.id,
-          entityType: 'CITY_VERIFICATION',
+          cityId: city.id,
           cityCreationRequestId: null,
         },
       });
