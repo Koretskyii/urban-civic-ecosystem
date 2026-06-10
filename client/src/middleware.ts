@@ -1,6 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { defaultLocale, locales } from './i18n';
+import { API_BASE_URL } from './config';
 
 type TokenPayload = {
   sub?: string;
@@ -12,14 +13,16 @@ const intlMiddleware = createMiddleware({
   defaultLocale,
 });
 
+// Short-lived per-city cache to avoid the blocking permissions fetch on every
+// navigation. A block applied by an admin takes effect within this window.
+const BLOCK_CHECK_COOKIE_PREFIX = 'ucb_';
+const BLOCK_CHECK_TTL_SECONDS = 30;
+
 const AUTH_REQUIRED_PREFIXES = ['/city', '/user/profile'];
 const PERMISSION_REQUIRED_ROUTES: Array<{
   pathPrefix: string;
   permission: string;
 }> = [];
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3001';
-
 const decodeToken = (token: string): TokenPayload | null => {
   try {
     const [, payloadPart] = token.split('.');
@@ -114,14 +117,19 @@ export default async function middleware(request: NextRequest) {
   }
 
   const cityId = getCityIdFromPathname(pathname);
-  if (
-    cityId &&
-    !isCityBannedPath(pathname, cityId) &&
-    (await isUserBlockedInCity(request, cityId))
-  ) {
-    return NextResponse.redirect(
-      new URL(`${localePrefix}/city/${cityId}/banned`, request.url),
-    );
+  let verifiedNotBlocked = false;
+  if (cityId && !isCityBannedPath(pathname, cityId)) {
+    const recentlyVerified =
+      request.cookies.get(`${BLOCK_CHECK_COOKIE_PREFIX}${cityId}`)?.value ===
+      '1';
+    if (!recentlyVerified) {
+      if (await isUserBlockedInCity(request, cityId)) {
+        return NextResponse.redirect(
+          new URL(`${localePrefix}/city/${cityId}/banned`, request.url),
+        );
+      }
+      verifiedNotBlocked = true;
+    }
   }
 
   const requiredPermission = PERMISSION_REQUIRED_ROUTES.find((entry) =>
@@ -137,7 +145,16 @@ export default async function middleware(request: NextRequest) {
     );
   }
 
-  return intlMiddleware(request);
+  const response = intlMiddleware(request);
+  if (verifiedNotBlocked && cityId) {
+    response.cookies.set(`${BLOCK_CHECK_COOKIE_PREFIX}${cityId}`, '1', {
+      maxAge: BLOCK_CHECK_TTL_SECONDS,
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+  }
+  return response;
 }
 
 export const config = {

@@ -41,7 +41,6 @@ export type PermissionKey =
   | 'alert:delete'
   | 'alert:manage'
 
-
   // Surveys
   | 'survey:create'
   | 'survey:update'

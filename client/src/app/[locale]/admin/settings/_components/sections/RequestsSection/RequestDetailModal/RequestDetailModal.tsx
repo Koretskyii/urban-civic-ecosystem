@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -214,9 +215,13 @@ function AttachmentPanel({
 
       {canPreview ? (
         <div className="flex items-center justify-center rounded-md border border-black/10 bg-white p-4">
-          <img
+          {/* Arbitrary object-storage user content: skip the Next optimizer (no domain to whitelist), keep lazy-loading + layout stability. */}
+          <Image
             src={attachment.url}
             alt={attachment.fileName}
+            width={480}
+            height={160}
+            unoptimized
             className="h-[10rem] w-[30rem] rounded-md border border-black/10 bg-white object-contain"
           />
         </div>

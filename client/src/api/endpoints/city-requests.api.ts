@@ -37,6 +37,11 @@ function buildListQuery(query?: GetCityRequestsQuery) {
   return queryString ? `?${queryString}` : '';
 }
 
+export const buildRequestsListPath = (
+  cityId: string,
+  query?: GetCityRequestsQuery,
+) => `${API_ROUTES.cityRequests.all(cityId)}${buildListQuery(query)}`;
+
 export const cityRequestsApi = {
   createRequest: (cityId: string, formData: FormData) =>
     apiClient.postFormData<CityRequestDetail>(
@@ -46,7 +51,7 @@ export const cityRequestsApi = {
 
   getRequests: (cityId: string, query?: GetCityRequestsQuery) =>
     apiClient.get<PaginatedResponse<CityRequestListItem>>(
-      `${API_ROUTES.cityRequests.all(cityId)}${buildListQuery(query)}`,
+      buildRequestsListPath(cityId, query),
     ),
 
   getRequestDetail: (cityId: string, requestId: string) =>

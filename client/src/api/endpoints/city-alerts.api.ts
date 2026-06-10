@@ -47,10 +47,13 @@ const buildAlertsQuery = (query?: AlertListQuery) => {
   return queryString ? `?${queryString}` : '';
 };
 
+export const buildAlertsListPath = (cityId: string, query?: AlertListQuery) =>
+  `${API_ROUTES.alerts.all(cityId)}${buildAlertsQuery(query)}`;
+
 export const cityAlertsApi = {
   getCityAlerts: (cityId: string, query?: AlertListQuery) => {
     return apiClient.get<PaginatedResponse<Alert>>(
-      `${API_ROUTES.alerts.all(cityId)}${buildAlertsQuery(query)}`,
+      buildAlertsListPath(cityId, query),
     );
   },
   getCityAlertById: (cityId: string, alertId: string) => {

@@ -310,7 +310,7 @@ describe('CityService', () => {
           },
         },
       });
-      const { domainVerification, ...rest } = currentRequest;
+      const { domainVerification: _, ...rest } = currentRequest;
       expect(result).toEqual({ ...rest, domainVerifiedAt: verifiedAt });
     });
   });

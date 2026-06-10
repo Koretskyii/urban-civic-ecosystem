@@ -32,6 +32,11 @@ export const uk = {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',
   },
   common: {
+    notFoundTitle: 'Не знайдено',
+    notFoundBack: 'Назад',
+    loading: 'Завантаження...',
+    errorTitle: 'Щось пішло не так',
+    errorRetry: 'Спробувати ще раз',
     cancel: 'Скасувати',
     verify: 'Перевірити',
     verifying: 'Перевірка...',

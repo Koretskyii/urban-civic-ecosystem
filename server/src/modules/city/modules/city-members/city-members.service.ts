@@ -8,11 +8,7 @@ import { ROLES } from '@/modules/rbac/constants/roles.const';
 import { GetCityMembersQueryDto, UpdateCityMemberRoleDto } from './dto';
 import { CITY_MEMBERS_ERRORS } from './city-members.constants';
 
-const ROLE_PRIORITY = [
-  ROLES.ADMIN,
-  ROLES.MUNICIPALITY,
-  ROLES.CITIZEN,
-] as const;
+const ROLE_PRIORITY = [ROLES.ADMIN, ROLES.MUNICIPALITY, ROLES.CITIZEN] as const;
 
 @Injectable()
 export class CityMembersService {
