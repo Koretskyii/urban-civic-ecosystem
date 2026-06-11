@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import * as dns from 'dns';
-import { DomainVerificationService } from './domain-verification/domain-verification.service';
+import { DomainVerificationService } from './domain-verification.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
 jest.mock('dns', () => ({

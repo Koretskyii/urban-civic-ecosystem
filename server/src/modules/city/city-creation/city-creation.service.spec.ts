@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
-import { CityCreationService } from './city-creation/city-creation.service';
+import { CityCreationService } from './city-creation.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { R2StorageService } from '../r2/r2.service';
+import { R2StorageService } from '../../r2/r2.service';
 import { CityCreationRequestStatus } from '@/generated/prisma/enums';
 
 describe('CityCreationService', () => {
