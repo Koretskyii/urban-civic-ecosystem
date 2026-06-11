@@ -111,13 +111,8 @@ export function useCloseSurvey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      cityId,
-      surveyId,
-    }: {
-      cityId: string;
-      surveyId: string;
-    }) => citySurveysApi.closeSurvey(cityId, surveyId),
+    mutationFn: ({ cityId, surveyId }: { cityId: string; surveyId: string }) =>
+      citySurveysApi.closeSurvey(cityId, surveyId),
     onSuccess: async (_data, variables) => {
       await invalidateSurveyQueries(
         queryClient,
@@ -132,13 +127,8 @@ export function useDeleteSurvey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      cityId,
-      surveyId,
-    }: {
-      cityId: string;
-      surveyId: string;
-    }) => citySurveysApi.deleteSurvey(cityId, surveyId),
+    mutationFn: ({ cityId, surveyId }: { cityId: string; surveyId: string }) =>
+      citySurveysApi.deleteSurvey(cityId, surveyId),
     onSuccess: async (_data, variables) => {
       await invalidateSurveyQueries(queryClient, variables.cityId);
     },
@@ -172,13 +162,8 @@ export function useRetractVote() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      cityId,
-      surveyId,
-    }: {
-      cityId: string;
-      surveyId: string;
-    }) => citySurveysApi.retractVote(cityId, surveyId),
+    mutationFn: ({ cityId, surveyId }: { cityId: string; surveyId: string }) =>
+      citySurveysApi.retractVote(cityId, surveyId),
     onSuccess: async (_data, variables) => {
       await invalidateSurveyQueries(
         queryClient,

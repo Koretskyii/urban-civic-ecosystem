@@ -31,24 +31,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Survey, SurveyVoteResult, ResultsVisibility } from '@/types';
+import type { SurveyVoteResult, ResultsVisibility } from '@/types';
 
 interface SurveyDetailViewProps {
   cityId: string;
   surveyId: string;
 }
 
-export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewProps) {
+export default function SurveyDetailView({
+  cityId,
+  surveyId,
+}: SurveyDetailViewProps) {
   const t = useTranslations();
   const router = useRouter();
 
-  const { data: survey, isLoading, isError } = useSurveyDetail(cityId, surveyId);
+  const {
+    data: survey,
+    isLoading,
+    isError,
+  } = useSurveyDetail(cityId, surveyId);
 
-  const { can: canManage } = usePermission(PERMISSION_GROUPS.SURVEY.MANAGE, { cityId });
-  const { can: canUpdate } = usePermission(PERMISSION_GROUPS.SURVEY.UPDATE, { cityId });
-  const { can: canDelete } = usePermission(PERMISSION_GROUPS.SURVEY.DELETE, { cityId });
-  const { can: canVote } = usePermission(PERMISSION_GROUPS.VOTE.CREATE, { cityId });
-  const { can: canRetract } = usePermission(PERMISSION_GROUPS.VOTE.DELETE, { cityId });
+  const { can: canManage } = usePermission(PERMISSION_GROUPS.SURVEY.MANAGE, {
+    cityId,
+  });
+  const { can: canUpdate } = usePermission(PERMISSION_GROUPS.SURVEY.UPDATE, {
+    cityId,
+  });
+  const { can: canDelete } = usePermission(PERMISSION_GROUPS.SURVEY.DELETE, {
+    cityId,
+  });
+  const { can: canVote } = usePermission(PERMISSION_GROUPS.VOTE.CREATE, {
+    cityId,
+  });
+  const { can: canRetract } = usePermission(PERMISSION_GROUPS.VOTE.DELETE, {
+    cityId,
+  });
 
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [voteError, setVoteError] = useState('');
@@ -58,7 +75,8 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editClosesAt, setEditClosesAt] = useState('');
-  const [editResultsVisibility, setEditResultsVisibility] = useState<ResultsVisibility>('AFTER_CLOSE');
+  const [editResultsVisibility, setEditResultsVisibility] =
+    useState<ResultsVisibility>('AFTER_CLOSE');
   const [editError, setEditError] = useState('');
 
   const castVoteMutation = useCastVote();
@@ -96,7 +114,9 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
   const isClosed = survey.status === 'CLOSED';
   const isDeleted = Boolean(survey.deletedAt);
   const now = new Date();
-  const isExpired = Boolean(survey.closesAt && new Date(survey.closesAt) <= now);
+  const isExpired = Boolean(
+    survey.closesAt && new Date(survey.closesAt) <= now,
+  );
   const canActuallyVote =
     canVote && !isClosed && !isExpired && !isDeleted && survey.allowVoteChange
       ? true
@@ -148,7 +168,9 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
     setEditTitle(survey.title);
     setEditDescription(survey.description ?? '');
     setEditClosesAt(
-      survey.closesAt ? new Date(survey.closesAt).toISOString().slice(0, 16) : '',
+      survey.closesAt
+        ? new Date(survey.closesAt).toISOString().slice(0, 16)
+        : '',
     );
     setEditResultsVisibility(survey.resultsVisibility);
     setEditError('');
@@ -183,14 +205,16 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
   const canSeeResults =
     canManage ||
     survey.resultsVisibility === 'LIVE' ||
-    (survey.resultsVisibility === 'AFTER_VOTE' && (Boolean(survey.myVote) || isClosed)) ||
+    (survey.resultsVisibility === 'AFTER_VOTE' &&
+      (Boolean(survey.myVote) || isClosed)) ||
     (survey.resultsVisibility === 'AFTER_CLOSE' && isClosed);
 
   const showResults = canSeeResults && Boolean(survey.results);
 
-  const totalVotes = showResults && survey.results
-    ? survey.results.reduce((acc, r) => acc + r.count, 0)
-    : 0;
+  const totalVotes =
+    showResults && survey.results
+      ? survey.results.reduce((acc, r) => acc + r.count, 0)
+      : 0;
 
   return (
     <div className="space-y-4">
@@ -237,11 +261,7 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
           {/* Manage actions */}
           <div className="mt-3 flex gap-2">
             {canUpdate && !isClosed && !isDeleted ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={openEdit}
-              >
+              <Button type="button" variant="outline" onClick={openEdit}>
                 {t('surveys.actions.edit')}
               </Button>
             ) : null}
@@ -327,7 +347,9 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
             ) : null}
 
             {voteError ? (
-              <p className="mt-2 text-sm text-[var(--danger-dark)]">{voteError}</p>
+              <p className="mt-2 text-sm text-[var(--danger-dark)]">
+                {voteError}
+              </p>
             ) : null}
 
             {!showResults && !isClosed ? (
@@ -353,12 +375,16 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
                 <span className="text-[var(--muted-foreground)]">
                   {t('surveys.fields.resultsVisibility')}
                 </span>
-                <span>{t(`surveys.resultsVisibility.${survey.resultsVisibility}`)}</span>
+                <span>
+                  {t(`surveys.resultsVisibility.${survey.resultsVisibility}`)}
+                </span>
               </div>
               {survey.closesAt ? (
                 <div className="flex justify-between">
                   <span className="text-[var(--muted-foreground)]">
-                    {isClosed ? t('surveys.closedAt', { date: '' }).split(':')[0] : t('surveys.closesAt', { date: '' }).split(':')[0]}
+                    {isClosed
+                      ? t('surveys.closedAt', { date: '' }).split(':')[0]
+                      : t('surveys.closesAt', { date: '' }).split(':')[0]}
                   </span>
                   <span>
                     {new Date(
@@ -402,13 +428,17 @@ export default function SurveyDetailView({ cityId, surveyId }: SurveyDetailViewP
             />
             <Select
               value={editResultsVisibility}
-              onValueChange={(v) => setEditResultsVisibility(v as ResultsVisibility)}
+              onValueChange={(v) =>
+                setEditResultsVisibility(v as ResultsVisibility)
+              }
             >
               <SelectTrigger className="h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(['LIVE', 'AFTER_VOTE', 'AFTER_CLOSE'] as ResultsVisibility[]).map((v) => (
+                {(
+                  ['LIVE', 'AFTER_VOTE', 'AFTER_CLOSE'] as ResultsVisibility[]
+                ).map((v) => (
                   <SelectItem key={v} value={v}>
                     {t(`surveys.resultsVisibility.${v}`)}
                   </SelectItem>

@@ -59,16 +59,21 @@ export default function SurveysList({ cityId }: SurveysListProps) {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editClosesAt, setEditClosesAt] = useState('');
-  const [editResultsVisibility, setEditResultsVisibility] = useState<ResultsVisibility>('AFTER_CLOSE');
+  const [editResultsVisibility, setEditResultsVisibility] =
+    useState<ResultsVisibility>('AFTER_CLOSE');
   const [editError, setEditError] = useState('');
 
-  const { can: canCreate, isLoading: isCreatePermissionLoading } = usePermission(
-    PERMISSION_GROUPS.SURVEY.CREATE,
-    { cityId },
-  );
-  const { can: canManage } = usePermission(PERMISSION_GROUPS.SURVEY.MANAGE, { cityId });
-  const { can: canUpdate } = usePermission(PERMISSION_GROUPS.SURVEY.UPDATE, { cityId });
-  const { can: canDelete } = usePermission(PERMISSION_GROUPS.SURVEY.DELETE, { cityId });
+  const { can: canCreate, isLoading: isCreatePermissionLoading } =
+    usePermission(PERMISSION_GROUPS.SURVEY.CREATE, { cityId });
+  const { can: canManage } = usePermission(PERMISSION_GROUPS.SURVEY.MANAGE, {
+    cityId,
+  });
+  const { can: canUpdate } = usePermission(PERMISSION_GROUPS.SURVEY.UPDATE, {
+    cityId,
+  });
+  const { can: canDelete } = usePermission(PERMISSION_GROUPS.SURVEY.DELETE, {
+    cityId,
+  });
 
   const canUseManageMode = canCreate || canManage || canUpdate || canDelete;
   const { mode: uiMode, setMode: setUiMode } = useRoleUiMode(
@@ -163,7 +168,9 @@ export default function SurveysList({ cityId }: SurveysListProps) {
     setEditTitle(survey.title);
     setEditDescription(survey.description ?? '');
     setEditClosesAt(
-      survey.closesAt ? new Date(survey.closesAt).toISOString().slice(0, 16) : '',
+      survey.closesAt
+        ? new Date(survey.closesAt).toISOString().slice(0, 16)
+        : '',
     );
     setEditResultsVisibility(survey.resultsVisibility);
     setEditError('');
@@ -411,7 +418,12 @@ export default function SurveysList({ cityId }: SurveysListProps) {
       </Dialog>
 
       {/* Edit dialog */}
-      <Dialog open={Boolean(editingSurvey)} onOpenChange={(open) => { if (!open) setEditingSurvey(null); }}>
+      <Dialog
+        open={Boolean(editingSurvey)}
+        onOpenChange={(open) => {
+          if (!open) setEditingSurvey(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('surveys.editTitle')}</DialogTitle>
@@ -440,13 +452,17 @@ export default function SurveysList({ cityId }: SurveysListProps) {
             />
             <Select
               value={editResultsVisibility}
-              onValueChange={(v) => setEditResultsVisibility(v as ResultsVisibility)}
+              onValueChange={(v) =>
+                setEditResultsVisibility(v as ResultsVisibility)
+              }
             >
               <SelectTrigger className="h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(['LIVE', 'AFTER_VOTE', 'AFTER_CLOSE'] as ResultsVisibility[]).map((v) => (
+                {(
+                  ['LIVE', 'AFTER_VOTE', 'AFTER_CLOSE'] as ResultsVisibility[]
+                ).map((v) => (
                   <SelectItem key={v} value={v}>
                     {t(`surveys.resultsVisibility.${v}`)}
                   </SelectItem>
@@ -542,9 +558,7 @@ function SurveyCard({
         {isDeleted ? (
           <Badge variant="danger">{t('surveys.deletedLabel')}</Badge>
         ) : null}
-        {survey.myVote ? (
-          <Badge variant="success">✓</Badge>
-        ) : null}
+        {survey.myVote ? <Badge variant="success">✓</Badge> : null}
       </div>
 
       <h3 className="mb-1 flex-1 text-base font-semibold leading-snug">
@@ -558,7 +572,9 @@ function SurveyCard({
       ) : null}
 
       <p className="text-xs text-[var(--muted-foreground)]">
-        {survey._count ? t('surveys.voteCount', { count: survey._count.votes }) : null}
+        {survey._count
+          ? t('surveys.voteCount', { count: survey._count.votes })
+          : null}
         {formattedClosedAt
           ? ` · ${t('surveys.closedAt', { date: formattedClosedAt })}`
           : formattedClosesAt

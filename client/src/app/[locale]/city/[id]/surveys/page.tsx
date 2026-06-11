@@ -1,4 +1,8 @@
-import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
 import { queryKeys } from '@/api';
 import { buildSurveysListPath } from '@/api/endpoints/city-surveys.api';
 import { serverApiFetch } from '@/api/server';
@@ -16,7 +20,9 @@ const INITIAL_SURVEYS_QUERY: SurveyListQuery = {
   sortOrder: 'desc',
 };
 
-export default async function CitySurveysPage({ params }: CitySurveysPageProps) {
+export default async function CitySurveysPage({
+  params,
+}: CitySurveysPageProps) {
   const { id: cityId } = await params;
 
   const queryClient = new QueryClient();

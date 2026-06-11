@@ -1,5 +1,9 @@
 import { notFound } from 'next/navigation';
-import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
 import { queryKeys } from '@/api';
 import { API_ROUTES } from '@/api/routes';
 import { serverApiFetch, ServerFetchError } from '@/api/server';
@@ -10,7 +14,9 @@ interface SurveyDetailPageProps {
   params: Promise<{ id: string; surveyId: string }>;
 }
 
-export default async function SurveyDetailPage({ params }: SurveyDetailPageProps) {
+export default async function SurveyDetailPage({
+  params,
+}: SurveyDetailPageProps) {
   const { id: cityId, surveyId } = await params;
 
   const queryClient = new QueryClient();

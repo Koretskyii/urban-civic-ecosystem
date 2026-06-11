@@ -32,7 +32,9 @@ export const buildSurveysListPath = (cityId: string, query?: SurveyListQuery) =>
 
 export const citySurveysApi = {
   getCitySurveys: (cityId: string, query?: SurveyListQuery) =>
-    apiClient.get<PaginatedResponse<Survey>>(buildSurveysListPath(cityId, query)),
+    apiClient.get<PaginatedResponse<Survey>>(
+      buildSurveysListPath(cityId, query),
+    ),
 
   getSurveyById: (cityId: string, surveyId: string) =>
     apiClient.get<Survey>(API_ROUTES.surveys.detail(cityId, surveyId)),
@@ -40,8 +42,15 @@ export const citySurveysApi = {
   createSurvey: (cityId: string, payload: CreateSurveyPayload) =>
     apiClient.post<Survey>(API_ROUTES.surveys.all(cityId), payload),
 
-  updateSurvey: (cityId: string, surveyId: string, payload: UpdateSurveyPayload) =>
-    apiClient.patch<Survey>(API_ROUTES.surveys.detail(cityId, surveyId), payload),
+  updateSurvey: (
+    cityId: string,
+    surveyId: string,
+    payload: UpdateSurveyPayload,
+  ) =>
+    apiClient.patch<Survey>(
+      API_ROUTES.surveys.detail(cityId, surveyId),
+      payload,
+    ),
 
   closeSurvey: (cityId: string, surveyId: string) =>
     apiClient.post<{ success: boolean; alreadyClosed: boolean }>(
