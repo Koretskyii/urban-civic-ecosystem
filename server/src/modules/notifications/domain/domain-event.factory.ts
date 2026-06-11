@@ -1,5 +1,6 @@
 import {
   type BuildCityRequestEventPayloadData,
+  type BuildSurveyEventPayloadData,
   type buildAlertEventPayloadData,
   type buildNewsEventPayloadData,
 } from './domain-events.types';
@@ -26,6 +27,18 @@ export function buildAlertEventPayload(data: buildAlertEventPayloadData) {
     alertTypeId: data.alertTypeId,
     severity: data.severity,
     expiresAt: data.expiresAt ? data.expiresAt.toISOString() : null,
+  };
+}
+
+export function buildSurveyEventPayload(data: BuildSurveyEventPayloadData) {
+  return {
+    eventId: crypto.randomUUID(),
+    occuredAt: new Date().toISOString(),
+    cityId: data.cityId,
+    agregateId: data.surveyId,
+    publisherId: data.publisherId || 'system',
+    title: data.title,
+    closesAt: data.closesAt ? data.closesAt.toISOString() : null,
   };
 }
 

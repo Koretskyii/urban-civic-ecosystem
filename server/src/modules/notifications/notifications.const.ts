@@ -5,6 +5,7 @@ import type { DomainEventType } from '@/modules/notifications/domain/domain-even
 import { AlertEventPayloadDto } from './dto/alert-event-payload.dto';
 import { CityRequestEventPayloadDto } from './dto/city-request-event-payload.dto';
 import { NewsEventPayloadDto } from './dto/news-event-payload.dto';
+import { SurveyEventPayloadDto } from './dto/survey-event-payload.dto';
 
 export const EVENT_PAYLOAD_DTO_MAP: Record<
   DomainEventType,
@@ -21,6 +22,8 @@ export const EVENT_PAYLOAD_DTO_MAP: Record<
   [DOMAIN_EVENT_TYPES.CITY_REQUEST_STATUS_UPDATED]: CityRequestEventPayloadDto,
   [DOMAIN_EVENT_TYPES.CITY_REQUEST_REPORT_CREATED]: CityRequestEventPayloadDto,
   [DOMAIN_EVENT_TYPES.CITY_REQUEST_MESSAGE_CREATED]: CityRequestEventPayloadDto,
+  [DOMAIN_EVENT_TYPES.SURVEY_CREATED]: SurveyEventPayloadDto,
+  [DOMAIN_EVENT_TYPES.SURVEY_CLOSED]: SurveyEventPayloadDto,
 };
 
 export const EVENT_TYPE_TO_NOTIFICATION_TYPE: Record<
@@ -43,6 +46,8 @@ export const EVENT_TYPE_TO_NOTIFICATION_TYPE: Record<
     InAppNotificationType.CITY_REQUEST_REPORT_CREATED,
   [DOMAIN_EVENT_TYPES.CITY_REQUEST_MESSAGE_CREATED]:
     InAppNotificationType.CITY_REQUEST_MESSAGE_CREATED,
+  [DOMAIN_EVENT_TYPES.SURVEY_CREATED]: InAppNotificationType.SURVEY_CREATED,
+  [DOMAIN_EVENT_TYPES.SURVEY_CLOSED]: InAppNotificationType.SURVEY_CLOSED,
 };
 
 export const EVENT_TYPE_TO_EMAIL_ENABLED: Record<DomainEventType, boolean> = {
@@ -57,4 +62,6 @@ export const EVENT_TYPE_TO_EMAIL_ENABLED: Record<DomainEventType, boolean> = {
   [DOMAIN_EVENT_TYPES.CITY_REQUEST_STATUS_UPDATED]: true,
   [DOMAIN_EVENT_TYPES.CITY_REQUEST_REPORT_CREATED]: true,
   [DOMAIN_EVENT_TYPES.CITY_REQUEST_MESSAGE_CREATED]: true,
+  [DOMAIN_EVENT_TYPES.SURVEY_CREATED]: false,
+  [DOMAIN_EVENT_TYPES.SURVEY_CLOSED]: false,
 };

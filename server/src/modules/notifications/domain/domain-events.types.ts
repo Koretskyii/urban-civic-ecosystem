@@ -70,3 +70,15 @@ export interface BuildCityRequestEventPayloadData {
   messageId?: string | null;
   messagePreview?: string | null;
 }
+
+export type SurveyEventPayload = BaseEventPayload & {
+  closesAt: string | null;
+};
+
+export interface BuildSurveyEventPayloadData {
+  cityId: string;
+  surveyId: string;
+  publisherId: string | null;
+  title: string;
+  closesAt: Date | null;
+}

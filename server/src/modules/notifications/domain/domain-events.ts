@@ -10,4 +10,6 @@ export const DOMAIN_EVENT_TYPES = {
   CITY_REQUEST_STATUS_UPDATED: 'city_request.status_updated',
   CITY_REQUEST_REPORT_CREATED: 'city_request.report_created',
   CITY_REQUEST_MESSAGE_CREATED: 'city_request.message_created',
+  SURVEY_CREATED: 'survey.created',
+  SURVEY_CLOSED: 'survey.closed',
 } as const;
