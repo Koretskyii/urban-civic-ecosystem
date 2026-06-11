@@ -9,8 +9,6 @@ import {
   Query,
   Req,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
 import type { RequestWithUser } from '@/types/auth.types';
@@ -27,13 +25,6 @@ import {
 
 @Controller('admin')
 @UseGuards(JWTGuard, SystemAdminGuard)
-@UsePipes(
-  new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }),
-)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

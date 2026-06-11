@@ -9,8 +9,6 @@ import {
   Query,
   Req,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { AlertsService } from './alerts.service';
 import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
@@ -22,13 +20,6 @@ import { CreateAlertDto, GetAlertsQueryDto, UpdateAlertDto } from './dto';
 
 @Controller('city/:cityId/alerts')
 @UseGuards(JWTGuard)
-@UsePipes(
-  new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }),
-)
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 

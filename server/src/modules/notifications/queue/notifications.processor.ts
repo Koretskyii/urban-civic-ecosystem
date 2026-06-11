@@ -17,7 +17,7 @@ import {
   EVENT_TYPE_TO_EMAIL_ENABLED,
   EVENT_PAYLOAD_DTO_MAP,
   EVENT_TYPE_TO_NOTIFICATION_TYPE,
-} from '../notifications.constants';
+} from '../notifications.const';
 import { EmailNotificationService } from '../email/email-notification.service';
 import { InAppNotificationService } from '../in-app/in-app-notification.service';
 import { OutboxRepository } from '../outbox/outbox.repository';
@@ -316,6 +316,13 @@ export class NotificationsProcessor extends WorkerHost {
         : `/city/${cityId}/city-requests`;
     }
 
+    if (eventType.startsWith('survey.')) {
+      const surveyId = this.getAggregateId(payload);
+      return surveyId
+        ? `/city/${cityId}/surveys/${surveyId}`
+        : `/city/${cityId}/surveys`;
+    }
+
     return `/city/${cityId}`;
   }
 
@@ -368,6 +375,10 @@ export class NotificationsProcessor extends WorkerHost {
       return typeof payload.messagePreview === 'string'
         ? payload.messagePreview
         : 'New message added';
+    }
+
+    if (eventType === DOMAIN_EVENT_TYPES.SURVEY_CLOSED) {
+      return 'Voting has ended';
     }
 
     return null;

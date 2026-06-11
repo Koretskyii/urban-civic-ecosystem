@@ -3,6 +3,7 @@ import type {
   GetCityRequestsQuery,
   NewsListQuery,
   CityMembersListQuery,
+  SurveyListQuery,
 } from '@/types';
 import {
   CITY_ALERTS_DEFAULT_FILTER_FIELDS,
@@ -76,7 +77,20 @@ export const queryKeys = {
 
   surveys: {
     all: (cityId: string) => ['surveys', cityId] as const,
-    detail: (id: string) => ['surveys', 'detail', id] as const,
+    list: (cityId: string, query?: SurveyListQuery) =>
+      [
+        'surveys',
+        cityId,
+        'list',
+        query?.includeDeleted ?? false,
+        query?.status ?? 'all',
+        query?.search ?? '',
+        query?.limit ?? 40,
+        query?.sortBy ?? 'createdAt',
+        query?.sortOrder ?? 'desc',
+      ] as const,
+    detail: (cityId: string, surveyId: string) =>
+      ['surveys', cityId, 'detail', surveyId] as const,
   },
 
   news: {

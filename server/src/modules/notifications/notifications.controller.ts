@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
 import type { RequestWithUser } from '@/types/auth.types';
-import { NotificationsService } from '../notifications.service';
+import { NotificationsService } from './notifications.service';
 
 @Controller('notifications')
 @UseGuards(JWTGuard)

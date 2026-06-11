@@ -6,9 +6,7 @@ import { jwtConfig } from './config/jwt.config';
 import { dbConfig } from './config/db.config';
 import { tlsConfig } from './config/tls.config';
 import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './modules/index';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AuthModule } from './modules/auth/auth.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { googleConfig } from './config/google.config';
 import { CityModule } from './modules/city/city.module';
@@ -40,7 +38,5 @@ import { AdminModule } from './modules/admin/admin.module';
     NotificationsModule,
     AdminModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

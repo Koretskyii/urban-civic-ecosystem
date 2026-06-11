@@ -163,6 +163,75 @@ export interface DomainVerificationData {
   token: string;
 }
 
+// ─── Surveys ───
+
+export type SurveyStatus = 'OPEN' | 'CLOSED';
+export type ResultsVisibility = 'LIVE' | 'AFTER_VOTE' | 'AFTER_CLOSE';
+
+export interface SurveyOption {
+  id: string;
+  text: string;
+  position: number;
+}
+
+export interface SurveyVoteResult {
+  optionId: string;
+  count: number;
+  percent: number;
+}
+
+export interface Survey {
+  id: string;
+  cityId: string;
+  publisherId?: string | null;
+  title: string;
+  description?: string | null;
+  status: SurveyStatus;
+  resultsVisibility: ResultsVisibility;
+  allowVoteChange: boolean;
+  closesAt?: string | null;
+  closedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  myVote?: string | null;
+  _count?: { votes: number; options: number };
+  options?: SurveyOption[];
+  results?: SurveyVoteResult[] | null;
+}
+
+export interface SurveyListQuery {
+  includeDeleted?: boolean;
+  status?: SurveyStatus;
+  search?: string;
+  limit?: number;
+  cursor?: string;
+  sortBy?: 'createdAt' | 'closesAt' | 'title';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface CreateSurveyPayload {
+  title: string;
+  description?: string;
+  options: { text: string }[];
+  closesAt?: string;
+  resultsVisibility?: ResultsVisibility;
+  allowVoteChange?: boolean;
+}
+
+export interface UpdateSurveyPayload {
+  title?: string;
+  description?: string;
+  closesAt?: string | null;
+  resultsVisibility?: ResultsVisibility;
+}
+
+export interface CastVotePayload {
+  optionId: string;
+}
+
+// ─── City Members ───
+
 export interface CityMember {
   userId: string;
   name: string;

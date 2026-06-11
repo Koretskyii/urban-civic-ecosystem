@@ -80,4 +80,13 @@ export const API_ROUTES = {
     detail: (cityId: string, departmentId: string): string =>
       `/city/${cityId}/departments/${departmentId}`,
   },
+  surveys: {
+    all: (cityId: string): string => `/city/${cityId}/surveys`,
+    detail: (cityId: string, surveyId: string): string =>
+      `/city/${cityId}/surveys/${surveyId}`,
+    close: (cityId: string, surveyId: string): string =>
+      `/city/${cityId}/surveys/${surveyId}/close`,
+    vote: (cityId: string, surveyId: string): string =>
+      `/city/${cityId}/surveys/${surveyId}/vote`,
+  },
 } as const;

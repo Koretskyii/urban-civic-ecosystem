@@ -7,8 +7,6 @@ import {
   Query,
   Req,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
 import { PermissionsGuard } from '@/modules/rbac/guards/permissions.guard';
@@ -20,13 +18,6 @@ import { GetCityMembersQueryDto, UpdateCityMemberRoleDto } from './dto';
 
 @Controller('city/:cityId/members')
 @UseGuards(JWTGuard)
-@UsePipes(
-  new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }),
-)
 export class CityMembersController {
   constructor(private readonly cityMembersService: CityMembersService) {}
 

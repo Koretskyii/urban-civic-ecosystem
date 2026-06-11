@@ -10,8 +10,6 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
@@ -37,13 +35,6 @@ import {
 
 @Controller('city/:cityId')
 @UseGuards(JWTGuard)
-@UsePipes(
-  new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }),
-)
 export class CityRequestsController {
   constructor(
     private readonly cityRequestsService: CityRequestsService,

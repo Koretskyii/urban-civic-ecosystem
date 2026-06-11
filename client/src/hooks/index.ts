@@ -85,3 +85,13 @@ export { useProtectedRoute } from './useProtectedRoute';
 export { useDebouncedValue } from './useDebouncedValue';
 export { useRoleUiMode, type RoleUiMode } from './useRoleUiMode';
 export { useResponsiveVirtualColumns } from './useResponsiveVirtualColumns';
+export {
+  useInfiniteCitySurveys,
+  useSurveyDetail,
+  useCreateSurvey,
+  useUpdateSurvey,
+  useCloseSurvey,
+  useDeleteSurvey,
+  useCastVote,
+  useRetractVote,
+} from './useSurveys';

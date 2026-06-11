@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CITY_DEPARTMENTS_ERRORS } from './city-departments.constants';
+import { CITY_DEPARTMENTS_ERRORS } from './city-departments.const';
 import { CreateCityDepartmentDto, UpdateCityDepartmentDto } from './dto';
 
 const CUSTOM_DEPARTMENT_TYPE = 'CUSTOM';

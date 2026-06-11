@@ -15,6 +15,7 @@ import {
   Settings,
   TriangleAlert,
   Building2,
+  Vote,
 } from 'lucide-react';
 
 interface CityLayoutShellProps {
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { key: 'home', path: '', icon: <House size={18} /> },
   { key: 'news', path: '/news', icon: <Newspaper size={18} /> },
   { key: 'alerts', path: '/alerts', icon: <Bell size={18} /> },
+  { key: 'surveys', path: '/surveys', icon: <Vote size={18} /> },
   {
     key: 'problem',
     path: '/city-requests',

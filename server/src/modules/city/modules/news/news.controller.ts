@@ -11,8 +11,6 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { JWTGuard } from '@/modules/auth/guards/jwt.guard';
@@ -25,13 +23,6 @@ import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('city/:cityId/news')
 @UseGuards(JWTGuard)
-@UsePipes(
-  new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }),
-)
 export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 

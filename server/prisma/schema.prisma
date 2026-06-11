@@ -52,6 +52,19 @@ enum InAppNotificationType {
   CITY_REQUEST_STATUS_UPDATED
   CITY_REQUEST_REPORT_CREATED
   CITY_REQUEST_MESSAGE_CREATED
+  SURVEY_CREATED
+  SURVEY_CLOSED
+}
+
+enum SurveyStatus {
+  OPEN
+  CLOSED
+}
+
+enum ResultsVisibility {
+  LIVE
+  AFTER_VOTE
+  AFTER_CLOSE
 }
 
 enum AlertSeverity {
@@ -125,6 +138,7 @@ model User {
   alertSubscriptions           AlertSubscription[]
   publishedAlerts              Alert[]               @relation("alertPublisher")
   votes                        Vote[]
+  publishedSurveys             Survey[]              @relation("surveyPublisher")
   publishedNews                GeneralNews[]
   notifications                InAppNotification[]
   notificationDeliveries       NotificationDelivery[]
@@ -420,25 +434,41 @@ model AlertSubscription {
 //////////////////// SURVEYS ////////////////////
 
 model Survey {
-  id          String  @id @default(cuid())
-  cityId      String
-  title       String
-  description String?
+  id                String            @id @default(cuid())
+  cityId            String
+  publisherId       String?
+  title             String
+  description       String?
+  status            SurveyStatus      @default(OPEN)
+  resultsVisibility ResultsVisibility @default(AFTER_CLOSE)
+  allowVoteChange   Boolean           @default(true)
+  closesAt          DateTime?
+  closedAt          DateTime?
 
-  city    City           @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  options SurveyOption[]
-  votes   Vote[]
+  city      City           @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  publisher User?          @relation("surveyPublisher", fields: [publisherId], references: [id], onDelete: SetNull)
+  options   SurveyOption[]
+  votes     Vote[]
 
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([cityId, status, deletedAt, createdAt(sort: Desc)])
+  @@index([status, closesAt])
+  @@index([publisherId])
 }
 
 model SurveyOption {
   id       String @id @default(cuid())
   surveyId String
   text     String
+  position Int    @default(0)
 
   survey Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
   votes  Vote[]
+
+  @@index([surveyId, position])
 }
 
 model Vote {
@@ -450,9 +480,12 @@ model Vote {
   survey    Survey       @relation(fields: [surveyId], references: [id], onDelete: Cascade)
   option    SurveyOption @relation(fields: [surveyOptionId], references: [id], onDelete: Cascade)
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime     @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([surveyId, userId])
+  @@index([surveyOptionId])
 }
 
 //////////////////// GENERAL NEWS ////////////////////

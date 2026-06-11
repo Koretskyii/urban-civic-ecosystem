@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminService } from './admin.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CityService } from '@/modules/city/city.service';
+import { CityCreationService } from '@/modules/city/city-creation/city-creation.service';
 import {
   CityCreationRequestStatus,
   SystemRole,
@@ -70,7 +70,7 @@ describe('AdminService', () => {
           useValue: mockPrismaService,
         },
         {
-          provide: CityService,
+          provide: CityCreationService,
           useValue: mockCityService,
         },
       ],

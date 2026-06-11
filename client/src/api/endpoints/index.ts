@@ -6,3 +6,4 @@ export { cityMembersApi } from './city-members.api';
 export { cityRequestsApi } from './city-requests.api';
 export { notificationsApi } from './notifications.api';
 export { rbacApi } from './rbac.api';
+export { citySurveysApi } from './city-surveys.api';
