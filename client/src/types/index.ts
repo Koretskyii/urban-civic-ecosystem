@@ -39,6 +39,15 @@ export type {
   DomainVerificationData,
   DomainVerificationResult,
   DomainVerificationToken,
+  Survey,
+  SurveyOption,
+  SurveyVoteResult,
+  SurveyStatus,
+  ResultsVisibility,
+  SurveyListQuery,
+  CreateSurveyPayload,
+  UpdateSurveyPayload,
+  CastVotePayload,
 } from './city.types';
 
 export type {
