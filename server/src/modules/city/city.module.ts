@@ -10,6 +10,7 @@ import { NewsModule } from './modules/news/news.module';
 import { CityRequestsModule } from './modules/city-requests/city-requests.module';
 import { CityMembersModule } from './modules/city-members/city-members.module';
 import { CityDepartmentsModule } from './modules/city-departments/city-departments.module';
+import { SurveysModule } from './modules/surveys/surveys.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CityDepartmentsModule } from './modules/city-departments/city-departmen
     CityRequestsModule,
     CityMembersModule,
     CityDepartmentsModule,
+    SurveysModule,
   ],
   controllers: [CityController],
   providers: [CityService, DomainVerificationService, CityCreationService],
