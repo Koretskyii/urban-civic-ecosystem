@@ -39,7 +39,9 @@ export class SurveysService {
           title: dto.title.trim(),
           description: dto.description?.trim() ?? null,
           closesAt: dto.closesAt ? new Date(dto.closesAt) : null,
-          ...(dto.resultsVisibility !== undefined && { resultsVisibility: dto.resultsVisibility }),
+          ...(dto.resultsVisibility !== undefined && {
+            resultsVisibility: dto.resultsVisibility,
+          }),
           allowVoteChange: dto.allowVoteChange ?? true,
           options: {
             create: dto.options.map((opt, i) => ({
