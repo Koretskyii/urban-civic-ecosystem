@@ -27,6 +27,8 @@ export const en = {
     notificationCityRequestStatusUpdated: 'Request status updated',
     notificationCityRequestReportCreated: 'Request report added',
     notificationCityRequestMessageCreated: 'New request message',
+    notificationSurveyCreated: 'New survey',
+    notificationSurveyClosed: 'Survey closed',
   },
   footer: {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',

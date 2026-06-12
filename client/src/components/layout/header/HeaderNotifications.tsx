@@ -67,6 +67,7 @@ export default function HeaderNotifications() {
   const formatNotificationDescription = (item: InAppNotification) => {
     const isNews = item.type.startsWith('NEWS_');
     const isCityRequest = item.type.startsWith('CITY_REQUEST_');
+    const isSurvey = item.type.startsWith('SURVEY_');
     const isCreated = item.type.endsWith('_CREATED');
     const isUpdated = item.type.endsWith('_UPDATED');
     const isDeleted = item.type.endsWith('_DELETED');
@@ -74,6 +75,21 @@ export default function HeaderNotifications() {
     const cityLabel = item.city
       ? `${item.city.name}, ${item.city.region}`
       : t('header.notificationCityFallback');
+
+    if (isSurvey) {
+      const primary =
+        item.type === 'SURVEY_CREATED'
+          ? t('header.notificationSurveyCreated')
+          : t('header.notificationSurveyClosed');
+
+      return {
+        primary,
+        title: item.title,
+        details: item.body ?? null,
+        cityLabel,
+        createdAt: new Date(item.createdAt).toLocaleString(),
+      };
+    }
 
     if (isCityRequest) {
       const primary =

@@ -9,7 +9,9 @@ export type InAppNotificationType =
   | 'CITY_REQUEST_ASSIGNED'
   | 'CITY_REQUEST_STATUS_UPDATED'
   | 'CITY_REQUEST_REPORT_CREATED'
-  | 'CITY_REQUEST_MESSAGE_CREATED';
+  | 'CITY_REQUEST_MESSAGE_CREATED'
+  | 'SURVEY_CREATED'
+  | 'SURVEY_CLOSED';
 
 export interface InAppNotificationCity {
   id: string;

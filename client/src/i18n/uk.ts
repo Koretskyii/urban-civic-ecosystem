@@ -27,6 +27,8 @@ export const uk = {
     notificationCityRequestStatusUpdated: 'Оновлено статус звернення',
     notificationCityRequestReportCreated: 'Додано звіт по зверненню',
     notificationCityRequestMessageCreated: 'Нове повідомлення у зверненні',
+    notificationSurveyCreated: 'Нове опитування',
+    notificationSurveyClosed: 'Опитування завершено',
   },
   footer: {
     rights: '© 2026 Urban Civic Ecosystem. All rights reserved.',
