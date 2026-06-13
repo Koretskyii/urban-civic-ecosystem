@@ -53,11 +53,7 @@ export default async function RootLayout({
   const accessToken = cookieStore.get('access_token')?.value;
   const queryClient = new QueryClient();
 
-  console.log('[DEBUG] layout API_BASE_URL:', API_BASE_URL);
-  console.log('[DEBUG] layout accessToken present:', Boolean(accessToken));
-
   if (accessToken) {
-    console.log('[DEBUG] layout prefetching /auth/me from:', `${API_BASE_URL}/auth/me`);
     await queryClient.prefetchQuery({
       queryKey: queryKeys.auth.me(),
       queryFn: async () => {
@@ -68,8 +64,6 @@ export default async function RootLayout({
           cache: 'no-store',
           signal: AbortSignal.timeout(5000),
         });
-
-        console.log('[DEBUG] layout /auth/me status:', response.status);
 
         if (!response.ok) {
           throw new Error('Failed to prefetch auth profile');
