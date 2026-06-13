@@ -7,10 +7,6 @@ import { authApi } from '@/api/endpoints';
 import { ERROR_MESSAGES } from '@/constants';
 import { useTranslations } from 'next-intl';
 
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
-}
 
 export default function GoogleCallbackPage() {
   const t = useTranslations();
@@ -21,7 +17,7 @@ export default function GoogleCallbackPage() {
   useEffect(() => {
     async function handleGoogleAuth() {
       try {
-        const accessToken = getCookie('access_token');
+        const accessToken = new URLSearchParams(window.location.search).get('token');
         if (!accessToken) {
           setError(ERROR_MESSAGES.AUTH.MISSING_TOKEN);
           return;
