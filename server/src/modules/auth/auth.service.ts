@@ -22,20 +22,24 @@ import type {
 import { ChangePasswordDto } from './dto';
 import { RbacService } from '../rbac/rbac.service';
 
+const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
+
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: true,
   sameSite: 'strict' as const,
   path: '/auth/refresh',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+  ...(cookieDomain && { domain: cookieDomain }),
 };
 
 const ACCESS_COOKIE_OPTIONS = {
   httpOnly: false, // JS must read this on the client
   secure: true,
-  sameSite: 'lax' as const, // lax needed for cross-origin redirect from Google
+  sameSite: 'lax' as const,
   path: '/',
   maxAge: 30 * 60 * 1000, // 30 minutes
+  ...(cookieDomain && { domain: cookieDomain }),
 };
 
 @Injectable()
