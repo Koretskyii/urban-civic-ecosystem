@@ -38,9 +38,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const nodeEnv = configService.get<string>('app.nodeEnv', 'development');
   const port = configService.get<number>('app.port', 3001);
-  const corsOrigin = configService.get<string[]>(
+  const corsOrigin = configService.get<string>(
     'app.corsOrigin',
-    ['https://localhost:3000'],
+    'https://localhost:3000',
   );
 
   app.useGlobalPipes(
@@ -57,7 +57,7 @@ async function bootstrap() {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, swaggerDocument);
 
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port);
   const protocol = tlsEnabled ? 'https' : 'http';
   console.log(`[${nodeEnv}] Server running on ${protocol}://localhost:${port}`);
 
