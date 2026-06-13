@@ -100,7 +100,6 @@ const isUserBlockedInCity = async (
 };
 
 export default async function middleware(request: NextRequest) {
-
   const localePrefix = getLocalePrefix(request.nextUrl.pathname);
   const pathname = stripLocalePrefix(request.nextUrl.pathname);
   const token = request.cookies.get('access_token')?.value;
