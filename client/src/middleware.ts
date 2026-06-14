@@ -99,6 +99,25 @@ const isUserBlockedInCity = async (
   }
 };
 
+function redirect(path: string, base: string): NextResponse {
+  const url = new URL(path, base);
+  url.port = '';
+  return NextResponse.redirect(url);
+}
+
+function fixResponsePort(response: NextResponse): NextResponse {
+  const location = response.headers.get('location');
+  if (!location) return response;
+  try {
+    const url = new URL(location);
+    if (url.port === '8080') {
+      url.port = '';
+      response.headers.set('location', url.toString());
+    }
+  } catch {}
+  return response;
+}
+
 export default async function middleware(request: NextRequest) {
   const localePrefix = getLocalePrefix(request.nextUrl.pathname);
   const pathname = stripLocalePrefix(request.nextUrl.pathname);
@@ -111,9 +130,7 @@ export default async function middleware(request: NextRequest) {
   );
 
   if (requiresAuth && !isAuthenticated) {
-    return NextResponse.redirect(
-      new URL(`${localePrefix}/user/auth`, request.url),
-    );
+    return redirect(`${localePrefix}/user/auth`, request.url);
   }
 
   const cityId = getCityIdFromPathname(pathname);
@@ -124,9 +141,7 @@ export default async function middleware(request: NextRequest) {
       '1';
     if (!recentlyVerified) {
       if (await isUserBlockedInCity(request, cityId)) {
-        return NextResponse.redirect(
-          new URL(`${localePrefix}/city/${cityId}/banned`, request.url),
-        );
+        return redirect(`${localePrefix}/city/${cityId}/banned`, request.url);
       }
       verifiedNotBlocked = true;
     }
@@ -140,12 +155,10 @@ export default async function middleware(request: NextRequest) {
     requiredPermission &&
     !payload?.permissions?.includes(requiredPermission)
   ) {
-    return NextResponse.redirect(
-      new URL(`${localePrefix}/forbidden`, request.url),
-    );
+    return redirect(`${localePrefix}/forbidden`, request.url);
   }
 
-  const response = intlMiddleware(request);
+  const response = fixResponsePort(intlMiddleware(request));
   if (verifiedNotBlocked && cityId) {
     response.cookies.set(`${BLOCK_CHECK_COOKIE_PREFIX}${cityId}`, '1', {
       maxAge: BLOCK_CHECK_TTL_SECONDS,
