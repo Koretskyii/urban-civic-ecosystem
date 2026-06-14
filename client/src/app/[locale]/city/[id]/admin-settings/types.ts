@@ -1,5 +1,1 @@
-export type AdminSettingsSection =
-  | 'members'
-  | 'departments'
-  | 'city-profile'
-  | 'roles-permissions';
+export type AdminSettingsSection = 'members' | 'departments' | 'city-profile';
