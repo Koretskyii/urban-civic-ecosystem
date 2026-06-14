@@ -167,11 +167,16 @@ export class SurveysService {
     const myVote = survey.votes[0]?.surveyOptionId ?? null;
     const isClosed = survey.status === 'CLOSED';
     const hasVoted = myVote !== null;
+    const now = new Date();
+    const isExpired = Boolean(survey.closesAt && survey.closesAt <= now);
+    const isFinished = isClosed || isExpired;
 
     const showResults =
       canManage ||
-      survey.resultsVisibility === 'LIVE' ||
-      (survey.resultsVisibility === 'AFTER_VOTE' && (hasVoted || isClosed)) ||
+      (survey.resultsVisibility === 'LIVE' && isFinished) ||
+      (survey.resultsVisibility === 'AFTER_VOTE' &&
+        isFinished &&
+        (hasVoted || isClosed)) ||
       (survey.resultsVisibility === 'AFTER_CLOSE' && isClosed);
 
     const results = showResults ? await this.computeResults(surveyId) : null;
