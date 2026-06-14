@@ -7,7 +7,6 @@ import { authApi } from '@/api/endpoints';
 import { ERROR_MESSAGES } from '@/constants';
 import { useTranslations } from 'next-intl';
 
-
 export default function GoogleCallbackPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -17,7 +16,9 @@ export default function GoogleCallbackPage() {
   useEffect(() => {
     async function handleGoogleAuth() {
       try {
-        const accessToken = new URLSearchParams(window.location.search).get('token');
+        const accessToken = new URLSearchParams(window.location.search).get(
+          'token',
+        );
         if (!accessToken) {
           setError(ERROR_MESSAGES.AUTH.MISSING_TOKEN);
           return;
