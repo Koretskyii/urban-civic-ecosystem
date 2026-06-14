@@ -7,6 +7,7 @@ import { API_BASE_URL } from '@/config';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function AuthPage() {
   const t = useTranslations();
@@ -47,14 +48,16 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-xs px-4 py-8">
-      <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-[0_12px_30px_rgba(12,38,61,0.12)]">
-        <h1 className="mb-1 text-center text-3xl">{t('app.shortName')}</h1>
-        <p className="mb-3 text-center text-sm text-[var(--muted-foreground)]">
+    <div className="mx-auto w-full max-w-sm px-4 py-10">
+      <div className="rounded-2xl border border-black/10 bg-white p-8 shadow-[0_12px_30px_rgba(12,38,61,0.12)]">
+        <h1 className="mb-1 text-center text-3xl font-bold">
+          {t('app.shortName')}
+        </h1>
+        <p className="mb-5 text-center text-sm text-[var(--muted-foreground)]">
           {t('app.tagline')}
         </p>
 
-        <div className="mb-3 grid grid-cols-2 rounded-md bg-black/5 p-1">
+        <div className="mb-4 grid grid-cols-2 rounded-md bg-black/5 p-1">
           <button
             type="button"
             onClick={() => handleTabChange(0)}
@@ -85,10 +88,10 @@ export default function AuthPage() {
           </p>
         ) : null}
 
-        <form onSubmit={handleSubmit} className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {isRegister ? (
             <label className="block">
-              <span className="mb-1 block text-sm text-[var(--muted-foreground)]">
+              <span className="mb-1.5 block text-sm text-[var(--muted-foreground)]">
                 {t('auth.nameLabel')}
               </span>
               <Input
@@ -103,7 +106,7 @@ export default function AuthPage() {
           ) : null}
 
           <label className="block">
-            <span className="mb-1 block text-sm text-[var(--muted-foreground)]">
+            <span className="mb-1.5 block text-sm text-[var(--muted-foreground)]">
               {t('auth.emailLabel')}
             </span>
             <Input
@@ -118,7 +121,7 @@ export default function AuthPage() {
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm text-[var(--muted-foreground)]">
+            <span className="mb-1.5 block text-sm text-[var(--muted-foreground)]">
               {t('auth.passwordLabel')}
             </span>
             <div className="flex h-11 items-center rounded-md border border-black/15 px-3 transition-colors focus-within:border-[var(--secondary)]">
@@ -133,9 +136,10 @@ export default function AuthPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="ml-2 text-xs text-[var(--muted-foreground)]"
+                className="ml-2 text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </label>
@@ -144,7 +148,7 @@ export default function AuthPage() {
             type="submit"
             disabled={isPending}
             size="lg"
-            className="mt-1 w-full text-sm"
+            className="mt-2 w-full text-sm"
           >
             {isPending
               ? t('common.processing')
@@ -154,7 +158,7 @@ export default function AuthPage() {
           </Button>
         </form>
 
-        <div className="my-3 flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+        <div className="my-4 flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
           <div className="h-px flex-1 bg-black/10" />
           <span>{t('common.or')}</span>
           <div className="h-px flex-1 bg-black/10" />

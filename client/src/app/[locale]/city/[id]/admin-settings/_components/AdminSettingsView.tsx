@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { usePermission } from '@/hooks';
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
-import { CITY_MEMBER_ROLE_OPTIONS } from '@/features/city-members';
 import { MembersSettingsSection } from './sections/MembersSettingsSection';
 import { DepartmentsSettingsSection } from './sections/DepartmentsSettingsSection';
 import { CityProfileSettingsSection } from './sections/CityProfileSettingsSection';
@@ -91,33 +90,6 @@ export default function AdminSettingsView({
       {activeSection === 'city-profile' ? (
         <CityProfileSettingsSection cityId={cityId} />
       ) : null}
-      {activeSection === 'roles-permissions' ? (
-        <RolesPermissionsSection />
-      ) : null}
     </div>
-  );
-}
-
-function RolesPermissionsSection() {
-  const t = useTranslations();
-
-  return (
-    <section className="space-y-3">
-      <h2 className="text-xl font-semibold text-[var(--primary)]">
-        {t('adminSettings.sections.roles-permissions')}
-      </h2>
-      <div className="grid gap-2 md:grid-cols-2">
-        {CITY_MEMBER_ROLE_OPTIONS.map((role) => (
-          <article key={role} className="rounded-md border border-black/10 p-3">
-            <p className="font-medium text-[var(--primary)]">
-              {t(`cityMembers.roles.${role}`)}
-            </p>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              {t(`adminSettings.roleDescriptions.${role}`)}
-            </p>
-          </article>
-        ))}
-      </div>
-    </section>
   );
 }

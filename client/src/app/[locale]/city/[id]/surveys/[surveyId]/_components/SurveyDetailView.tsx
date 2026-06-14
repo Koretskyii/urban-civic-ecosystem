@@ -202,10 +202,12 @@ export default function SurveyDetailView({
     }
   };
 
+  const isFinished = isClosed || isExpired;
   const canSeeResults =
     canManage ||
-    survey.resultsVisibility === 'LIVE' ||
+    (survey.resultsVisibility === 'LIVE' && isFinished) ||
     (survey.resultsVisibility === 'AFTER_VOTE' &&
+      isFinished &&
       (Boolean(survey.myVote) || isClosed)) ||
     (survey.resultsVisibility === 'AFTER_CLOSE' && isClosed);
 
