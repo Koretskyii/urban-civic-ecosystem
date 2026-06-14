@@ -7,5 +7,4 @@ export const ADMIN_SETTINGS_SECTIONS: AdminSettingsSection[] = [
   'city-profile',
   'departments',
   'members',
-  'roles-permissions',
 ];
