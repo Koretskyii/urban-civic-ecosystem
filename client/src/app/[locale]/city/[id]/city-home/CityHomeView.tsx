@@ -18,6 +18,7 @@ import { inferRoleFromPermissions } from '@/constants/rbac.const';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  BarChart3,
   Bell,
   Building2,
   ClipboardList,
@@ -32,6 +33,7 @@ import { ContentCard } from './_components/ContentCard/ContentCard';
 import { NewsPreview } from './_components/NewsPreview/NewsPreview';
 import { RequestPreview } from './_components/RequestPreview/RequestPreview';
 import { RolePanel } from './_components/RolePanel/RolePanel';
+import { AnalyticsTeaser } from './_components/AnalyticsTeaser/AnalyticsTeaser';
 import type { CityHomeViewProps } from './types/CityHomeView.types';
 
 const CityRequestsOverviewMap = dynamic(
@@ -320,6 +322,20 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
           </AsyncListState>
         </ContentCard>
       </section>
+
+      {isMember ? (
+        <section>
+          <ContentCard
+            title={t('cityHome.analyticsTeaser.title')}
+            description={t('cityHome.analyticsTeaser.description')}
+            icon={<BarChart3 size={18} />}
+            actionLabel={t('cityHome.actions.openAnalytics')}
+            onAction={() => router.push(`${baseRoute}/analytics`)}
+          >
+            <AnalyticsTeaser cityId={cityId} enabled={contentEnabled} />
+          </ContentCard>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -51,10 +51,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const CITY_FEATURE_CODES = ['PPLC', 'PPLA', 'PPLA2', 'PPLA3', 'PPL'];
+
   const geonamesUrl = new URL('https://secure.geonames.org/searchJSON');
   geonamesUrl.searchParams.set('name_startsWith', query);
   geonamesUrl.searchParams.set('country', 'UA');
-  geonamesUrl.searchParams.set('featureClass', 'P');
+  for (const code of CITY_FEATURE_CODES) {
+    geonamesUrl.searchParams.append('featureCode', code);
+  }
   geonamesUrl.searchParams.set('maxRows', String(MAX_ROWS));
   geonamesUrl.searchParams.set('username', username);
   geonamesUrl.searchParams.set('lang', 'uk');

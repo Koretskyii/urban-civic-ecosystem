@@ -157,4 +157,18 @@ export const queryKeys = {
     users: (query?: unknown) =>
       [...queryKeys.admin.all, 'users', query] as const,
   },
+
+  analytics: {
+    all: ['analytics'] as const,
+    cityRequests: (cityId: string, query?: unknown) =>
+      [...queryKeys.analytics.all, 'city', cityId, 'requests', query] as const,
+    cityRequestsGeo: (cityId: string) =>
+      [...queryKeys.analytics.all, 'city', cityId, 'requests', 'geo'] as const,
+    citySurveys: (cityId: string, query?: unknown) =>
+      [...queryKeys.analytics.all, 'city', cityId, 'surveys', query] as const,
+    cityAlerts: (cityId: string, query?: unknown) =>
+      [...queryKeys.analytics.all, 'city', cityId, 'alerts', query] as const,
+    systemOverview: (query?: unknown) =>
+      [...queryKeys.analytics.all, 'system', 'overview', query] as const,
+  },
 } as const;

@@ -89,4 +89,14 @@ export const API_ROUTES = {
     vote: (cityId: string, surveyId: string): string =>
       `/city/${cityId}/surveys/${surveyId}/vote`,
   },
+  analytics: {
+    cityRequests: (cityId: string): string =>
+      `/city/${cityId}/analytics/requests`,
+    cityRequestsGeo: (cityId: string): string =>
+      `/city/${cityId}/analytics/requests/geo`,
+    citySurveys: (cityId: string): string =>
+      `/city/${cityId}/analytics/surveys`,
+    cityAlerts: (cityId: string): string => `/city/${cityId}/analytics/alerts`,
+    systemOverview: '/admin/analytics/overview',
+  },
 } as const;

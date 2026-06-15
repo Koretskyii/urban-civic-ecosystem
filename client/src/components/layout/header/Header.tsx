@@ -30,7 +30,7 @@ export default function Header() {
           </Link>
           {isSystemAdmin ? (
             <Link
-              href="/admin/settings"
+              href="/admin"
               className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-[var(--primary)] no-underline transition hover:bg-[var(--secondary)]/20 hover:shadow-sm"
             >
               <ShieldCheck className="h-4 w-4" aria-hidden="true" />
