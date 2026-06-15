@@ -95,3 +95,10 @@ export {
   useCastVote,
   useRetractVote,
 } from './useSurveys';
+export {
+  useCityRequestsAnalytics,
+  useCityRequestsGeo,
+  useCitySurveysAnalytics,
+  useCityAlertsAnalytics,
+  useSystemAnalytics,
+} from './useAnalytics';
