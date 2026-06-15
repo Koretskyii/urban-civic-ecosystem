@@ -1,11 +1,14 @@
 import {
   ArcElement,
+  BarController,
   BarElement,
   CategoryScale,
   Chart as ChartJS,
+  DoughnutController,
   Filler,
   Legend,
   LinearScale,
+  LineController,
   LineElement,
   PointElement,
   Tooltip,
@@ -13,11 +16,15 @@ import {
 
 let registered = false;
 
-// chart.js v4 is tree-shakeable — elements must be registered before render.
+// chart.js v4 is tree-shakeable — controllers, elements and scales must be
+// registered before the generic <Chart> renders.
 export const registerCharts = (): void => {
   if (registered) return;
 
   ChartJS.register(
+    BarController,
+    LineController,
+    DoughnutController,
     CategoryScale,
     LinearScale,
     PointElement,

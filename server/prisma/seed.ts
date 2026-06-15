@@ -32,7 +32,10 @@ const prismaWithDepartmentDelegate = prisma as PrismaClient & {
 
 const ROLE_NAMES = Object.values(ROLES);
 const ALERT_TYPE_NAMES = Object.values(ALERT_TYPES);
-const DEFAULT_SYSTEM_ADMIN_EMAILS = ['yuriykoretskiy999@gmail.com'];
+const DEFAULT_SYSTEM_ADMIN_EMAILS = [
+  'yuriykoretskiy999@gmail.com',
+  'admin@gmail.com',
+];
 const SYSTEM_ADMIN_EMAILS = Array.from(
   new Set(
     [
