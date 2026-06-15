@@ -14,6 +14,7 @@ import { r2Config } from './config/r2.config';
 import { UsersModule } from './modules/users/users.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AdminModule } from './modules/admin/admin.module';
     UsersModule,
     NotificationsModule,
     AdminModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}
