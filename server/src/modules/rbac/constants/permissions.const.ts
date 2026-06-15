@@ -70,4 +70,7 @@ export const PERMISSIONS_KEYS = {
   USER_UPDATE_PROFILE: 'user:update_profile',
   USER_DELETE_PROFILE: 'user:delete_profile',
   USER_MANAGE_PROFILE: 'user:manage_profile',
+
+  // ─── Analytics ───
+  ANALYTICS_READ: 'analytics:read',
 } as const;

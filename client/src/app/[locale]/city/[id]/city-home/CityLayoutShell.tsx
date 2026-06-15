@@ -16,6 +16,7 @@ import {
   TriangleAlert,
   Building2,
   Vote,
+  BarChart3,
 } from 'lucide-react';
 
 interface CityLayoutShellProps {
@@ -37,6 +38,7 @@ const NAV_ITEMS = [
     icon: <TriangleAlert size={18} />,
     accent: true,
   },
+  { key: 'analytics', path: '/analytics', icon: <BarChart3 size={18} /> },
   {
     key: 'adminSettings',
     path: '/admin-settings',
