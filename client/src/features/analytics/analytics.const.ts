@@ -12,6 +12,8 @@ export const LINE_TENSION = 0.3;
 export const LINE_POINT_RADIUS = 2;
 export const LINE_FILL_ALPHA = '33'; // hex alpha appended to line fill color
 
+export const CHART_LABEL_MAX_LENGTH = 30;
+
 // Heatmap (leaflet.heat)
 export const HEAT_RADIUS = 25;
 export const HEAT_BLUR = 18;
