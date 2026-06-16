@@ -1,7 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { defaultLocale, locales } from './i18n';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL, IS_PRODUCTION } from './config';
 
 type TokenPayload = {
   sub?: string;
@@ -101,7 +101,10 @@ const isUserBlockedInCity = async (
 
 function redirect(path: string, base: string): NextResponse {
   const url = new URL(path, base);
-  url.port = '';
+  // Strip the internal proxy port on prod; keep the local dev port (e.g. 3000).
+  if (IS_PRODUCTION) {
+    url.port = '';
+  }
   return NextResponse.redirect(url);
 }
 
