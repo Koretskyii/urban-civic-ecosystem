@@ -3,17 +3,14 @@
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/i18n/navigation';
 import {
   useCityAlerts,
   useCityById,
   useCityNews,
   useCityRequestsList,
-  useJoinCity,
   useRBAC,
 } from '@/hooks';
-import { queryKeys } from '@/api/queryKeys';
 import { inferRoleFromPermissions } from '@/constants/rbac.const';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +21,6 @@ import {
   ClipboardList,
   MapPinned,
   Newspaper,
-  Users,
 } from 'lucide-react';
 import type { Alert, CityRequestListItem, News } from '@/types';
 import { AsyncListState } from './_components/AsyncListState/AsyncListState';
@@ -83,13 +79,10 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { data: city, isLoading: isCityLoading } = useCityById(cityId);
   const { permissions, role, isLoading: isRbacLoading } = useRBAC({ cityId });
   const effectiveRole = role ?? inferRoleFromPermissions(permissions);
-  const isMember = Boolean(effectiveRole || permissions.length > 0);
-  const { mutate: joinCity, isPending: isJoining } = useJoinCity();
-  const contentEnabled = Boolean(cityId && isMember);
+  const contentEnabled = Boolean(cityId);
 
   const newsQuery = useCityNews(
     cityId,
@@ -130,15 +123,6 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
   }, [city?.centerLat, city?.centerLng]);
 
   const baseRoute = `/city/${cityId}`;
-  const handleJoin = () => {
-    joinCity(cityId, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.rbac.permissions(cityId),
-        });
-      },
-    });
-  };
   const openRequest = (requestId: string) => {
     router.push(`${baseRoute}/city-requests/${requestId}`);
   };
@@ -158,9 +142,7 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
           <div className="p-5 md:p-6">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{city.region}</Badge>
-              <Badge variant={isMember ? 'success' : 'outline'}>
-                {isMember ? t('cityHome.joined') : t('cityHome.notJoined')}
-              </Badge>
+              <Badge variant="success">{t('cityHome.joined')}</Badge>
             </div>
             <div className="mb-4 flex items-start gap-3">
               <div className="rounded-lg bg-[var(--secondary)]/12 p-2 text-[var(--secondary)]">
@@ -176,33 +158,22 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {!isMember ? (
-                <Button onClick={handleJoin} disabled={isJoining}>
-                  <Users size={16} className="mr-2" />
-                  {isJoining ? t('common.processing') : t('cityHome.joinCity')}
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={() => router.push(`${baseRoute}/city-requests`)}
-                  >
-                    <ClipboardList size={16} className="mr-2" />
-                    {t('cityHome.actions.reportProblem')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push(`${baseRoute}/news`)}
-                  >
-                    <Newspaper size={16} className="mr-2" />
-                    {t('cityHome.actions.readNews')}
-                  </Button>
-                </>
-              )}
+              <Button onClick={() => router.push(`${baseRoute}/city-requests`)}>
+                <ClipboardList size={16} className="mr-2" />
+                {t('cityHome.actions.reportProblem')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push(`${baseRoute}/news`)}
+              >
+                <Newspaper size={16} className="mr-2" />
+                {t('cityHome.actions.readNews')}
+              </Button>
             </div>
           </div>
 
           <div className="border-t border-black/10 bg-[var(--surface-2)] p-5 lg:border-l lg:border-t-0">
-            <RolePanel role={effectiveRole} isMember={isMember} />
+            <RolePanel role={effectiveRole} isMember />
           </div>
         </div>
       </section>
@@ -323,19 +294,17 @@ export default function CityHomeView({ cityId }: CityHomeViewProps) {
         </ContentCard>
       </section>
 
-      {isMember ? (
-        <section>
-          <ContentCard
-            title={t('cityHome.analyticsTeaser.title')}
-            description={t('cityHome.analyticsTeaser.description')}
-            icon={<BarChart3 size={18} />}
-            actionLabel={t('cityHome.actions.openAnalytics')}
-            onAction={() => router.push(`${baseRoute}/analytics`)}
-          >
-            <AnalyticsTeaser cityId={cityId} enabled={contentEnabled} />
-          </ContentCard>
-        </section>
-      ) : null}
+      <section>
+        <ContentCard
+          title={t('cityHome.analyticsTeaser.title')}
+          description={t('cityHome.analyticsTeaser.description')}
+          icon={<BarChart3 size={18} />}
+          actionLabel={t('cityHome.actions.openAnalytics')}
+          onAction={() => router.push(`${baseRoute}/analytics`)}
+        >
+          <AnalyticsTeaser cityId={cityId} enabled={contentEnabled} />
+        </ContentCard>
+      </section>
     </div>
   );
 }

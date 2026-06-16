@@ -18,6 +18,7 @@ import {
   Vote,
   BarChart3,
 } from 'lucide-react';
+import { CityJoinGate } from './_components/CityJoinGate/CityJoinGate';
 
 interface CityLayoutShellProps {
   cityId: string;
@@ -52,7 +53,12 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
   const { can: canManageRoles } = usePermission(PERMISSION_GROUPS.ROLE.MANAGE, {
     cityId,
   });
-  const { permissions, isBlocked } = usePermissions({ cityId });
+  const {
+    permissions,
+    role,
+    isBlocked,
+    isLoading: isRbacLoading,
+  } = usePermissions({ cityId });
   const { data: city, isLoading } = useCityById(cityId);
   const pathname = usePathname();
   const router = useRouter();
@@ -62,6 +68,7 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
 
   const width = collapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
   const myCityRole = inferRoleFromPermissions(permissions);
+  const isMember = Boolean(role) || permissions.length > 0;
   const visibleNavItems = NAV_ITEMS.filter(
     (item) => item.key !== 'adminSettings' || canManageRoles,
   );
@@ -75,6 +82,24 @@ export default function CityLayoutShell(props: CityLayoutShellProps) {
 
   if (isBlocked && !isBannedPage) {
     return <div className="min-h-[80vh] bg-white" />;
+  }
+
+  if (isRbacLoading || isLoading) {
+    return (
+      <div className="flex min-h-[80vh] flex-1 items-center justify-center bg-white text-sm text-[var(--muted-foreground)]">
+        {t('common.loading')}
+      </div>
+    );
+  }
+
+  if (!isMember && !isBlocked) {
+    return (
+      <CityJoinGate
+        cityId={cityId}
+        cityName={city?.name}
+        cityRegion={city?.region}
+      />
+    );
   }
 
   return (

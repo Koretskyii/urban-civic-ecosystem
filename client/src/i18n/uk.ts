@@ -63,6 +63,7 @@ export const uk = {
     noOptions: 'Місто не знайдено',
     loading: 'Завантаження...',
     placeholder: 'Оберіть місто',
+    loginRequired: 'Щоб переглянути список міст, будь ласка, увійдіть в акаунт',
   },
   auth: {
     registerTab: 'Реєстрація',
@@ -214,6 +215,12 @@ export const uk = {
   },
   cityLayout: {
     myRole: 'Моя роль',
+  },
+  cityJoinGate: {
+    description:
+      'Приєднайтесь до міста, щоб бачити новини, оголошення, опитування, звернення та статистику.',
+    join: 'Приєднатися',
+    joining: 'Приєднання...',
   },
   cityMembers: {
     title: 'Учасники міста та ролі',
