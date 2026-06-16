@@ -62,6 +62,12 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
   const protocol = tlsEnabled ? 'https' : 'http';
   console.log(`[${nodeEnv}] Server running on ${protocol}://localhost:${port}`);
+  console.log('[DEBUG] PORT env:', process.env.PORT);
+  console.log('[DEBUG] CORS origins:', corsOrigin);
+  console.log('[DEBUG] NODE_ENV:', nodeEnv);
+  console.log('[DEBUG] DATABASE_URL set:', Boolean(process.env.DATABASE_URL));
+  console.log('[DEBUG] REDIS_URL set:', Boolean(process.env.REDIS_URL));
+  console.log('[DEBUG] TLS_ENABLED:', process.env.TLS_ENABLED);
 
   if (nodeEnv === 'development' && tlsEnabled) {
     console.log('Using self-signed certificate for local development');
