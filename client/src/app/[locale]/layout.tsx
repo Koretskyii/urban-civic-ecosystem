@@ -57,7 +57,10 @@ export default async function RootLayout({
   console.log('[DEBUG] layout accessToken present:', Boolean(accessToken));
 
   if (accessToken) {
-    console.log('[DEBUG] layout prefetching /auth/me from:', `${API_BASE_URL}/auth/me`);
+    console.log(
+      '[DEBUG] layout prefetching /auth/me from:',
+      `${API_BASE_URL}/auth/me`,
+    );
     await queryClient.prefetchQuery({
       queryKey: queryKeys.auth.me(),
       queryFn: async () => {
