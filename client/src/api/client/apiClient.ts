@@ -31,8 +31,7 @@ class ApiClient {
         method: 'POST',
         credentials: 'include',
       });
-    } catch {
-    }
+    } catch {}
     useAuthStore.getState().logout();
   }
 
