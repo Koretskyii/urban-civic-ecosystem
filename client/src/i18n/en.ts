@@ -63,6 +63,7 @@ export const en = {
     noOptions: 'City not found',
     loading: 'Loading...',
     placeholder: 'Choose a city',
+    loginRequired: 'Please sign in to view the list of cities',
   },
   auth: {
     registerTab: 'Sign up',
@@ -211,6 +212,12 @@ export const en = {
   },
   cityLayout: {
     myRole: 'My role',
+  },
+  cityJoinGate: {
+    description:
+      'Join this city to see news, announcements, surveys, requests and statistics.',
+    join: 'Join',
+    joining: 'Joining...',
   },
   cityMembers: {
     title: 'City members and roles',

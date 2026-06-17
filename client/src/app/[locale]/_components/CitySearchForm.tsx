@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { useCities } from '@/hooks';
+import { useCities, useCurrentUser } from '@/hooks';
 import { useTranslations } from 'next-intl';
 import {
   Select,
@@ -17,6 +17,8 @@ export default function CitySearchForm() {
   const t = useTranslations();
   const [selectedCityId, setSelectedCityId] = useState('');
   const router = useRouter();
+  const { data: currentUser, isLoading: isAuthLoading } = useCurrentUser();
+  const isAuthenticated = Boolean(currentUser);
   const { data: cities = [], isLoading } = useCities();
 
   const sortedCities = useMemo(
@@ -33,6 +35,28 @@ export default function CitySearchForm() {
       router.push(`/city/${selectedCityId}`);
     }
   };
+
+  if (isAuthLoading) {
+    return (
+      <p className="text-sm text-[var(--muted-foreground)]">
+        {t('citySearch.loading')}
+      </p>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <h2 className="text-2xl font-bold">{t('citySearch.title')}</h2>
+        <p className="text-sm text-[var(--muted-foreground)]">
+          {t('citySearch.loginRequired')}
+        </p>
+        <Button size="lg" onClick={() => router.push('/user/auth')}>
+          {t('auth.loginTab')}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-4">

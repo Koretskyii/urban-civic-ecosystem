@@ -4,13 +4,14 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
 import HeaderNotifications from './HeaderNotifications';
-import { useAuthStore } from '@/store';
+import { useCurrentUser } from '@/hooks';
 import { ShieldCheck } from 'lucide-react';
 
 export default function Header() {
   const t = useTranslations();
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const isSystemAdmin = useAuthStore((s) => s.user?.systemRole === 'ADMIN');
+  const { data: user } = useCurrentUser();
+  const isAuthenticated = Boolean(user);
+  const isSystemAdmin = user?.systemRole === 'ADMIN';
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--secondary)]/25 bg-white/92 text-[var(--primary)] shadow-[0_8px_24px_rgba(6,24,41,0.1)] backdrop-blur">
@@ -22,12 +23,14 @@ export default function Header() {
           <span>{t('app.name')}</span>
         </Link>
         <div className="flex items-center gap-2">
-          <Link
-            href="/city/create"
-            className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-[var(--primary)] no-underline transition hover:bg-[var(--warning)]/20 hover:shadow-sm"
-          >
-            {t('header.createCity')}
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href="/city/create"
+              className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-[var(--primary)] no-underline transition hover:bg-[var(--warning)]/20 hover:shadow-sm"
+            >
+              {t('header.createCity')}
+            </Link>
+          ) : null}
           {isSystemAdmin ? (
             <Link
               href="/admin"

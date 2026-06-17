@@ -14,6 +14,10 @@ import {
   AUTH_PROVIDERS,
   ERROR_MESSAGES,
   AUTH_SUCCESS_MESSAGES,
+  REFRESH_COOKIE_OPTIONS,
+  ACCESS_COOKIE_OPTIONS,
+  REFRESH_CLEAR_OPTIONS,
+  ACCESS_CLEAR_OPTIONS,
 } from './constants/index';
 import type {
   User as UserAuthData,
@@ -21,26 +25,6 @@ import type {
 } from '@/types/auth.types.js';
 import { ChangePasswordDto } from './dto';
 import { RbacService } from '../rbac/rbac.service';
-
-const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
-
-const REFRESH_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'strict' as const,
-  path: '/auth/refresh',
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-  ...(cookieDomain && { domain: cookieDomain }),
-};
-
-const ACCESS_COOKIE_OPTIONS = {
-  httpOnly: false, // JS must read this on the client
-  secure: true,
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 30 * 60 * 1000, // 30 minutes
-  ...(cookieDomain && { domain: cookieDomain }),
-};
 
 @Injectable()
 export class AuthService {
@@ -201,18 +185,8 @@ export class AuthService {
   }
 
   logout(res: Response) {
-    res.clearCookie('refresh_token', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/auth/refresh',
-    });
-    res.clearCookie('access_token', {
-      httpOnly: false,
-      secure: true,
-      sameSite: 'lax',
-      path: '/',
-    });
+    res.clearCookie('refresh_token', REFRESH_CLEAR_OPTIONS);
+    res.clearCookie('access_token', ACCESS_CLEAR_OPTIONS);
     return { message: AUTH_SUCCESS_MESSAGES.LOGGED_OUT };
   }
 

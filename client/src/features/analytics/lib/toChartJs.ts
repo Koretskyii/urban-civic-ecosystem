@@ -11,6 +11,7 @@ import {
 } from './palette';
 import {
   CHART_BORDER_WIDTH,
+  CHART_LABEL_MAX_LENGTH,
   LINE_FILL_ALPHA,
   LINE_POINT_RADIUS,
   LINE_TENSION,
@@ -28,6 +29,9 @@ interface AdapterOptions {
 }
 
 const identity = (value: string) => value;
+
+const truncate = (value: string, max: number) =>
+  value.length > max ? `${value.slice(0, max)}…` : value;
 
 // Charts whose categories carry a fixed semantic color.
 const SEMANTIC_COLORS: Record<string, Record<string, string>> = {
@@ -58,7 +62,9 @@ export const toChartJs = (
   const resolveLabel = options.resolveLabel ?? identity;
   const resolveSeries = options.resolveSeries ?? identity;
 
-  const labels = chart.labels.map(resolveLabel);
+  const labels = chart.labels.map((raw) =>
+    truncate(resolveLabel(raw), CHART_LABEL_MAX_LENGTH),
+  );
   const isCategoryColored = chart.kind === 'doughnut';
 
   const datasets = chart.series.map((series, seriesIndex) => {

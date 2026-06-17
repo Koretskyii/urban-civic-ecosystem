@@ -25,6 +25,16 @@ class ApiClient {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
+  private async forceLogout(): Promise<void> {
+    try {
+      await fetch(`${this.baseUrl}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {}
+    useAuthStore.getState().logout();
+  }
+
   private async refreshAccessToken(): Promise<string | null> {
     if (this.isRefreshing && this.refreshPromise) {
       return this.refreshPromise;
@@ -40,7 +50,7 @@ class ApiClient {
         });
 
         if (!res.ok) {
-          useAuthStore.getState().logout();
+          await this.forceLogout();
           return null;
         }
 
@@ -49,7 +59,7 @@ class ApiClient {
         return data.accessToken;
       } catch (error) {
         console.error('Token refresh failed:', error);
-        useAuthStore.getState().logout();
+        await this.forceLogout();
         return null;
       } finally {
         this.isRefreshing = false;
@@ -117,7 +127,7 @@ class ApiClient {
             return retryRes.json();
           }
         }
-        useAuthStore.getState().logout();
+        await this.forceLogout();
       }
 
       throw new ApiError(
