@@ -3,6 +3,11 @@ import { persist } from 'zustand/middleware';
 import type { User } from '@/types';
 import { AUTH_STORAGE_KEY } from '@/constants/constants';
 
+const clearAccessTokenCookie = () => {
+  if (typeof document === 'undefined') return;
+  document.cookie = 'access_token=; Max-Age=0; path=/';
+};
+
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -27,7 +32,10 @@ export const useAuthStore = create<AuthState>()(
 
       setToken: (token) => set({ token, isAuthenticated: true }),
 
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      logout: () => {
+        clearAccessTokenCookie();
+        set({ user: null, token: null, isAuthenticated: false });
+      },
 
       setLoading: (isLoading) => set({ isLoading }),
     }),
@@ -36,7 +44,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
-        isAuthenticated: state.isAuthenticated,
       }),
     },
   ),

@@ -10,14 +10,14 @@ import type {
 } from '@/types/auth.types';
 
 export function useCurrentUser() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const token = useAuthStore((s) => s.token);
   const setUser = useAuthStore((s) => s.setUser);
 
   const query = useQuery({
     queryKey: queryKeys.auth.me(),
     queryFn: () => authApi.getMe(),
-    enabled: isAuthenticated,
+    enabled: Boolean(token),
+    retry: false,
   });
 
   useEffect(() => {
