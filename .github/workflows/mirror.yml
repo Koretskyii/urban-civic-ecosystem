@@ -14,5 +14,5 @@ jobs:
       - name: Mirror to GitLab
         uses: pixta-dev/repository-mirroring-action@v1
         with:
-          target_repo_url: "git@gitlab.com:2022-2026/ipz-22-1/koretskyi-yuriy/diploma_koretskyi_2026.git"
+          target_repo_url: "git@git.ztu.edu.ua:ipz/2022-2026/ipz-22-1/koretskyy-yuriy/diploma_koretskyi_2026.git"
           ssh_private_key: ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
