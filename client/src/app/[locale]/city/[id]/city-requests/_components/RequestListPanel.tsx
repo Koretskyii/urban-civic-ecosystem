@@ -1,7 +1,7 @@
 'use client';
 
-import { memo, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { memo, useMemo, useRef } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import type { CityRequestListItem } from '@/types';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
@@ -27,6 +27,8 @@ const RequestRow = memo(function RequestRow({
   isActive,
   onSelect,
 }: RequestRowProps) {
+  const t = useTranslations();
+
   return (
     <button
       type="button"
@@ -43,7 +45,7 @@ const RequestRow = memo(function RequestRow({
       </p>
       <div className="mt-1 flex flex-wrap gap-1">
         <span className="rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] text-white">
-          {request.status}
+          {t(`cityProblem.statuses.${request.status}`)}
         </span>
         <span className="rounded-full border border-black/20 px-2 py-0.5 text-[10px]">
           {`P${request.priority}`}
@@ -72,7 +74,17 @@ export const RequestListPanel = memo(function RequestListPanel(
     onLoadMore,
   } = props;
   const t = useTranslations();
+  const locale = useLocale();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: 'short',
+        timeStyle: 'short',
+        timeZone: 'Europe/Kyiv',
+      }),
+    [locale],
+  );
   // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: requests.length,
@@ -160,9 +172,7 @@ export const RequestListPanel = memo(function RequestListPanel(
                             {request.assignedDepartment?.name ?? '-'}
                           </div>
                           <div className="px-3 py-2 text-[var(--muted-foreground)]">
-                            {new Date(request.createdAt).toLocaleString(
-                              'uk-UA',
-                            )}
+                            {dateFormatter.format(new Date(request.createdAt))}
                           </div>
                         </div>
                       );

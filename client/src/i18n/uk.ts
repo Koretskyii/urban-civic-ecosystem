@@ -750,6 +750,7 @@ export const uk = {
       voting: 'Зберігаємо...',
       retract: 'Відкликати голос',
       close: 'Завершити опитування',
+      closeShort: 'Завершити',
       closing: 'Завершуємо...',
       create: 'Створити',
       creating: 'Створюємо...',
@@ -768,6 +769,15 @@ export const uk = {
       retract: 'Не вдалося відкликати голос.',
       optionsMin: 'Потрібно щонайменше 2 варіанти.',
       titleRequired: 'Назва має містити щонайменше 3 символи.',
+    },
+    table: {
+      title: 'Назва',
+      status: 'Статус',
+      votes: 'Голоси',
+      closesAt: 'Завершення',
+      deleted: 'Видалено',
+      manage: 'Керування',
+      delete: 'Видалити',
     },
     detail: {
       backToSurveys: 'Назад до опитувань',

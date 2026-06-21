@@ -16,6 +16,7 @@ import {
 import { PERMISSION_GROUPS } from '@/constants/rbac.const';
 import { RoleModeSwitcher, DebouncedSearchInput } from '@/components';
 import type { Survey, SurveyStatus, ResultsVisibility } from '@/types';
+import { ManageSurveysView } from './ManageSurveysView';
 import {
   Dialog,
   DialogContent,
@@ -227,195 +228,125 @@ export default function SurveysList({ cityId }: SurveysListProps) {
         <h2 className="text-2xl">{t('surveys.title')}</h2>
       </div>
 
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3">
         <RoleModeSwitcher
           value={uiMode}
           canManage={canUseManageMode}
           isPermissionLoading={isCreatePermissionLoading}
           onChange={setUiMode}
         />
-        {isManageMode && canCreate ? (
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="rounded-md bg-[var(--primary)] px-3 py-2 text-sm font-semibold text-white"
-          >
-            {t('surveys.createTitle')}
-          </button>
-        ) : null}
       </div>
 
-      {/* Filters */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <DebouncedSearchInput
-          value={search}
-          onValueChange={setSearch}
-          placeholder={t('surveys.searchPlaceholder')}
-          className="h-10 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
+      {isManageMode ? (
+        <ManageSurveysView
+          surveys={surveys}
+          search={search}
+          statusFilter={statusFilter}
+          includeDeleted={includeDeleted}
+          canCreate={canCreate}
+          canUpdate={canUpdate}
+          canDelete={canDelete}
+          canManage={canManage}
+          isCreating={createSurveyMutation.isPending}
+          isClosing={closeSurveyMutation.isPending}
+          isDeleting={deleteSurveyMutation.isPending}
+          hasNextPage={surveysQuery.hasNextPage}
+          isFetchingNextPage={surveysQuery.isFetchingNextPage}
+          createOpen={createOpen}
+          newTitle={newTitle}
+          newDescription={newDescription}
+          newOptions={newOptions}
+          newClosesAt={newClosesAt}
+          formError={formError}
+          t={t}
+          onSearchChange={setSearch}
+          onStatusFilterChange={setStatusFilter}
+          onIncludeDeletedChange={setIncludeDeleted}
+          onCreateOpenChange={(open) => {
+            if (!open) resetCreateForm();
+            setCreateOpen(open);
+          }}
+          onNewTitleChange={setNewTitle}
+          onNewDescriptionChange={setNewDescription}
+          onNewOptionsChange={setNewOptions}
+          onNewClosesAtChange={setNewClosesAt}
+          onCreateSurvey={onCreateSurvey}
+          onOpenSurvey={(id) => router.push(`/city/${cityId}/surveys/${id}`)}
+          onStartEdit={startEdit}
+          onCloseSurvey={onCloseSurvey}
+          onDeleteSurvey={onDeleteSurvey}
+          onLoadMore={loadMore}
         />
-        <Select
-          value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
-        >
-          <SelectTrigger className="h-10 !w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_OPTIONS.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s === 'all'
-                  ? t('surveys.statusFilter.all')
-                  : t(`surveys.statusFilter.${s}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {isManageMode ? (
-          <label className="flex cursor-pointer items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
-            <input
-              type="checkbox"
-              checked={includeDeleted}
-              onChange={(e) => setIncludeDeleted(e.target.checked)}
-              className="accent-[var(--secondary)]"
-            />
-            {t('surveys.includeDeleted')}
-          </label>
-        ) : null}
-      </div>
-
-      {/* List */}
-      {surveys.length === 0 ? (
-        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-          {t('surveys.empty')}
-        </p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {surveys.map((survey) => (
-            <SurveyCard
-              key={survey.id}
-              survey={survey}
-              isManageMode={isManageMode}
-              canManage={canManage}
-              canUpdate={canUpdate}
-              canDelete={canDelete}
-              isClosing={closeSurveyMutation.isPending}
-              isDeleting={deleteSurveyMutation.isPending}
-              t={t}
-              onOpen={() => router.push(`/city/${cityId}/surveys/${survey.id}`)}
-              onClose={() => onCloseSurvey(survey.id)}
-              onEdit={() => startEdit(survey)}
-              onDelete={() => onDeleteSurvey(survey.id)}
+        <>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <DebouncedSearchInput
+              value={search}
+              onValueChange={setSearch}
+              placeholder={t('surveys.searchPlaceholder')}
+              className="h-10 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
             />
-          ))}
-        </div>
-      )}
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+            >
+              <SelectTrigger className="h-10 !w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s === 'all'
+                      ? t('surveys.statusFilter.all')
+                      : t(`surveys.statusFilter.${s}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {surveysQuery.hasNextPage ? (
-        <button
-          type="button"
-          onClick={loadMore}
-          disabled={surveysQuery.isFetchingNextPage}
-          className="mt-3 rounded-md border border-[var(--secondary)]/30 px-3 py-2 text-sm text-[var(--secondary-dark)] disabled:opacity-60"
-        >
-          {surveysQuery.isFetchingNextPage
-            ? t('common.processing')
-            : t('common.loadMore')}
-        </button>
-      ) : null}
-
-      {/* Create Dialog */}
-      <Dialog
-        open={createOpen}
-        onOpenChange={(open) => {
-          if (!open) resetCreateForm();
-          setCreateOpen(open);
-        }}
-      >
-        <DialogContent aria-describedby={undefined}>
-          <DialogHeader>
-            <DialogTitle>{t('surveys.createTitle')}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={onCreateSurvey} className="grid gap-2">
-            <input
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder={t('surveys.fields.title')}
-              className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
-            />
-            <textarea
-              value={newDescription}
-              onChange={(e) => setNewDescription(e.target.value)}
-              placeholder={t('surveys.fields.description')}
-              rows={2}
-              className="rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-[var(--secondary)]"
-            />
-            <div className="grid gap-1.5">
-              {newOptions.map((opt, i) => (
-                <div key={i} className="flex items-center gap-1">
-                  <input
-                    value={opt}
-                    onChange={(e) => {
-                      const next = [...newOptions];
-                      next[i] = e.target.value;
-                      setNewOptions(next);
-                    }}
-                    placeholder={t('surveys.fields.option', { n: i + 1 })}
-                    className="h-9 flex-1 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
-                  />
-                  {newOptions.length > 2 ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setNewOptions(newOptions.filter((_, j) => j !== i))
-                      }
-                      className="text-xs text-[var(--danger-dark)]"
-                    >
-                      ✕
-                    </button>
-                  ) : null}
-                </div>
+          {surveys.length === 0 ? (
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+              {t('surveys.empty')}
+            </p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {surveys.map((survey) => (
+                <SurveyCard
+                  key={survey.id}
+                  survey={survey}
+                  isManageMode={false}
+                  canManage={false}
+                  canUpdate={false}
+                  canDelete={false}
+                  isClosing={false}
+                  isDeleting={false}
+                  t={t}
+                  onOpen={() =>
+                    router.push(`/city/${cityId}/surveys/${survey.id}`)
+                  }
+                  onClose={() => undefined}
+                  onEdit={() => undefined}
+                  onDelete={() => undefined}
+                />
               ))}
-              {newOptions.length < 6 ? (
-                <button
-                  type="button"
-                  onClick={() => setNewOptions([...newOptions, ''])}
-                  className="text-left text-xs text-[var(--secondary-dark)]"
-                >
-                  {t('surveys.fields.addOption')}
-                </button>
-              ) : null}
             </div>
-            <input
-              type="datetime-local"
-              value={newClosesAt}
-              onChange={(e) => setNewClosesAt(e.target.value)}
-              step="60"
-              className="h-10 rounded-md border border-black/15 px-3 text-sm outline-none focus:border-[var(--secondary)]"
-            />
-            {formError ? (
-              <p className="text-xs text-[var(--danger-dark)]">{formError}</p>
-            ) : null}
-            <DialogFooter>
-              <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
-                className="rounded-md px-3 py-2 text-sm"
-              >
-                {t('surveys.actions.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={createSurveyMutation.isPending}
-                className="rounded-md bg-[var(--primary)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
-              >
-                {createSurveyMutation.isPending
-                  ? t('surveys.actions.creating')
-                  : t('surveys.actions.create')}
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          )}
+
+          {surveysQuery.hasNextPage ? (
+            <button
+              type="button"
+              onClick={loadMore}
+              disabled={surveysQuery.isFetchingNextPage}
+              className="mt-3 rounded-md border border-[var(--secondary)]/30 px-3 py-2 text-sm text-[var(--secondary-dark)] disabled:opacity-60"
+            >
+              {surveysQuery.isFetchingNextPage
+                ? t('common.processing')
+                : t('common.loadMore')}
+            </button>
+          ) : null}
+        </>
+      )}
 
       {/* Edit dialog */}
       <Dialog
