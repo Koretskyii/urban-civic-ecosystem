@@ -744,6 +744,7 @@ export const en = {
       voting: 'Submitting...',
       retract: 'Retract vote',
       close: 'Close survey',
+      closeShort: 'Close',
       closing: 'Closing...',
       create: 'Create',
       creating: 'Creating...',
@@ -762,6 +763,15 @@ export const en = {
       retract: 'Failed to retract vote.',
       optionsMin: 'At least 2 options are required.',
       titleRequired: 'Title must be at least 3 characters.',
+    },
+    table: {
+      title: 'Title',
+      status: 'Status',
+      votes: 'Votes',
+      closesAt: 'Closes at',
+      deleted: 'Deleted',
+      manage: 'Manage',
+      delete: 'Delete',
     },
     detail: {
       backToSurveys: 'Back to surveys',

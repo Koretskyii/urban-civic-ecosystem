@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { FilePreviewList } from '@/components/ui/file-preview-list';
 import type { CityRequestDetail } from '@/types';
@@ -18,6 +18,7 @@ interface RequestTimelineSectionProps {
 export function RequestTimelineSection(props: RequestTimelineSectionProps) {
   const { reports, title, emptyLabel, noDescriptionLabel } = props;
   const locale = useLocale();
+  const t = useTranslations();
 
   const sortedReports = useMemo(
     () =>
@@ -85,10 +86,10 @@ export function RequestTimelineSection(props: RequestTimelineSectionProps) {
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-[var(--primary)]">
-                          {report.type}
+                          {t(`cityProblem.reportTypes.${report.type}`)}
                           {report.status ? (
                             <span className="text-[var(--muted-foreground)] font-normal ml-1">
-                              → {report.status}
+                              → {t(`cityProblem.statuses.${report.status}`)}
                             </span>
                           ) : null}
                         </span>
