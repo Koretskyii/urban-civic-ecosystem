@@ -199,7 +199,10 @@ export function ManageSurveysView(props: ManageSurveysViewProps) {
                   {t('surveys.table.delete')}
                 </div>
               </div>
-              <div ref={scrollRef} className="max-h-[560px] overflow-y-auto overflow-x-hidden">
+              <div
+                ref={scrollRef}
+                className="max-h-[560px] overflow-y-auto overflow-x-hidden"
+              >
                 <div
                   className="relative w-full"
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}

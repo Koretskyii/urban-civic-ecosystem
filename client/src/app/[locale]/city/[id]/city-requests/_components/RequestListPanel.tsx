@@ -172,9 +172,7 @@ export const RequestListPanel = memo(function RequestListPanel(
                             {request.assignedDepartment?.name ?? '-'}
                           </div>
                           <div className="px-3 py-2 text-[var(--muted-foreground)]">
-                            {dateFormatter.format(
-                              new Date(request.createdAt),
-                            )}
+                            {dateFormatter.format(new Date(request.createdAt))}
                           </div>
                         </div>
                       );
