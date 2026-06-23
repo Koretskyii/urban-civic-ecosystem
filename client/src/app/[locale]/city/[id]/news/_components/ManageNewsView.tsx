@@ -15,7 +15,7 @@ import type { News } from '@/types';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { useTranslations } from 'next-intl';
 import type { FormEvent } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   Select,
   SelectContent,
@@ -52,7 +52,7 @@ interface ManageNewsViewProps {
   onNewTitleChange: (value: string) => void;
   onNewContentChange: (value: string) => void;
   onNewFilesChange: (value: File[]) => void;
-  onCreateNews: (event: FormEvent<HTMLFormElement>) => void;
+  onCreateNews: (event: FormEvent<HTMLFormElement>) => Promise<boolean>;
   onOpenNews: (newsId: string) => void;
   onStartEdit: (item: { id: string; title: string; content: string }) => void;
   onDeleteNews: (newsId: string) => void;
@@ -93,6 +93,7 @@ export function ManageNewsView(props: ManageNewsViewProps) {
     onLoadMore,
   } = props;
 
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
@@ -112,7 +113,10 @@ export function ManageNewsView(props: ManageNewsViewProps) {
         ) : null}
         <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
           {canCreateNews ? (
-            <Dialog>
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
               <DialogTrigger asChild>
                 <button
                   type="button"
@@ -125,7 +129,13 @@ export function ManageNewsView(props: ManageNewsViewProps) {
                 <DialogHeader>
                   <DialogTitle>{t('news.createTitle')}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={onCreateNews} className="grid gap-2">
+                <form
+                  onSubmit={async (event) => {
+                    const isCreated = await onCreateNews(event);
+                    if (isCreated) setIsCreateDialogOpen(false);
+                  }}
+                  className="grid gap-2"
+                >
                   <input
                     placeholder={t('news.fields.title')}
                     value={newTitle}
