@@ -174,7 +174,7 @@ export default function AlertsList(props: AlertsListProps) {
     const content = newContent.trim();
     if (!newAlertTypeId || title.length < 3 || content.length < 3) {
       setFormError(t('alerts.formValidation'));
-      return;
+      return false;
     }
 
     try {
@@ -193,8 +193,10 @@ export default function AlertsList(props: AlertsListProps) {
       setNewExpiresAt('');
       setNewTitle('');
       setNewContent('');
+      return true;
     } catch {
       setFormError(t('alerts.createError'));
+      return false;
     }
   };
 

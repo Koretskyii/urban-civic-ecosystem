@@ -14,7 +14,7 @@ import type { Alert, AlertSeverity, AlertType } from '@/types';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { useTranslations } from 'next-intl';
 import type { FormEvent } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   ALERT_SEVERITY_FILTER_ALL,
   ALERT_SEVERITY_OPTIONS,
@@ -74,7 +74,7 @@ interface ManageAlertsViewProps {
   onNewExpiresAtChange: (value: string) => void;
   onNewTitleChange: (value: string) => void;
   onNewContentChange: (value: string) => void;
-  onCreateAlert: (event: FormEvent<HTMLFormElement>) => void;
+  onCreateAlert: (event: FormEvent<HTMLFormElement>) => Promise<boolean>;
   onOpenAlert: (alertId: string) => void;
   onStartEdit: (item: {
     id: string;
@@ -134,6 +134,7 @@ export function ManageAlertsView(props: ManageAlertsViewProps) {
     onLoadMore,
   } = props;
 
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
@@ -154,7 +155,10 @@ export function ManageAlertsView(props: ManageAlertsViewProps) {
 
         <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
           {canCreateAlert ? (
-            <Dialog>
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
               <DialogTrigger asChild>
                 <button
                   type="button"
@@ -167,7 +171,13 @@ export function ManageAlertsView(props: ManageAlertsViewProps) {
                 <DialogHeader>
                   <DialogTitle>{t('alerts.createTitle')}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={onCreateAlert} className="grid gap-2">
+                <form
+                  onSubmit={async (event) => {
+                    const isCreated = await onCreateAlert(event);
+                    if (isCreated) setIsCreateDialogOpen(false);
+                  }}
+                  className="grid gap-2"
+                >
                   <Select
                     value={newAlertTypeId || ALERT_TYPE_PLACEHOLDER}
                     onValueChange={(value) => {

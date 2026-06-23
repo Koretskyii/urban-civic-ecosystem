@@ -104,7 +104,7 @@ export default function NewsGrid(props: NewsGridProps) {
 
     if (title.length < 3 || content.length < 3) {
       setFormError(t('news.formValidation'));
-      return;
+      return false;
     }
 
     try {
@@ -116,8 +116,10 @@ export default function NewsGrid(props: NewsGridProps) {
       setNewTitle('');
       setNewContent('');
       setNewFiles([]);
+      return true;
     } catch {
       setFormError(t('news.createError'));
+      return false;
     }
   };
 
